@@ -1,1 +1,1 @@
-# infinite-pinball
+# Infinite Pinball

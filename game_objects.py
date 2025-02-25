@@ -21,7 +21,7 @@ class Ball:
 
     def draw(self, screen, offset_x=0):
         if self.texture:
-            rotated = pygame.transform.rotozoom(self.texture, -math.degrees(self.body.angle), 1)
+            rotated = pygame.transform.rotozoom(self.texture, 0, self.radius * 2 / 16)
             rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
@@ -30,7 +30,7 @@ class Ball:
 
 
 class Bumper:
-    def __init__(self, space, bumper_def, texture=None):
+    def __init__(self, space, bumper_def, textures=None):
         self.config = bumper_def
         self.space = space
         self.pos = bumper_def["pos"]
@@ -48,11 +48,19 @@ class Bumper:
         self.shape.score_value = self.score_value
         self.shape.money_value = self.money_value
         space.add(self.body, self.shape)
-        self.texture = texture
+        self.textures = textures
+        self.shape.bumped = 0
+
+    def update(self, dt):
+        if self.shape.bumped > 0:
+            self.shape.bumped = max(0, self.shape.bumped - dt)
 
     def draw(self, screen, offset_x=0):
-        if self.texture:
-            rotated = pygame.transform.rotozoom(self.texture, 0, 1)
+        if self.textures:
+            if self.shape.bumped:
+                rotated = pygame.transform.rotozoom(self.textures["bumped"], 0, self.radius * 2 / 32)
+            else:
+                rotated = pygame.transform.rotozoom(self.textures["idle"], 0, self.radius * 2 / 32)
             rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
@@ -120,7 +128,7 @@ class Flipper:
 
     def draw(self, screen, offset_x=0):
         if self.texture:
-            rotated = pygame.transform.rotozoom(self.texture, -math.degrees(self.body.angle), 1)
+            rotated = pygame.transform.rotozoom(self.texture, -math.degrees(self.body.angle), self.length / 40)
             rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
             screen.blit(rotated, rect)
         else:

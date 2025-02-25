@@ -1,3 +1,4 @@
+import sys
 import pygame
 import pymunk
 import pymunk.pygame_util
@@ -25,14 +26,15 @@ class PinballRound:
         # Create bumpers.
         self.bumpers = []
         for bumper_def in config.bumpers:
-            bumper = Bumper(self.space, bumper_def, texture=self.textures.get("bumper"))
+            bumper = Bumper(self.space, bumper_def, textures={"idle": self.textures.get("bumper"),
+                                                              "bumped": self.textures.get("bumper_bumped")})
             self.bumpers.append(bumper)
 
         # Create flippers.
-        self.left_flipper = Flipper(self.space, config.left_flipper_pos, True,
-                                    config, texture=self.textures.get("flipper"))
-        self.right_flipper = Flipper(self.space, config.right_flipper_pos, False,
-                                     config, texture=self.textures.get("flipper"))
+        self.left_flipper = Flipper(self.space, config.left_flipper_pos, True, config,
+                                    texture=self.textures.get("flipper_left"))
+        self.right_flipper = Flipper(self.space, config.right_flipper_pos, False, config,
+                                     texture=self.textures.get("flipper_right"))
 
         # Create the ball.
         self.ball = Ball(self.space, config, config.ball_start, texture=self.textures.get("ball"))
@@ -53,6 +55,8 @@ class PinballRound:
             if shape.collision_type == 1:
                 s_val = getattr(shape, "score_value", 0)
                 m_val = getattr(shape, "money_value", 0)
+                if getattr(shape, "bumped", None) is not None:
+                    setattr(shape, "bumped", 0.1)
                 pos = shape.body.position
                 x = pos.x + 20
                 y = pos.y
@@ -66,6 +70,51 @@ class PinballRound:
                 break
         return True
 
+    def draw(self, dt):
+        # Clear screen.
+        self.screen.fill((20, 20, 70))
+        # For simplicity, we still call debug_draw for static elements.
+        self.space.debug_draw(self.draw_options)
+
+        self.left_flipper.draw(self.screen, offset_x=self.config.ui_width)
+        self.right_flipper.draw(self.screen, offset_x=self.config.ui_width)
+
+        # Draw bumpers
+        for bumper in self.bumpers[:]:
+            bumper.update(dt)
+            bumper.draw(self.screen, offset_x=self.config.ui_width)
+
+        # Draw hit effects.
+        for effect in self.hit_effects[:]:
+            effect.update(dt)
+            effect.draw(self.screen, offset_x=self.config.ui_width)
+            if effect.is_dead():
+                self.hit_effects.remove(effect)
+
+        self.ball.draw(self.screen, offset_x=self.config.ui_width)
+
+        # Draw the launch indicator.
+        if not self.ball_launched:
+            ind_x, ind_y = self.config.launch_indicator_pos
+            ind_w, ind_h = self.config.launch_indicator_size
+            pygame.draw.rect(self.screen, (255, 255, 255), (ind_x, ind_y, ind_w, ind_h), 2)
+            charge_ratio = self.launch_charge / self.config.launch_max_impulse
+            fill_height = ind_h * charge_ratio
+            pygame.draw.rect(self.screen, (0, 255, 0), (ind_x, ind_y + ind_h - fill_height, ind_w, fill_height))
+
+        # Display UI text.
+        font = pygame.font.SysFont("Arial", 24)
+        min_score_text = font.render(f"Required score: {self.config.min_score}", True, (255, 255, 255))
+        score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
+        balls_text = font.render(f"Balls Left: {self.balls_left}", True, (255, 255, 255))
+        money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
+        self.screen.blit(balls_text, self.config.ui_balls_pos)
+        self.screen.blit(score_text, self.config.ui_score_pos)
+        self.screen.blit(min_score_text, self.config.ui_min_score_pos)
+        self.screen.blit(money_text, self.config.ui_money_pos)
+
+        pygame.display.flip()
+
     def run(self):
         clock = pygame.time.Clock()
         running = True
@@ -76,7 +125,7 @@ class PinballRound:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    exit()
+                    sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         choice = PinballRound.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
@@ -97,8 +146,7 @@ class PinballRound:
 
             if not self.ball_launched and self.launch_key_down:
                 self.launch_charge += dt * self.config.launch_charge_rate
-                if self.launch_charge > self.config.launch_max_impulse:
-                    self.launch_charge = self.config.launch_max_impulse
+                self.launch_charge = min(self.launch_charge, self.config.launch_max_impulse)
 
             if self.ball.body.position.y > self.config.screen_height + 50:
                 self.space.remove(self.ball.body, self.ball.shape)
@@ -138,34 +186,7 @@ class PinballRound:
             if self.ball.body.velocity.length > 2000:
                 self.ball.body.velocity = self.ball.body.velocity * (2000 / self.ball.body.velocity.length)
 
-            self.screen.fill((20, 20, 70))
-            self.space.debug_draw(self.draw_options)
-
-            for effect in self.hit_effects[:]:
-                effect.update(dt)
-                effect.draw(self.screen, offset_x=self.config.ui_width)
-                if effect.is_dead():
-                    self.hit_effects.remove(effect)
-
-            if not self.ball_launched:
-                ind_x, ind_y = self.config.launch_indicator_pos
-                ind_w, ind_h = self.config.launch_indicator_size
-                pygame.draw.rect(self.screen, (255, 255, 255), (ind_x, ind_y, ind_w, ind_h), 2)
-                charge_ratio = self.launch_charge / self.config.launch_max_impulse
-                fill_height = ind_h * charge_ratio
-                pygame.draw.rect(self.screen, (0, 255, 0), (ind_x, ind_y + ind_h - fill_height, ind_w, fill_height))
-
-            font = pygame.font.SysFont("Arial", 24)
-            min_score_text = font.render(f"Required score: {self.config.min_score}", True, (255, 255, 255))
-            score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
-            balls_text = font.render(f"Balls Left: {self.balls_left}", True, (255, 255, 255))
-            money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
-            self.screen.blit(balls_text, self.config.ui_balls_pos)
-            self.screen.blit(score_text, self.config.ui_score_pos)
-            self.screen.blit(min_score_text, self.config.ui_min_score_pos)
-            self.screen.blit(money_text, self.config.ui_money_pos)
-
-            pygame.display.flip()
+            self.draw(dt)
             clock.tick(self.config.fps)
         return exit_option, self.score, self.money
 
@@ -183,7 +204,7 @@ class PinballRound:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    exit()
+                    sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         selected = (selected - 1) % len(options)

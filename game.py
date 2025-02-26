@@ -1,10 +1,11 @@
 import pygame
 import sys
 import math
+import random
 from config import Config
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
-from effects import overlay_menu
+from effects import overlay_menu, DisappearingItem
 
 
 class PinballGame:
@@ -61,19 +62,46 @@ class PinballGame:
                     elif event.key == pygame.K_ESCAPE:
                         pref_running = False
             pygame.display.flip()
-            clock.tick(30)
+            clock.tick(self.config.fps)
 
     def shop_screen(self):
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
         font = pygame.font.SysFont("Arial", 24)
         big_font = pygame.font.SysFont("Arial", 36)
-        grid_cols, grid_rows = self.config.shop_grid
-        shop_rect = pygame.Rect(*self.config.shop_rect)
-        cell_width = shop_rect.width // grid_cols
-        cell_height = shop_rect.height // grid_rows
+        shop = Inventory()
+        for i in range(2):
+            item = random.randint(0, len(self.config.shop_items["cards"])-1)
+            item = self.config.shop_items["cards"][item]
+            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
+        for i in range(3):
+            item = random.randint(0, len(self.config.shop_items["objects"])-1)
+            item = self.config.shop_items["objects"][item]
+            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
+        for i in range(1):
+            item = random.randint(0, len(self.config.shop_items["effects"])-1)
+            item = self.config.shop_items["effects"][item]
+            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                self.config.shop_pos_effects[0] + 100 + i * 130, self.config.shop_pos_effects[1])))
+        for i in range(2):
+            item = random.randint(0, len(self.config.shop_items["packs"])-1)
+            item = self.config.shop_items["packs"][item]
+            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
+
+        play_button_text = big_font.render("Play", True, (0, 0, 0))
+        play_button_rect = play_button_text.get_rect()
+        play_button_rect.topleft = self.config.ui_continue_pos
+        play_button_rect.width = self.config.ui_butt_width
+        field_button_text = big_font.render("Field", True, (0, 0, 0))
+        field_button_rect = field_button_text.get_rect()
+        field_button_rect.topleft = self.config.ui_field_config_pos
+        field_button_rect.width = self.config.ui_butt_width
 
         message = ""
+        effects = []
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -83,81 +111,62 @@ class PinballGame:
                     if event.key == pygame.K_RETURN:
                         return "continue"
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = pygame.mouse.get_pos()
-                    if shop_rect.collidepoint(pos):
-                        rel_x = pos[0] - shop_rect.x
-                        rel_y = pos[1] - shop_rect.y
-                        col = rel_x // cell_width
-                        row = rel_y // cell_height
-                        idx = row * grid_cols + col
-                        if idx < len(self.config.shop_items):
-                            item = self.config.shop_items[idx]
-                            if self.money >= item["price"]:
-                                if self.inventory.add_item(InventoryItem(item["name"], init_pos=pos)):
-                                    self.money -= item["price"]
-                                    message = f"Purchased {item['name']} for {item['price']}!"
-                                else:
-                                    message = "Not enough inventory space!"
+                    mpos = pygame.mouse.get_pos()
+                    if play_button_rect.inflate(20, 10).collidepoint(mpos):
+                        pygame.time.delay(200)
+                        return "continue"
+                    if field_button_rect.inflate(20, 10).collidepoint(mpos):
+                        pygame.time.delay(200)
+                        return "field_setup"
+                item = shop.handle_event(event)
+                if item is not None:
+                    if self.money >= item.properties["price"]:
+                        if item.properties["effect"] in ["card", "buildable"]:
+                            if self.inventory.add_item(item):
+                                self.money -= item.properties["price"]
+                                shop.remove_item(item)
+                                message = f"Purchased {item.name} for {item.properties['price']}!"
                             else:
-                                message = f"Not enough money for {item['name']}."
+                                message = "Not enough inventory space!"
+                        elif item.properties["effect"] == "immediate":
+                            effects.append(DisappearingItem(item, 0.5))
+                            shop.remove_item(item)
+                            message = f"Purchased {item.name} for {item.properties['price']}!"
+                    else:
+                        message = f"Not enough money for {item.name}."
                 self.inventory.handle_event(event)
             self.screen.fill((20, 20, 70))
+            n = 0
+            if play_button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+                n = 3
+            pygame.draw.rect(self.screen, (255, 255, 0), play_button_rect.inflate(20 + n, 10 + n), border_radius=5)
+            self.screen.blit(play_button_text, play_button_rect)
+            n = 0
+            if field_button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+                n = 3
+            pygame.draw.rect(self.screen, (255, 0, 100), field_button_rect.inflate(20 + n, 10 + n), border_radius=5)
+            self.screen.blit(field_button_text, field_button_rect)
             header = big_font.render("In-Game Shop", True, (255, 255, 255))
-            self.screen.blit(header, (shop_rect.x, shop_rect.y - 40))
-            for row in range(grid_rows):
-                for col in range(grid_cols):
-                    idx = row * grid_cols + col
-                    cell_rect = pygame.Rect(shop_rect.x + col * cell_width,
-                                            shop_rect.y + row * cell_height, cell_width, cell_height)
-                    pygame.draw.rect(self.screen, (200, 200, 200), cell_rect, 2)
-                    if idx < len(self.config.shop_items):
-                        item = self.config.shop_items[idx]
-                        item_text = font.render(item["name"], True, (255, 255, 255))
-                        price_text = font.render(f"${item['price']}", True, (255, 255, 0))
-                        self.screen.blit(item_text, item_text.get_rect(center=(cell_rect.centerx,
-                                                                               cell_rect.centery - 10)))
-                        self.screen.blit(price_text, price_text.get_rect(center=(cell_rect.centerx,
-                                                                                 cell_rect.centery + 20)))
-            button_text = big_font.render("Play", True, (0, 0, 0))
-            button_rect = button_text.get_rect()
-            button_rect.topleft = self.config.ui_continue_pos
-            button_rect.width = self.config.ui_butt_width
-            n = 0
-            if button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
-                n = 3
-            pygame.draw.rect(self.screen, (255, 255, 0), button_rect.inflate(20+n, 10+n), border_radius=5)
-            self.screen.blit(button_text, button_rect)
-            if pygame.mouse.get_pressed()[0]:
-                mpos = pygame.mouse.get_pos()
-                if button_rect.inflate(20, 10).collidepoint(mpos):
-                    pygame.time.delay(200)
-                    return "continue"
-            button_text = big_font.render("Field", True, (0, 0, 0))
-            button_rect = button_text.get_rect()
-            button_rect.topleft = self.config.ui_field_config_pos
-            button_rect.width = self.config.ui_butt_width
-            n = 0
-            if button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
-                n = 3
-            pygame.draw.rect(self.screen, (255, 0, 100), button_rect.inflate(20+n, 10+n), border_radius=5)
-            self.screen.blit(button_text, button_rect)
-            if pygame.mouse.get_pressed()[0]:
-                mpos = pygame.mouse.get_pos()
-                if button_rect.inflate(20, 10).collidepoint(mpos):
-                    pygame.time.delay(200)
-                    return "field_setup"
+            self.screen.blit(header, self.config.shop_pos)
             if message:
                 msg_text = font.render(message, True, (0, 255, 0))
-                self.screen.blit(msg_text, (shop_rect.x, shop_rect.bottom + 20))
+                self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
             score_text = font.render(f"Next score: {self.score_needed}", True, (255, 255, 255))
             money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
             self.screen.blit(score_text, self.config.ui_min_score_pos)
             self.screen.blit(money_text, self.config.ui_money_pos)
 
+            shop.update(dt)
+            shop.draw(self.screen)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
+            for effect in effects[:]:
+                effect.update(dt)
+                effect.draw(self.screen)
+                if effect.is_dead():
+                    effects.remove(effect)
             pygame.display.flip()
-            clock.tick(30)
+            clock.tick(self.config.fps)
 
     def field_modification_screen(self):
         # Here you could let the player add or remove objects, rearrange bumpers, etc.
@@ -187,7 +196,7 @@ class PinballGame:
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
             pygame.display.flip()
-            clock.tick(30)
+            clock.tick(self.config.fps)
         return 'back'
 
     def round_results_overlay(self, score, min_score):
@@ -243,7 +252,7 @@ class PinballGame:
                     self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
                                            150 + i * 45))
             pygame.display.flip()
-            clock.tick(30)
+            clock.tick(self.config.fps)
         return result
 
     def run(self):

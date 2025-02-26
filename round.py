@@ -167,9 +167,15 @@ class PinballRound:
 
             # Ramp gate control.
             if self.ball.body.position.x > self.config.right_wall_x:
-                if self.ball.body.position.y < self.config.bottom_opening_top:
+                xb = self.ball.body.position.x
+                x0 = self.config.right_wall_x
+                x1 = self.config.launch_ramp_wall_x
+                y0 = self.config.bottom_opening_top
+                y1 = self.config.bottom_opening_bottom
+                line = y0 + (y1 - y0) * (xb - x0) / (x1 - x0)
+                if self.ball.body.position.y + self.ball.radius < line - 5:
                     self.ramp_recline.sensor = False
-                if self.ball.body.position.y > self.config.bottom_opening_bottom:
+                if self.ball.body.position.y - self.ball.radius > line + 5:
                     self.ramp_recline.sensor = True
                 self.ramp_gate.sensor = True
             else:

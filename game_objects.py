@@ -82,8 +82,8 @@ class Flipper:
         self.body = pymunk.Body(self.mass, moment)
         self.body.position = pos
         self.shape = pymunk.Poly(self.body, vertices)
-        self.shape.elasticity = 0.99
-        self.shape.friction = 0.8
+        self.shape.elasticity = 0.6
+        self.shape.friction = 0.1
         space.add(self.body, self.shape)
 
         if is_left:

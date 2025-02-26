@@ -15,7 +15,7 @@ class Config:
         self.ui_butt_width = 160
         self.ui_continue_pos = (20, 150)
         self.ui_field_config_pos = (20, 220)
-        self.ui_inventory_pos = (0, 300)
+        self.ui_inventory_pos = (10, 300)
         self.ui_inventory_height = 300
 
         # Table boundaries.
@@ -68,31 +68,44 @@ class Config:
         self.extra_award_per_order = 5
 
         # Shop settings.
-        self.shop_grid = (4, 2)
-        self.shop_items = [
-            {"name": "+Ball", "price": 50},
-            {"name": "Multiplier", "price": 100},
-            {"name": "Bumper Up", "price": 75},
-            {"name": "Flipper Up", "price": 80},
-            {"name": "Shield", "price": 60},
-            {"name": "SlowMo", "price": 90},
-            {"name": "Mega Bump", "price": 120},
-            {"name": "Bonus", "price": 150},
-        ]
+        self.shop_items = {
+            "cards": [
+                {"name": "Shield", "price": 60, "effect": "card"},
+                {"name": "SlowMo", "price": 90, "effect": "card"},
+                {"name": "Mega Bump", "price": 120, "effect": "card"},
+                {"name": "Bonus", "price": 150, "effect": "card"}
+            ],
+            "effects": [
+                {"name": "+Ball", "price": 50, "effect": "immediate"},
+                {"name": "Multiplier", "price": 100, "effect": "immediate"}
+            ],
+            "objects": [
+                {"name": "Bumper Up", "price": 75, "effect": "buildable"},
+                {"name": "Flipper Up", "price": 80, "effect": "buildable"}
+            ],
+            "packs": [
+                {"name": "Card Pack", "price": 200, "item_type": "cards", "effect": "pack"},
+                {"name": "Object Pack", "price": 100, "item_type": "objects", "effect": "pack"},
+            ]
+        }
 
         # Custom bumpers.
         self.bumpers = [
             {"pos": (200, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10},
             {"pos": (400, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10},
             {"pos": (300, 500), "radius": 30, "force": 1.3, "score": 100, "money": 10},
-            {"pos": (300, 720), "radius": 10, "force": 1.1, "score": 50, "money": 0},
+            {"pos": (300, 720), "radius": 10, "force": 1.0, "score": 5, "money": 0},
             {"pos": (300, 100), "radius": 10, "force": 1.1, "score": 50, "money": 0},
-            {"pos": (100, 400), "radius": 10, "force": 1.1, "score": 150, "money": 0},
-            {"pos": (500, 400), "radius": 10, "force": 1.0, "score": 5, "money": 0},
+            {"pos": (100, 400), "radius": 10, "force": 1.1, "score": 50, "money": 0},
+            {"pos": (500, 400), "radius": 10, "force": 1.1, "score": 50, "money": 0},
         ]
 
         # Derived values.
-        self.shop_rect = (self.ui_width + 50, 100, 500, 200)
+        self.shop_pos = (self.ui_width + 200, 50)
+        self.shop_pos_objects = (self.ui_width + 30, 150)
+        self.shop_pos_cards = (self.shop_pos_objects[0] + 400, 150)
+        self.shop_pos_effects = (self.ui_width + 30, 350)
+        self.shop_pos_packs = (self.shop_pos_effects[0] + 400, 350)
         self.right_wall_x = self.left_wall_x + self.field_width
         self.bottom_wall_y = self.top_wall_y + self.field_height
         self.launch_opening_top = self.top_wall_y + self.launch_opening_height

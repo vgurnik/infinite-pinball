@@ -1,17 +1,22 @@
 class Config:
     def __init__(self):
         # Screen and simulation settings.
-        self.screen_width = 850
+        self.screen_width = 900
         self.screen_height = 850
-        self.fps = 60
+        self.fps = 180
         self.gravity = (0, 900)
 
         # UI panel settings.
-        self.ui_width = 150
+        self.ui_width = 200
         self.ui_min_score_pos = (10, 10)
         self.ui_score_pos = (10, 40)
         self.ui_money_pos = (10, 70)
         self.ui_balls_pos = (10, 100)
+        self.ui_butt_width = 160
+        self.ui_continue_pos = (20, 150)
+        self.ui_field_config_pos = (20, 220)
+        self.ui_inventory_pos = (0, 300)
+        self.ui_inventory_height = 300
 
         # Table boundaries.
         self.left_wall_x = 50

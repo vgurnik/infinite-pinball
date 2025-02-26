@@ -8,42 +8,43 @@ from static_objects import StaticObjects
 
 
 class PinballRound:
-    def __init__(self, screen, config, money, textures):
-        self.screen = screen
-        self.config = config
-        self.money = money
+    def __init__(self, game_instance):
+        self.screen = game_instance.screen
+        self.config = game_instance.config
+        self.money = game_instance.money
+        self.inventory = game_instance.inventory
         self.space = pymunk.Space()
-        self.space.gravity = config.gravity
-        self.draw_options = pymunk.pygame_util.DrawOptions(screen)
+        self.space.gravity = self.config.gravity
+        self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
         # Translate drawing so that simulation is offset by UI width.
-        self.draw_options.transform = pymunk.Transform.translation(config.ui_width, 0)
-        self.textures = textures
+        self.draw_options.transform = pymunk.Transform.translation(self.config.ui_width, 0)
+        self.textures = game_instance.textures
 
         # Create static boundaries and ramp gates.
-        StaticObjects.create_boundaries(self.space, config)
-        self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, config)
+        StaticObjects.create_boundaries(self.space, self.config)
+        self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config)
 
         # Create bumpers.
         self.bumpers = []
-        for bumper_def in config.bumpers:
+        for bumper_def in self.config.bumpers:
             bumper = Bumper(self.space, bumper_def, textures={"idle": self.textures.get("bumper"),
                                                               "bumped": self.textures.get("bumper_bumped")})
             self.bumpers.append(bumper)
 
         # Create flippers.
-        self.left_flipper = Flipper(self.space, config.left_flipper_pos, True, config,
+        self.left_flipper = Flipper(self.space, self.config.left_flipper_pos, True, self.config,
                                     texture=self.textures.get("flipper_left"))
-        self.right_flipper = Flipper(self.space, config.right_flipper_pos, False, config,
+        self.right_flipper = Flipper(self.space, self.config.right_flipper_pos, False, self.config,
                                      texture=self.textures.get("flipper_right"))
 
         # Create the ball.
-        self.ball = Ball(self.space, config, config.ball_start, texture=self.textures.get("ball"))
+        self.ball = Ball(self.space, self.config, self.config.ball_start, texture=self.textures.get("ball"))
         self.ball_launched = False
         self.launch_charge = 0.0
         self.launch_key_down = False
 
         self.score = 0
-        self.balls_left = config.balls
+        self.balls_left = self.config.balls
         self.hit_effects = []
 
         # Collision handler for bumpers.
@@ -113,6 +114,8 @@ class PinballRound:
         self.screen.blit(min_score_text, self.config.ui_min_score_pos)
         self.screen.blit(money_text, self.config.ui_money_pos)
 
+        self.inventory.draw(self.screen)
+
         pygame.display.flip()
 
     def run(self):
@@ -143,6 +146,7 @@ class PinballRound:
                                 self.ball.body.apply_impulse_at_local_point((0, -impulse), (0, 0))
                             self.launch_charge = 0
                             self.launch_key_down = False
+                self.inventory.handle_event(event)
 
             if not self.ball_launched and self.launch_key_down:
                 self.launch_charge += dt * self.config.launch_charge_rate
@@ -185,6 +189,8 @@ class PinballRound:
             self.space.step(dt)
             if self.ball.body.velocity.length > 2000:
                 self.ball.body.velocity = self.ball.body.velocity * (2000 / self.ball.body.velocity.length)
+
+            self.inventory.update(dt)
 
             self.draw(dt)
             clock.tick(self.config.fps)

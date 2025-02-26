@@ -6,10 +6,8 @@ class InventoryItem:
         self.name = name
         self.image = image  # Optional pygame.Surface for custom artwork.
         self.description = description
-        if init_pos is None:
-            self.pos = pygame.math.Vector2(target_position)  # current position (float for smooth movement)
-        else:
-            self.pos = pygame.math.Vector2(init_pos)  # current position (float for smooth movement)
+        # If no initial position is provided, start at the target position.
+        self.pos = pygame.math.Vector2(init_pos if init_pos is not None else target_position)
         self.target_position = pygame.math.Vector2(target_position)
         self.card_size = card_size
         self.rect = pygame.Rect(self.pos.x, self.pos.y, card_size[0], card_size[1])
@@ -18,52 +16,84 @@ class InventoryItem:
 
     def update(self, dt):
         if not self.dragging:
-            # Smoothly move towards the target position.
-            self.pos += (self.target_position - self.pos) * 50 * dt  # 5 is a smoothing factor
+            # Smoothly move toward the target position.
+            self.pos += (self.target_position - self.pos) * 50 * dt
         self.rect.topleft = (int(self.pos.x), int(self.pos.y))
 
     def draw(self, surface):
-        # Optionally, draw an image (scaled to leave a small margin).
+        # If an image is provided, draw the scaled image.
         if self.image:
-            img = pygame.transform.smoothscale(
-                self.image, (self.card_size[0] - 10, self.card_size[1] - 40)
-            )
+            img = pygame.transform.smoothscale(self.image, (self.card_size[0] - 10, self.card_size[1] - 40))
             img_rect = img.get_rect(center=self.rect.center)
             surface.blit(img, img_rect)
         else:
-            # Draw card background.
+            # Draw a simple card background.
             pygame.draw.rect(surface, (200, 200, 200), self.rect, border_radius=5)
             pygame.draw.rect(surface, (100, 100, 100), self.rect, 2, border_radius=5)
-        # Draw the name of the item at the top of the card.
+        # Draw the item name centered at the top of the card.
         font = pygame.font.SysFont("Arial", 20)
         text_surface = font.render(self.name, True, (0, 0, 0))
-        surface.blit(text_surface, (self.rect.x + self.rect.width / 2 - text_surface.get_width() / 2, self.rect.y + 5))
+        x = self.rect.x + (self.rect.width - text_surface.get_width()) / 2
+        y = self.rect.y + 5
+        surface.blit(text_surface, (x, y))
 
 
 class Inventory:
+    """
+    Base Inventory class for an arbitrary shaped table.
+    In this version, items are considered immutable – they follow a fixed layout.
+    """
+    def __init__(self):
+        self.items = []
+        self.dragging_item = None
+
+    def clear(self):
+        self.items = []
+
+    def add_item(self, item: InventoryItem):
+        self.items.append(item)
+
+    def remove_item(self, item: InventoryItem):
+        if item in self.items:
+            self.items.remove(item)
+
+    def update(self, dt):
+        for item in self.items:
+            item.update(dt)
+
+    def draw(self, surface):
+        for item in self.items:
+            if not item.dragging:
+                item.draw(surface)
+        if self.dragging_item is not None:
+            self.dragging_item.draw(surface)
+
+    def handle_event(self, event):
+        # Base inventory is immutable; do nothing on events.
+        pass
+
+    def set_layout(self, positions):
+        """
+        Arrange items according to a provided list of target positions.
+        Each position should be a tuple (x, y) corresponding to each item in order.
+        """
+        for item, pos in zip(self.items, positions):
+            item.target_position = pygame.math.Vector2(pos)
+
+
+class PlayerInventory(Inventory):
+    """
+    Inherited PlayerInventory class where items are permutable.
+    Items are arranged strictly vertically and can be dragged to re-order.
+    """
     def __init__(self, position, width, height, slot_height=170, slot_margin=10):
-        """
-        position: (x, y) of the inventory panel.
-        width, height: dimensions of the inventory panel.
-        slot_height: height allocated for each item slot.
-        slot_margin: vertical spacing between slots.
-        """
+        super().__init__()
         self.position = pygame.math.Vector2(position)
         self.width = width
         self.height = height
         self.slot_height = slot_height
         self.slot_margin = slot_margin
-        self.items = []
-        self.dragging_item = None
-
-    def add_item(self, item):
-        self.items.append(item)
-        self.recalculate_targets()
-
-    def remove_item(self, item):
-        if item in self.items:
-            self.items.remove(item)
-            self.recalculate_targets()
+        self.max_size = 7
 
     def recalculate_targets(self):
         # Arrange items vertically.
@@ -73,38 +103,37 @@ class Inventory:
             target_x = self.position.x
             item.target_position = pygame.math.Vector2(target_x, target_y)
 
+    def add_item(self, item: InventoryItem):
+        if len(self.items) < self.max_size:
+            super().add_item(item)
+            self.recalculate_targets()
+            return True
+        else:
+            return False
+
+    def remove_item(self, item: InventoryItem):
+        super().remove_item(item)
+        self.recalculate_targets()
+
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # left click
                 mouse_pos = pygame.mouse.get_pos()
-                for item in self.items[::-1]:
+                # Iterate in reverse so that top-most drawn items are prioritized.
+                for item in reversed(self.items):
                     if item.rect.collidepoint(mouse_pos):
                         item.dragging = True
                         self.dragging_item = item
                         item.offset = pygame.math.Vector2(item.pos) - pygame.math.Vector2(mouse_pos)
                         break
         elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
-                if self.dragging_item:
-                    self.dragging_item.dragging = False
-                    self.dragging_item = None
-                    self.recalculate_targets()
+            if event.button == 1 and self.dragging_item:
+                self.dragging_item.dragging = False
+                self.dragging_item = None
+                # After dropping, re-sort the items based on their current y-positions.
+                self.items.sort(key=lambda x: x.pos.y)
+                self.recalculate_targets()
         elif event.type == pygame.MOUSEMOTION:
             if self.dragging_item:
                 mouse_pos = pygame.mouse.get_pos()
                 self.dragging_item.pos = pygame.math.Vector2(mouse_pos) + self.dragging_item.offset
-
-    def update(self, dt):
-        for item in self.items:
-            item.update(dt)
-
-    def draw(self, surface):
-        # Draw inventory panel background.
-        # panel_rect = pygame.Rect(self.position.x, self.position.y, self.width, self.height)
-        # pygame.draw.rect(surface, (0, 0, 0, 255), panel_rect, border_radius=5)
-        # Draw each inventory item.
-        for item in self.items:
-            if not item.dragging:
-                item.draw(surface)
-        if self.dragging_item is not None:
-            self.dragging_item.draw(surface)

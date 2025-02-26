@@ -5,6 +5,7 @@ import pymunk.pygame_util
 from effects import HitEffect
 from game_objects import Ball, Bumper, Flipper
 from static_objects import StaticObjects
+from effects import overlay_menu
 
 
 class PinballRound:
@@ -13,6 +14,7 @@ class PinballRound:
         self.config = game_instance.config
         self.money = game_instance.money
         self.inventory = game_instance.inventory
+        self.score_needed = game_instance.score_needed
         self.space = pymunk.Space()
         self.space.gravity = self.config.gravity
         self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
@@ -105,7 +107,7 @@ class PinballRound:
 
         # Display UI text.
         font = pygame.font.SysFont("Arial", 24)
-        min_score_text = font.render(f"Required score: {self.config.min_score}", True, (255, 255, 255))
+        min_score_text = font.render(f"Required score: {self.score_needed}", True, (255, 255, 255))
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         balls_text = font.render(f"Balls Left: {self.balls_left}", True, (255, 255, 255))
         money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
@@ -131,7 +133,7 @@ class PinballRound:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        choice = PinballRound.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                        choice = overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
                         if choice == "Exit to Main Menu":
                             exit_option = "menu"
                             running = False
@@ -195,54 +197,3 @@ class PinballRound:
             self.draw(dt)
             clock.tick(self.config.fps)
         return exit_option, self.score, self.money
-
-    @staticmethod
-    def overlay_menu(screen, title, options):
-        clock = pygame.time.Clock()
-        selected = 0
-        overlay = pygame.Surface((screen.get_width(), screen.get_height()))
-        overlay.set_alpha(180)
-        overlay.fill((0, 0, 0))
-        option_rects = []
-
-        while True:
-            mouse_pos = pygame.mouse.get_pos()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        selected = (selected - 1) % len(options)
-                    elif event.key == pygame.K_DOWN:
-                        selected = (selected + 1) % len(options)
-                    elif event.key == pygame.K_RETURN:
-                        return options[selected]
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    for i, rect in enumerate(option_rects):
-                        if rect.collidepoint(mouse_pos):
-                            return options[i]
-                elif event.type == pygame.MOUSEMOTION:
-                    for i, rect in enumerate(option_rects):
-                        if rect.collidepoint(mouse_pos):
-                            selected = i
-
-            screen.blit(overlay, (0, 0))
-            font = pygame.font.SysFont("Arial", 36)
-            title_text = font.render(title, True, (255, 255, 255))
-            title_rect = title_text.get_rect(center=(screen.get_width() // 2, 150))
-            screen.blit(title_text, title_rect)
-            option_rects = []
-            for idx, option in enumerate(options):
-                if idx == selected:
-                    opt_font = pygame.font.SysFont("Arial", 42)
-                    color = (255, 255, 0)
-                else:
-                    opt_font = pygame.font.SysFont("Arial", 36)
-                    color = (255, 255, 255)
-                text = opt_font.render(option, True, color)
-                rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
-                screen.blit(text, rect)
-                option_rects.append(rect)
-            pygame.display.flip()
-            clock.tick(30)

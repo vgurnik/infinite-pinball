@@ -1,8 +1,10 @@
 import pygame
 import sys
+import math
 from config import Config
 from round import PinballRound
-from inventory import Inventory, InventoryItem
+from inventory import Inventory, PlayerInventory, InventoryItem
+from effects import overlay_menu
 
 
 class PinballGame:
@@ -12,9 +14,11 @@ class PinballGame:
         self.screen = pygame.display.set_mode((self.config.screen_width, self.config.screen_height))
         pygame.display.set_caption("Infinite Pinball")
         self.money = 0
+        self.round = 0
+        self.score_needed = self.config.min_score[self.round]
         self.textures = self.load_textures()
-        self.inventory = Inventory(position=self.config.ui_inventory_pos,
-                                   width=self.config.ui_width, height=self.config.ui_inventory_height)
+        self.inventory = PlayerInventory(position=self.config.ui_inventory_pos,
+                                         width=self.config.ui_width, height=self.config.ui_inventory_height)
 
     @staticmethod
     def load_textures():
@@ -27,8 +31,8 @@ class PinballGame:
         return textures
 
     def main_menu(self):
-        choice = PinballRound.overlay_menu(self.screen, "Main Menu",
-                                           ["Start Game", "Preferences", "Exit", "Debug_Shop"])
+        choice = overlay_menu(self.screen, "Main Menu",
+                              ["Start Game", "Preferences", "Exit", "Debug_Shop"])
         return choice
 
     def preferences_menu(self):
@@ -89,9 +93,11 @@ class PinballGame:
                         if idx < len(self.config.shop_items):
                             item = self.config.shop_items[idx]
                             if self.money >= item["price"]:
-                                self.money -= item["price"]
-                                self.inventory.add_item(InventoryItem(item["name"], init_pos=pos))
-                                message = f"Purchased {item['name']} for {item['price']}!"
+                                if self.inventory.add_item(InventoryItem(item["name"], init_pos=pos)):
+                                    self.money -= item["price"]
+                                    message = f"Purchased {item['name']} for {item['price']}!"
+                                else:
+                                    message = "Not enough inventory space!"
                             else:
                                 message = f"Not enough money for {item['name']}."
                 self.inventory.handle_event(event)
@@ -143,7 +149,7 @@ class PinballGame:
             if message:
                 msg_text = font.render(message, True, (0, 255, 0))
                 self.screen.blit(msg_text, (shop_rect.x, shop_rect.bottom + 20))
-            score_text = font.render(f"Next score: {self.config.min_score}", True, (255, 255, 255))
+            score_text = font.render(f"Next score: {self.score_needed}", True, (255, 255, 255))
             money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
             self.screen.blit(score_text, self.config.ui_min_score_pos)
             self.screen.blit(money_text, self.config.ui_money_pos)
@@ -169,7 +175,7 @@ class PinballGame:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        choice = PinballRound.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                        choice = overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
                         if choice == "Exit to Main Menu":
                             return 'menu'
                     elif event.key == pygame.K_RETURN:
@@ -184,14 +190,16 @@ class PinballGame:
             clock.tick(30)
         return 'back'
 
-    def round_results_overlay(self, score, money, min_score):
-        money_gain = score // 10
-        new_total = money + money_gain
+    def round_results_overlay(self, score, min_score):
+        extra_orders = int(math.log10(score / min_score)) if score >= min_score else 0
+        award = self.config.base_award + extra_orders * self.config.extra_award_per_order
+        self.money += award
         clock = pygame.time.Clock()
         font = pygame.font.SysFont("Arial", 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
         overlay.fill((20, 20, 20, 80))
         waiting = True
+        result = 'lose'
         while waiting:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -203,21 +211,40 @@ class PinballGame:
                     if event.key == pygame.K_RETURN:
                         waiting = False
             self.screen.blit(overlay, (self.config.ui_width, 0))
-            texts = [
-                "Round Over!",
-                f"Score: {score}",
-                f"Money earned: {money_gain}",
-                f"Total Money: {new_total}",
-                f"Required Minimum Score: {min_score}",
-                "Press ENTER to continue..."
-            ]
-            for i, line in enumerate(texts):
-                txt = font.render(line, True, (255, 255, 255))
-                self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
-                                       150 + i * 45))
+            if score < min_score:
+                result = 'lose'
+                texts = [
+                    "Game Over!",
+                    f"Score: {score}",
+                    f"Required Minimum Score: {min_score}",
+                    f"Total Money: {self.money}",
+                    "Press ENTER to return to main menu"
+                ]
+                for i, line in enumerate(texts):
+                    txt = font.render(line, True, (255, 100, 100))
+                    self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
+                                           150 + i * 45))
+            else:
+                result = 'win'
+                texts = [
+                    "Round Complete!",
+                    f"Score: {score}",
+                    f"Required Minimum Score: {min_score}",
+                    f"Award: {self.config.base_award}",
+                    f"Award for extra score: {award - self.config.base_award}",
+                    f"Total Money: {self.money}",
+                    "Press ENTER to continue..."
+                ]
+                for i, line in enumerate(texts):
+                    if i == 0:
+                        txt = font.render(line, True, (0, 255, 0))
+                    else:
+                        txt = font.render(line, True, (255, 255, 255))
+                    self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
+                                           150 + i * 45))
             pygame.display.flip()
             clock.tick(30)
-        return new_total
+        return result
 
     def run(self):
         while True:
@@ -233,14 +260,23 @@ class PinballGame:
                 self.money = 0
                 continue
             elif choice == "Start Game":
+                self.inventory.clear()
+                self.money = 0
+                self.round = 0
                 while True:
                     round_instance = PinballRound(self)
                     result, round_score, self.money = round_instance.run()
                     if result != "round_over":
                         break
-                    self.money = self.round_results_overlay(
-                        round_score, self.money, self.config.min_score)
-                    while result in ['round_over', 'back']:
+                    result = self.round_results_overlay(round_score, self.score_needed)
+                    if result == 'lose':
+                        break
+                    self.round += 1
+                    if self.round < 10:
+                        self.score_needed = self.config.min_score[self.round]
+                    else:
+                        self.score_needed = 10**(self.round - 2)
+                    while result in ['win', 'back']:
                         result = self.shop_screen()
                         if result == 'field_setup':
                             result = self.field_modification_screen()

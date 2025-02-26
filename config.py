@@ -54,7 +54,18 @@ class Config:
 
         # Game play.
         self.balls = 3
-        self.min_score = 1000
+        self.min_score = [1000,
+                          2000,
+                          5000,
+                          10000,
+                          30000,
+                          75000,
+                          150000,
+                          500000,
+                          2000000,
+                          10000000]
+        self.base_award = 10
+        self.extra_award_per_order = 5
 
         # Shop settings.
         self.shop_grid = (4, 2)

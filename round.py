@@ -10,11 +10,10 @@ from game_effects import overlay_menu
 
 class PinballRound:
     def __init__(self, game_instance):
+        self.game_instance = game_instance
         self.screen = game_instance.screen
         self.config = game_instance.config
-        self.money = game_instance.money
         self.inventory = game_instance.inventory
-        self.score_needed = game_instance.score_needed
         self.space = pymunk.Space()
         self.space.gravity = self.config.gravity
         self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
@@ -65,12 +64,16 @@ class PinballRound:
                 x = pos.x + 20
                 y = pos.y
                 if s_val:
-                    self.hit_effects.append(HitEffect((x, y), f"+{s_val}", (0, 255, 0)))
+                    if self.game_instance.config.score_multiplier != 1:
+                        s_str = f"+{s_val} X {self.game_instance.config.score_multiplier}"
+                    else:
+                        s_str = f"+{s_val}"
+                    self.hit_effects.append(HitEffect((x, y), s_str, (0, 255, 0)))
                     y += 20
-                    self.score += s_val
+                    self.score += s_val * self.game_instance.config.score_multiplier
                 if m_val:
                     self.hit_effects.append(HitEffect((x, y), f"+{m_val}", (255, 255, 0)))
-                    self.money += m_val
+                    self.game_instance.money += m_val
                 break
         return True
 
@@ -108,10 +111,10 @@ class PinballRound:
 
         # Display UI text.
         font = pygame.font.SysFont("Arial", 24)
-        min_score_text = font.render(f"Required score: {self.score_needed}", True, (255, 255, 255))
+        min_score_text = font.render(f"Required score: {self.game_instance.score_needed}", True, (255, 255, 255))
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         balls_text = font.render(f"Balls Left: {self.balls_left}", True, (255, 255, 255))
-        money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
+        money_text = font.render(f"$ {self.game_instance.money}", True, (255, 255, 255))
         self.screen.blit(balls_text, self.config.ui_balls_pos)
         self.screen.blit(score_text, self.config.ui_score_pos)
         self.screen.blit(min_score_text, self.config.ui_min_score_pos)
@@ -203,4 +206,4 @@ class PinballRound:
 
             self.draw(dt)
             clock.tick(self.config.fps)
-        return exit_option, self.score, self.money
+        return exit_option, self.score

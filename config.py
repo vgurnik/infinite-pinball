@@ -66,24 +66,25 @@ class Config:
                           10000000]
         self.base_award = 10
         self.extra_award_per_order = 5
+        self.score_multiplier = 1
 
         # Shop settings.
         self.shop_items = {
             "cards": [
-                {"name": "Shield", "price": 60, "type": "card",
+                {"name": "Shield", "price": 60, "type": "card", "effect": "change_ball_amount",
                  "description": "Allow the ball to bounce\nfrom the bottom for 5 s"},
-                {"name": "SlowMo", "price": 90, "type": "card",
+                {"name": "SlowMo", "price": 90, "type": "card", "effect": "change_ball_amount",
                  "description": "Slow down time\nfor 5 s"},
-                {"name": "Mega Bump", "price": 120, "type": "card",
+                {"name": "Mega Bump", "price": 120, "type": "card", "effect": "change_ball_amount",
                  "description": "Increase the strength of all bumpers\nx2 for 5 s"},
-                {"name": "Bonus", "price": 150, "type": "card",
+                {"name": "Bonus", "price": 150, "type": "card", "effect": "change_ball_amount",
                  "description": "Increase scoring points\nx5 for 5 s"}
             ],
             "effects": [
-                {"name": "+Ball", "price": 50, "type": "immediate",
+                {"name": "+Ball", "price": 50, "type": "immediate", "effect": "change_ball_amount", "params": [1],
                  "description": "Additional ball"},
-                {"name": "Multiplier", "price": 100, "type": "immediate",
-                 "description": "Score 10% more points"}
+                {"name": "Multiplier", "price": 100, "type": "immediate", "effect": "change_score_multiplier",
+                 "params": [0.5], "description": "Score 50% more points"}
             ],
             "objects": [
                 {"name": "Bumper", "price": 75, "type": "buildable",
@@ -108,10 +109,9 @@ class Config:
             {"pos": (200, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
             {"pos": (400, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
             {"pos": (300, 500), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
-            #{"pos": (300, 620), "radius": 15, "force": 1.0, "score": 5, "money": 0, "texture": "bumper_small"},
             {"pos": (300, 100), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
-            {"pos": (100, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
-            {"pos": (500, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
+            {"pos": (150, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
+            {"pos": (450, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
         ]
 
         # Derived values.

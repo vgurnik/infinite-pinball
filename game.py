@@ -6,6 +6,7 @@ from config import Config
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import overlay_menu, DisappearingItem
+from card_effects import get_card_function
 
 
 class PinballGame:
@@ -20,6 +21,7 @@ class PinballGame:
         self.textures = self.load_textures()
         self.inventory = PlayerInventory(position=self.config.ui_inventory_pos,
                                          width=self.config.ui_width, height=self.config.ui_inventory_height)
+        self.round_instance = None
 
     @staticmethod
     def load_textures():
@@ -133,6 +135,7 @@ class PinballGame:
                         elif item.properties["type"] == "immediate":
                             effects.append(DisappearingItem(item, 0.5))
                             shop.remove_item(item)
+                            get_card_function(item.properties["effect"])(self, *item.properties["params"])
                             message = f"Purchased {item.name} for {item.properties['price']}!"
                     else:
                         message = f"Not enough money for {item.name}."
@@ -272,11 +275,13 @@ class PinballGame:
                 continue
             elif choice == "Start Game":
                 self.inventory.clear()
+                self.config = Config()
                 self.money = 0
                 self.round = 0
+                self.score_needed = self.config.min_score[0]
                 while True:
-                    round_instance = PinballRound(self)
-                    result, round_score, self.money = round_instance.run()
+                    self.round_instance = PinballRound(self)
+                    result, round_score = self.round_instance.run()
                     if result != "round_over":
                         break
                     result = self.round_results_overlay(round_score, self.score_needed)

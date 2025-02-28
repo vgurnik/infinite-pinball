@@ -6,6 +6,7 @@ Maybe this shall be a game someday
 - [ ] Add build mode
 - [ ] Actually add card effects
 - [ ] Add pack opening
+- [x] Add descriptions (context)
 #### 2
 - [ ] Finish texturing the field
 - [ ] Texturize GUI

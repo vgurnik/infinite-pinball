@@ -2,10 +2,10 @@ import sys
 import pygame
 import pymunk
 import pymunk.pygame_util
-from effects import HitEffect
+from game_effects import HitEffect
 from game_objects import Ball, Bumper, Flipper
 from static_objects import StaticObjects
-from effects import overlay_menu
+from game_effects import overlay_menu
 
 
 class PinballRound:
@@ -29,8 +29,9 @@ class PinballRound:
         # Create bumpers.
         self.bumpers = []
         for bumper_def in self.config.bumpers:
-            bumper = Bumper(self.space, bumper_def, textures={"idle": self.textures.get("bumper"),
-                                                              "bumped": self.textures.get("bumper_bumped")})
+            bumper = Bumper(self.space, bumper_def,
+                            textures={"idle": self.textures.get(bumper_def["texture"]),
+                                      "bumped": self.textures.get(bumper_def["texture"]+"_bumped")})
             self.bumpers.append(bumper)
 
         # Create flippers.

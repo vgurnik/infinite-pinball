@@ -5,7 +5,7 @@ import random
 from config import Config
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
-from effects import overlay_menu, DisappearingItem
+from game_effects import overlay_menu, DisappearingItem
 
 
 class PinballGame:
@@ -27,7 +27,9 @@ class PinballGame:
         textures = {"ball": pygame.image.load("assets/ball.bmp").convert_alpha(),
                     "flipper_left": pygame.image.load("assets/flipper_left.bmp").convert_alpha(),
                     "bumper": pygame.image.load("assets/bumper_big.bmp").convert_alpha(),
-                    "bumper_bumped": pygame.image.load("assets/bumper_big_bumped.bmp").convert_alpha()}
+                    "bumper_bumped": pygame.image.load("assets/bumper_big_bumped.bmp").convert_alpha(),
+                    "bumper_small": pygame.image.load("assets/bumper_small.bmp").convert_alpha(),
+                    "bumper_small_bumped": pygame.image.load("assets/bumper_small_bumped.bmp").convert_alpha()}
         textures["flipper_right"] = pygame.transform.flip(textures["flipper_left"], flip_x=True, flip_y=False)
         return textures
 
@@ -121,14 +123,14 @@ class PinballGame:
                 item = shop.handle_event(event)
                 if item is not None:
                     if self.money >= item.properties["price"]:
-                        if item.properties["effect"] in ["card", "buildable"]:
+                        if item.properties["type"] in ["card", "buildable"]:
                             if self.inventory.add_item(item):
                                 self.money -= item.properties["price"]
                                 shop.remove_item(item)
                                 message = f"Purchased {item.name} for {item.properties['price']}!"
                             else:
                                 message = "Not enough inventory space!"
-                        elif item.properties["effect"] == "immediate":
+                        elif item.properties["type"] == "immediate":
                             effects.append(DisappearingItem(item, 0.5))
                             shop.remove_item(item)
                             message = f"Purchased {item.name} for {item.properties['price']}!"

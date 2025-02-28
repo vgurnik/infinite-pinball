@@ -1,6 +1,6 @@
 import pygame
 import sys
-from inventory import InventoryItem
+from multiline_text import multiline
 
 
 def overlay_menu(screen, title, options):
@@ -52,6 +52,35 @@ def overlay_menu(screen, title, options):
             option_rects.append(rect)
         pygame.display.flip()
         clock.tick(30)
+
+
+class ContextWindow:
+    def __init__(self, pos=(0, 0), text=None, visible=False):
+        self.x, self.y = pos
+        self.text = text
+        self.visible = visible
+
+    def update(self, pos, text):
+        self.x, self.y = pos
+        self.text = text
+
+    def set_visibility(self, visibility):
+        self.visible = visibility
+
+    def draw(self, surface):
+        if self.visible:
+            font = pygame.font.SysFont("Arial", 20)
+            text_surface = multiline(self.text, font, (0, 0, 0), (200, 200, 200))
+            rect = text_surface.get_rect().inflate((6, 6))
+            if self.x + rect.width > surface.get_width():
+                self.x = surface.get_width() - rect.width
+            if self.y + rect.height > surface.get_height():
+                self.y = surface.get_height() - rect.height
+            rect.topleft = (self.x, self.y)
+            pygame.draw.rect(surface, (200, 200, 200), rect, border_radius=5)
+            pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
+            # Draw the item name centered at the top of the card.
+            surface.blit(text_surface, (rect.x + 3, rect.y + 3))
 
 
 class BaseEffect:
@@ -111,7 +140,7 @@ class DisappearingItem(BaseEffect):
             surface.blit(img, img_rect)
         else:
             # Draw a simple card background.
-            match self.item.properties["effect"]:
+            match self.item.properties["type"]:
                 case "immediate":
                     color = (255, 100, 100)
                 case "buildable":

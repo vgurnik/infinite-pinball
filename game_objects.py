@@ -58,9 +58,11 @@ class Bumper:
     def draw(self, screen, offset_x=0):
         if self.textures:
             if self.shape.bumped:
-                rotated = pygame.transform.rotozoom(self.textures["bumped"], 0, self.radius * 2 / 32)
+                rotated = pygame.transform.rotozoom(self.textures["bumped"], 0,
+                                                    self.radius * 2 / self.textures["bumped"].get_size()[0])
             else:
-                rotated = pygame.transform.rotozoom(self.textures["idle"], 0, self.radius * 2 / 32)
+                rotated = pygame.transform.rotozoom(self.textures["idle"], 0,
+                                                    self.radius * 2 / self.textures["idle"].get_size()[0])
             rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
             screen.blit(rotated, rect)
         else:

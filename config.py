@@ -70,34 +70,48 @@ class Config:
         # Shop settings.
         self.shop_items = {
             "cards": [
-                {"name": "Shield", "price": 60, "effect": "card"},
-                {"name": "SlowMo", "price": 90, "effect": "card"},
-                {"name": "Mega Bump", "price": 120, "effect": "card"},
-                {"name": "Bonus", "price": 150, "effect": "card"}
+                {"name": "Shield", "price": 60, "type": "card",
+                 "description": "Allow the ball to bounce\nfrom the bottom for 5 s"},
+                {"name": "SlowMo", "price": 90, "type": "card",
+                 "description": "Slow down time\nfor 5 s"},
+                {"name": "Mega Bump", "price": 120, "type": "card",
+                 "description": "Increase the strength of all bumpers\nx2 for 5 s"},
+                {"name": "Bonus", "price": 150, "type": "card",
+                 "description": "Increase scoring points\nx5 for 5 s"}
             ],
             "effects": [
-                {"name": "+Ball", "price": 50, "effect": "immediate"},
-                {"name": "Multiplier", "price": 100, "effect": "immediate"}
+                {"name": "+Ball", "price": 50, "type": "immediate",
+                 "description": "Additional ball"},
+                {"name": "Multiplier", "price": 100, "type": "immediate",
+                 "description": "Score 10% more points"}
             ],
             "objects": [
-                {"name": "Bumper Up", "price": 75, "effect": "buildable"},
-                {"name": "Flipper Up", "price": 80, "effect": "buildable"}
+                {"name": "Bumper", "price": 75, "type": "buildable",
+                 "description": "Additional bumper"},
+                {"name": "Flipper", "price": 80, "type": "buildable",
+                 "description": "Additional flipper\nlolwhat"}
             ],
             "packs": [
-                {"name": "Card Pack", "price": 200, "item_type": "cards", "effect": "pack"},
-                {"name": "Object Pack", "price": 100, "item_type": "objects", "effect": "pack"},
+                {"name": "Card Pack", "price": 200, "item_type": "cards", "type": "pack",
+                 "description": "Choose 1 of 4 cards"},
+                {"name": "Big Card Pack", "price": 400, "item_type": "cards", "type": "pack",
+                 "description": "Choose 1 of 6 cards"},
+                {"name": "Object Pack", "price": 100, "item_type": "objects", "type": "pack",
+                 "description": "Choose 1 of 4 objects"},
+                {"name": "Big Object Pack", "price": 200, "item_type": "objects", "type": "pack",
+                 "description": "Choose 1 of 6 objects"},
             ]
         }
 
         # Custom bumpers.
         self.bumpers = [
-            {"pos": (200, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10},
-            {"pos": (400, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10},
-            {"pos": (300, 500), "radius": 30, "force": 1.3, "score": 100, "money": 10},
-            {"pos": (300, 720), "radius": 10, "force": 1.0, "score": 5, "money": 0},
-            {"pos": (300, 100), "radius": 10, "force": 1.1, "score": 50, "money": 0},
-            {"pos": (100, 400), "radius": 10, "force": 1.1, "score": 50, "money": 0},
-            {"pos": (500, 400), "radius": 10, "force": 1.1, "score": 50, "money": 0},
+            {"pos": (200, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
+            {"pos": (400, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
+            {"pos": (300, 500), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
+            #{"pos": (300, 620), "radius": 15, "force": 1.0, "score": 5, "money": 0, "texture": "bumper_small"},
+            {"pos": (300, 100), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
+            {"pos": (100, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
+            {"pos": (500, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
         ]
 
         # Derived values.

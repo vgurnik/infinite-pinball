@@ -1,4 +1,5 @@
 import pygame
+from game_effects import ContextWindow
 
 
 class InventoryItem:
@@ -37,7 +38,7 @@ class InventoryItem:
             surface.blit(img, img_rect)
         else:
             # Draw a simple card background.
-            match self.properties["effect"]:
+            match self.properties["type"]:
                 case "immediate":
                     color = (255, 100, 100)
                 case "buildable":
@@ -64,6 +65,7 @@ class Inventory:
     def __init__(self):
         self.items = []
         self.dragging_item = None
+        self.context = ContextWindow()
 
     def clear(self):
         self.items = []
@@ -85,6 +87,7 @@ class Inventory:
                 item.draw(surface)
         if self.dragging_item is not None:
             self.dragging_item.draw(surface)
+        self.context.draw(surface)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -100,7 +103,11 @@ class Inventory:
             for item in reversed(self.items):
                 if item.rect.collidepoint(mouse_pos):
                     item.highlighted = True
+                    self.context.update(mouse_pos, item.properties["description"])
+                    self.context.set_visibility(True)
                     break
+            else:
+                self.context.set_visibility(False)
         return None
 
     def set_layout(self, positions):
@@ -173,4 +180,8 @@ class PlayerInventory(Inventory):
             for item in reversed(self.items):
                 if item.rect.collidepoint(mouse_pos):
                     item.highlighted = True
+                    self.context.update(mouse_pos, item.properties["description"])
+                    self.context.set_visibility(True)
                     break
+            else:
+                self.context.set_visibility(False)

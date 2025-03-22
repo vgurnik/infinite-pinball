@@ -37,11 +37,11 @@ class Bumper:
         self.space = space
         self.pos = bumper_def["pos"]
         self.radius = bumper_def["size"]
-        self.force = bumper_def["force"]
+        self.type = 'bumper'
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
-        self.shape.elasticity = self.force
+        self.shape.elasticity = bumper_def["force"]
         self.shape.friction = 0.5
         self.shape.collision_type = 2
         # Attach custom properties.
@@ -76,6 +76,7 @@ class Flipper:
         self.config = config
         self.is_left = is_left
         self.mass = 100
+        self.type = 'flipper'
         self.effect = flipper_def["effect"]
         self.length = config.flipper_length
         self.width = config.flipper_width

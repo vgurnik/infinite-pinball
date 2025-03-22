@@ -1,5 +1,7 @@
 import pygame
 from game_effects import ContextWindow
+from multiline_text import multiline
+from effects import get_card_function
 
 
 class InventoryItem:
@@ -14,6 +16,12 @@ class InventoryItem:
         self.target_position = pygame.math.Vector2(target_position)
         self.card_size = card_size
         self.rect = pygame.Rect(self.pos.x, self.pos.y, card_size[0], card_size[1])
+        self.effect = {
+            "effect": get_card_function(properties.get("effect", None)),
+            "negative_effect": get_card_function(properties.get("effect", None), negative=True),
+            "duration": properties.get("duration", 0),
+            "params": properties.get("params", [])
+        }
         self.dragging = False
         self.highlighted = False
 
@@ -103,7 +111,8 @@ class Inventory:
             for item in reversed(self.items):
                 if item.rect.collidepoint(mouse_pos):
                     item.highlighted = True
-                    self.context.update(mouse_pos, item.properties["description"])
+                    self.context.update(mouse_pos,
+                                        item.properties["description"]+'\n'+'Price: $'+str(item.properties["price"]))
                     self.context.set_visibility(True)
                     break
             else:
@@ -132,8 +141,11 @@ class PlayerInventory(Inventory):
         self.slot_height = slot_height
         self.slot_margin = slot_margin
         self.max_size = 7
+        self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100, self.width, 100)
 
     def recalculate_targets(self):
+        if len(self.items) == 0:
+            return
         # Arrange items vertically.
         spacing = min(self.slot_height + self.slot_margin, self.height / len(self.items))
         for index, item in enumerate(self.items):
@@ -154,9 +166,9 @@ class PlayerInventory(Inventory):
         self.recalculate_targets()
 
     def handle_event(self, event):
+        mouse_pos = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # left click
-                mouse_pos = pygame.mouse.get_pos()
                 # Iterate in reverse so that top-most drawn items are prioritized.
                 for item in reversed(self.items):
                     if item.rect.collidepoint(mouse_pos):
@@ -167,12 +179,18 @@ class PlayerInventory(Inventory):
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1 and self.dragging_item:
                 self.dragging_item.dragging = False
+                in_quiestion = self.dragging_item
                 self.dragging_item = None
+                if self.deletion_zone.collidepoint(mouse_pos):
+                    self.context.set_visibility(False)
+                    return {"try_selling": in_quiestion}
+                if mouse_pos[0] > self.width and in_quiestion.properties["type"] == "active_card":
+                    self.context.set_visibility(False)
+                    return {"try_using": in_quiestion}
                 # After dropping, re-sort the items based on their current y-positions.
                 self.items.sort(key=lambda x: x.pos.y)
                 self.recalculate_targets()
         elif event.type == pygame.MOUSEMOTION:
-            mouse_pos = pygame.mouse.get_pos()
             if self.dragging_item:
                 self.dragging_item.pos = pygame.math.Vector2(mouse_pos) + self.dragging_item.offset
             for item in self.items:
@@ -180,8 +198,23 @@ class PlayerInventory(Inventory):
             for item in reversed(self.items):
                 if item.rect.collidepoint(mouse_pos):
                     item.highlighted = True
-                    self.context.update(mouse_pos, item.properties["description"])
+                    self.context.update(mouse_pos,
+                                        item.properties["description"]+'\n'+'Price: $'+str(item.properties["price"]))
                     self.context.set_visibility(True)
                     break
             else:
                 self.context.set_visibility(False)
+            if self.deletion_zone.collidepoint(mouse_pos) and self.dragging_item:
+                self.context.update(mouse_pos, f"Drop here to sell\nfor ${self.dragging_item.properties['price']//2}")
+                self.context.set_visibility(True)
+
+    def draw(self, surface):
+        alpha_surface = pygame.Surface(self.deletion_zone.size)
+        alpha_surface.fill((255, 100, 100))
+        alpha_surface.set_alpha(50)
+        font = pygame.font.SysFont("Arial", 25)
+        text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0), (255, 100, 100))
+        alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
+                                          (self.deletion_zone.height - text_surface.get_height()) / 2))
+        surface.blit(alpha_surface, self.deletion_zone.topleft)
+        super().draw(surface)

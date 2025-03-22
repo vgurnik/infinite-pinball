@@ -4,13 +4,14 @@ Maybe this shall be a game someday
 ### TODO:
 #### 1
 - [ ] Add build mode
-- [ ] Actually add card effects
+- [x] Actually add card effects
 - [ ] Add pack opening
 - [x] Add descriptions (context)
 #### 2
 - [ ] Finish texturing the field
 - [ ] Texturize GUI
 - [ ] Texturize cards
+- [ ] Add active effects visualization
 - [ ] Add more card-object-effect options
 #### 3
 - [ ] Balance scoring

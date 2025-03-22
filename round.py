@@ -2,10 +2,9 @@ import sys
 import pygame
 import pymunk
 import pymunk.pygame_util
-from game_effects import HitEffect
+from game_effects import HitEffect, overlay_menu, DisappearingItem
 from game_objects import Ball, Bumper, Flipper
 from static_objects import StaticObjects
-from game_effects import overlay_menu
 
 
 class PinballRound:
@@ -13,6 +12,7 @@ class PinballRound:
         self.game_instance = game_instance
         self.screen = game_instance.screen
         self.config = game_instance.config
+        self.real_fps = self.config.fps
         self.inventory = game_instance.inventory
         self.space = pymunk.Space()
         self.space.gravity = self.config.gravity
@@ -76,20 +76,21 @@ class PinballRound:
                 x = pos.x + 20
                 y = pos.y
                 if shape.effect:
-                    shape.effect(self, *shape.effect_params)
+                    shape.effect(self.game_instance, *shape.effect_params)
             elif shape.collision_type == 2:
                 if shape.effect:
-                    shape.effect(self, *shape.effect_params)
+                    shape.effect(self.game_instance, *shape.effect_params)
         for effect in self.applied_effects:
-            effect["effect"](self, *effect["params"])
+            if effect["negative_effect"] is None:
+                effect["effect"](self.game_instance, *effect["params"])
         if self.immediate['score']:
-            if self.game_instance.config.score_multiplier != 1:
-                s_str = f"+{self.immediate['score']} X {self.game_instance.config.score_multiplier}"
+            if self.config.score_multiplier != 1:
+                s_str = f"+{self.immediate['score']} X {self.config.score_multiplier}"
             else:
                 s_str = f"+{self.immediate['score']}"
             self.hit_effects.append(HitEffect((x, y), s_str, (0, 255, 0)))
             y += 20
-            self.score += self.immediate['score'] * self.game_instance.config.score_multiplier
+            self.score += self.immediate['score'] * self.config.score_multiplier
         if self.immediate['money']:
             self.hit_effects.append(HitEffect((x, y), f"+{self.immediate['money']}", (255, 255, 0)))
             self.game_instance.money += self.immediate['money']
@@ -116,6 +117,13 @@ class PinballRound:
             if effect.is_dead():
                 self.hit_effects.remove(effect)
 
+        for applied_effect in self.applied_effects[:]:
+            applied_effect["duration"] -= dt
+            if applied_effect["duration"] <= 0:
+                if applied_effect["negative_effect"] is not None:
+                    applied_effect["negative_effect"](self.game_instance, *applied_effect["params"])
+                self.applied_effects.remove(applied_effect)
+
         self.ball.draw(self.screen, offset_x=self.config.ui_width)
 
         # Draw the launch indicator.
@@ -130,7 +138,8 @@ class PinballRound:
         # Display UI text.
         font = pygame.font.SysFont("Arial", 24)
         min_score_text = font.render(f"Required score: {self.game_instance.score_needed}", True, (255, 255, 255))
-        score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
+        score_text = font.render(f"Score: {int(self.score) if self.score == int(self.score) else self.score}",
+                                 True, (255, 255, 255))
         balls_text = font.render(f"Balls Left: {self.balls_left}", True, (255, 255, 255))
         money_text = font.render(f"$ {self.game_instance.money}", True, (255, 255, 255))
         self.screen.blit(balls_text, self.config.ui_balls_pos)
@@ -148,7 +157,7 @@ class PinballRound:
         exit_option = "exit"
 
         while running:
-            dt = 1.0 / self.config.fps
+            dt = 1.0 / (self.real_fps if self.real_fps > 0 else self.config.fps)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -170,7 +179,29 @@ class PinballRound:
                                 self.ball.body.apply_impulse_at_local_point((0, -impulse), (0, 0))
                             self.launch_charge = 0
                             self.launch_key_down = False
-                self.inventory.handle_event(event)
+                ret = self.inventory.handle_event(event)
+                if ret:
+                    if "try_selling" in ret:
+                        item = ret["try_selling"]
+                        if item.properties["type"] != "passive_card" or \
+                                item.effect["negative_effect"](self.game_instance, *item.effect["params"]):
+                            self.game_instance.money += item.properties["price"] // 2
+                            self.inventory.remove_item(item)
+                    elif "try_using" in ret:
+                        item = ret["try_using"]
+                        if item.effect["effect"] is not None:
+                            if item.effect["duration"] != 0:
+                                self.applied_effects.append(item.effect)
+                                if item.effect["negative_effect"] is not None:
+                                    item.effect["effect"](self.game_instance, *item.effect["params"])
+                                self.inventory.remove_item(item)
+                                self.hit_effects.append(DisappearingItem(item, 0.5))
+                            else:
+                                if item.effect["effect"](self.game_instance, *item.effect["params"]):
+                                    self.inventory.remove_item(item)
+                                    self.hit_effects.append(DisappearingItem(item, 0.5))
+                                else:
+                                    item.effect["negative_effect"](self.game_instance, *item.effect["params"])
 
             if not self.ball_launched and self.launch_key_down:
                 self.launch_charge += dt * self.config.launch_charge_rate
@@ -222,4 +253,9 @@ class PinballRound:
 
             self.draw(dt)
             clock.tick(self.config.fps)
+            self.real_fps = clock.get_fps()
+
+        for applied_effect in self.applied_effects:
+            if applied_effect["negative_effect"] is not None:
+                applied_effect["negative_effect"](self, *applied_effect["params"])
         return exit_option, self.score

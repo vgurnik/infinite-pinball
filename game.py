@@ -6,7 +6,6 @@ from config import Config
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import overlay_menu, DisappearingItem
-from effects import get_card_function
 
 
 class PinballGame:
@@ -84,8 +83,8 @@ class PinballGame:
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
         for i in range(1):
-            item = random.randint(0, len(self.config.shop_items["effects"])-1)
-            item = self.config.shop_items["effects"][item]
+            item = random.randint(0, len(self.config.shop_items["vouchers"])-1)
+            item = self.config.shop_items["vouchers"][item]
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_effects[0] + 100 + i * 130, self.config.shop_pos_effects[1])))
         for i in range(2):
@@ -124,21 +123,44 @@ class PinballGame:
                 item = shop.handle_event(event)
                 if item is not None:
                     if self.money >= item.properties["price"]:
-                        if item.properties["type"] in ["card", "buildable"]:
-                            if self.inventory.add_item(item):
+                        if item.properties["type"] in ["active_card", "passive_card", "buildable"]:
+                            if item.properties["type"] == "passive_card":
+                                execution = item.effect["effect"](self, *item.effect["params"])
+                            else:
+                                execution = True
+                            addition = self.inventory.add_item(item)
+                            if execution and addition:
                                 self.money -= item.properties["price"]
                                 shop.remove_item(item)
                                 message = f"Purchased {item.name} for {item.properties['price']}!"
                             else:
-                                message = "Not enough inventory space!"
+                                if not addition:
+                                    message = "Not enough inventory space!"
+                                elif not execution:
+                                    message = f"Effect of {item.name} cannot be applied!"
+                                if item.properties["type"] == "passive_card" and execution \
+                                        and item.effect["negative_effect"]:
+                                    # Theoretically impossible to have this return False, but just in case be mindful.<-
+                                    item.effect["negative_effect"](self, *item.effect["params"])
                         elif item.properties["type"] == "immediate":
-                            effects.append(DisappearingItem(item, 0.5))
-                            shop.remove_item(item)
-                            get_card_function(item.properties["effect"])(self, *item.properties["params"])
-                            message = f"Purchased {item.name} for {item.properties['price']}!"
+                            if item.effect["effect"](self, *item.effect["params"]):
+                                effects.append(DisappearingItem(item, 0.5))
+                                shop.remove_item(item)
+                                self.money -= item.properties["price"]
+                                message = f"Purchased {item.name} for {item.properties['price']}!"
+                            else:
+                                message = f"Effect of {item.name} cannot be applied!"
                     else:
                         message = f"Not enough money for {item.name}."
-                self.inventory.handle_event(event)
+                ret = self.inventory.handle_event(event)
+                if ret:
+                    if "try_selling" in ret:
+                        item = ret["try_selling"]
+                        if item.effect["negative_effect"] is None\
+                                or item.effect["negative_effect"](self, *item.effect["params"]):
+                            self.money += item.properties["price"] // 2
+                            self.inventory.remove_item(item)
+                            message = f"Sold {item.name} for {item.properties['price'] // 2}!"
             self.screen.fill((20, 20, 70))
             n = 0
             if play_button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
@@ -206,7 +228,8 @@ class PinballGame:
     def round_results_overlay(self, score, min_score):
         extra_orders = int(math.log10(score / min_score)) if score >= min_score else 0
         award = self.config.base_award + extra_orders * self.config.extra_award_per_order
-        self.money += award
+        if score >= min_score:
+            self.money += award
         clock = pygame.time.Clock()
         font = pygame.font.SysFont("Arial", 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
@@ -273,7 +296,6 @@ class PinballGame:
                 self.money = 0
                 continue
             elif choice == "Start Game":
-                self.inventory.clear()
                 self.config = Config()
                 self.money = 0
                 self.round = 0

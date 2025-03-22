@@ -26,21 +26,29 @@ class PinballRound:
         self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config)
 
         # Create bumpers.
-        self.bumpers = []
-        for bumper_def in self.config.bumpers:
-            bumper = Bumper(self.space, bumper_def,
-                            textures={"idle": self.textures.get(bumper_def["texture"]),
-                                      "bumped": self.textures.get(bumper_def["texture"]+"_bumped")})
-            self.bumpers.append(bumper)
-
-        # Create flippers.
-        self.left_flipper = Flipper(self.space, self.config.left_flipper_pos, True, self.config,
-                                    texture=self.textures.get("flipper_left"))
-        self.right_flipper = Flipper(self.space, self.config.right_flipper_pos, False, self.config,
-                                     texture=self.textures.get("flipper_right"))
+        self.objects = []
+        for obj in self.config.board_objects:
+            if obj["type"] == "bumper":
+                bumper_def = self.config.objects_settings["bumper"][obj["class"]]
+                bumper_def["pos"] = obj["pos"]
+                bumper = Bumper(self.space, bumper_def,
+                                textures={"idle": self.textures.get(bumper_def["texture"]),
+                                          "bumped": self.textures.get(bumper_def["texture"]+"_bumped")})
+                self.objects.append(bumper)
+            elif obj["type"] == "flipper":
+                flipper_def = self.config.objects_settings["flipper"][obj["class"]]
+                flipper_def["pos"] = obj["pos"]
+                flipper = Flipper(self.space, flipper_def, obj["is_left"], self.config,
+                                  texture=self.textures.get(flipper_def["texture"]))
+                if obj["is_left"]:
+                    self.left_flipper = flipper
+                else:
+                    self.right_flipper = flipper
+                self.objects.append(flipper)
 
         # Create the ball.
-        self.ball = Ball(self.space, self.config, self.config.ball_start, texture=self.textures.get("ball"))
+        self.ball = Ball(self.space, self.config.objects_settings["ball"]["ball_standard"], self.config.ball_start,
+                         self.textures.get(self.config.objects_settings["ball"]["ball_standard"]["texture"]))
         self.ball_launched = False
         self.launch_charge = 0.0
         self.launch_key_down = False
@@ -48,33 +56,43 @@ class PinballRound:
         self.score = 0
         self.balls_left = self.config.balls
         self.hit_effects = []
+        self.applied_effects = []
+        self.immediate = {}
 
         # Collision handler for bumpers.
         handler = self.space.add_collision_handler(1, 2)
-        handler.begin = self.bumper_collision
+        handler.begin = self.collision
 
-    def bumper_collision(self, arbiter, _space, _data):
+    def collision(self, arbiter, _space, _data):
+        self.immediate['score'] = 0
+        self.immediate['money'] = 0
+        x = 0
+        y = 0
         for shape in arbiter.shapes:
             if shape.collision_type == 1:
-                s_val = getattr(shape, "score_value", 0)
-                m_val = getattr(shape, "money_value", 0)
                 if getattr(shape, "bumped", None) is not None:
                     setattr(shape, "bumped", 0.1)
                 pos = shape.body.position
                 x = pos.x + 20
                 y = pos.y
-                if s_val:
-                    if self.game_instance.config.score_multiplier != 1:
-                        s_str = f"+{s_val} X {self.game_instance.config.score_multiplier}"
-                    else:
-                        s_str = f"+{s_val}"
-                    self.hit_effects.append(HitEffect((x, y), s_str, (0, 255, 0)))
-                    y += 20
-                    self.score += s_val * self.game_instance.config.score_multiplier
-                if m_val:
-                    self.hit_effects.append(HitEffect((x, y), f"+{m_val}", (255, 255, 0)))
-                    self.game_instance.money += m_val
-                break
+                if shape.effect:
+                    shape.effect(self, *shape.effect_params)
+            elif shape.collision_type == 2:
+                if shape.effect:
+                    shape.effect(self, *shape.effect_params)
+        for effect in self.applied_effects:
+            effect["effect"](self, *effect["params"])
+        if self.immediate['score']:
+            if self.game_instance.config.score_multiplier != 1:
+                s_str = f"+{self.immediate['score']} X {self.game_instance.config.score_multiplier}"
+            else:
+                s_str = f"+{self.immediate['score']}"
+            self.hit_effects.append(HitEffect((x, y), s_str, (0, 255, 0)))
+            y += 20
+            self.score += self.immediate['score'] * self.game_instance.config.score_multiplier
+        if self.immediate['money']:
+            self.hit_effects.append(HitEffect((x, y), f"+{self.immediate['money']}", (255, 255, 0)))
+            self.game_instance.money += self.immediate['money']
         return True
 
     def draw(self, dt):
@@ -86,10 +104,10 @@ class PinballRound:
         self.left_flipper.draw(self.screen, offset_x=self.config.ui_width)
         self.right_flipper.draw(self.screen, offset_x=self.config.ui_width)
 
-        # Draw bumpers
-        for bumper in self.bumpers[:]:
-            bumper.update(dt)
-            bumper.draw(self.screen, offset_x=self.config.ui_width)
+        # Draw board objects
+        for obj in self.objects[:]:
+            obj.update(dt)
+            obj.draw(self.screen, offset_x=self.config.ui_width)
 
         # Draw hit effects.
         for effect in self.hit_effects[:]:
@@ -161,7 +179,9 @@ class PinballRound:
             if self.ball.body.position.y > self.config.screen_height + 50:
                 self.space.remove(self.ball.body, self.ball.shape)
                 if self.balls_left > 0:
-                    self.ball = Ball(self.space, self.config, self.config.ball_start, texture=self.textures.get("ball"))
+                    self.ball = Ball(self.space, self.config.objects_settings["ball"]["ball_standard"],
+                                     self.config.ball_start, self.textures.get(
+                            self.config.objects_settings["ball"]["ball_standard"]["texture"]))
                     self.ball_launched = False
                     self.launch_charge = 0
                     self.launch_key_down = False
@@ -193,10 +213,6 @@ class PinballRound:
                 self.left_flipper.active_angle if keys[pygame.K_LEFT] else self.left_flipper.default_angle)
             self.right_flipper.spring.rest_angle = (
                 self.right_flipper.active_angle if keys[pygame.K_RIGHT] else self.right_flipper.default_angle)
-
-            # Snap flippers to their target angles if within a small tolerance to avoid jiggle.
-            self.left_flipper.snap()
-            self.right_flipper.snap()
 
             self.space.step(dt)
             if self.ball.body.velocity.length > 2000:

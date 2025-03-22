@@ -6,7 +6,7 @@ from config import Config
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import overlay_menu, DisappearingItem
-from card_effects import get_card_function
+from effects import get_card_function
 
 
 class PinballGame:
@@ -32,7 +32,6 @@ class PinballGame:
                     "bumper_bumped": pygame.image.load("assets/bumper_big_bumped.bmp").convert_alpha(),
                     "bumper_small": pygame.image.load("assets/bumper_small.bmp").convert_alpha(),
                     "bumper_small_bumped": pygame.image.load("assets/bumper_small_bumped.bmp").convert_alpha()}
-        textures["flipper_right"] = pygame.transform.flip(textures["flipper_left"], flip_x=True, flip_y=False)
         return textures
 
     def main_menu(self):

@@ -1,21 +1,23 @@
 import math
 import pygame
 import pymunk
+from effects import get_object_function
 
 
 class Ball:
     def __init__(self, space, config, pos, texture=None):
-        self.config = config
         self.space = space
-        self.mass = config.ball_mass
-        self.radius = config.ball_radius
+        self.mass = config["mass"]
+        self.radius = config["size"]
         inertia = pymunk.moment_for_circle(self.mass, 0, self.radius)
         self.body = pymunk.Body(self.mass, inertia)
         self.body.position = pos
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = 0.95
         self.shape.friction = 0.9
-        self.shape.collision_type = 2  # for collisions with bumpers
+        self.shape.collision_type = 1  # for collisions with bumpers
+        self.shape.effect = get_object_function(config["effect"])
+        self.shape.effect_params = config.get("params", [])
         space.add(self.body, self.shape)
         self.texture = texture
 
@@ -34,19 +36,17 @@ class Bumper:
         self.config = bumper_def
         self.space = space
         self.pos = bumper_def["pos"]
-        self.radius = bumper_def["radius"]
+        self.radius = bumper_def["size"]
         self.force = bumper_def["force"]
-        self.score_value = bumper_def["score"]
-        self.money_value = bumper_def["money"]
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = self.force
         self.shape.friction = 0.5
-        self.shape.collision_type = 1
+        self.shape.collision_type = 2
         # Attach custom properties.
-        self.shape.score_value = self.score_value
-        self.shape.money_value = self.money_value
+        self.shape.effect = get_object_function(bumper_def["effect"])
+        self.shape.effect_params = bumper_def.get("params", [])
         space.add(self.body, self.shape)
         self.textures = textures
         self.shape.bumped = 0
@@ -71,20 +71,25 @@ class Bumper:
 
 
 class Flipper:
-    def __init__(self, space, pos, is_left, config, texture=None):
+    def __init__(self, space, flipper_def, is_left, config, texture=None):
         self.space = space
         self.config = config
         self.is_left = is_left
         self.mass = 100
+        self.effect = flipper_def["effect"]
         self.length = config.flipper_length
         self.width = config.flipper_width
         vertices = [(-self.length/2, -self.width/2), (self.length/2, -self.width/2),
                     (self.length/2, self.width/2), (-self.length/2, self.width/2)]
         moment = pymunk.moment_for_poly(self.mass, vertices)
         self.body = pymunk.Body(self.mass, moment)
+        pos = flipper_def["pos"]
         self.body.position = pos
         self.shape = pymunk.Poly(self.body, vertices)
-        self.shape.elasticity = 0.6
+        self.shape.collision_type = 2
+        self.shape.effect = get_object_function(flipper_def["effect"])
+        self.shape.effect_params = flipper_def.get("params", [])
+        self.shape.elasticity = flipper_def["force"]
         self.shape.friction = 0.1
         space.add(self.body, self.shape)
 
@@ -116,6 +121,11 @@ class Flipper:
         )
         space.add(self.spring)
         self.texture = texture
+        if not self.is_left:
+            self.texture = pygame.transform.flip(self.texture, flip_x=True, flip_y=False)
+
+    def update(self, dt):
+        self.snap()
 
     def snap(self, tolerance=0):
         """Eliminate jiggle by snapping to target angle if within a small tolerance."""

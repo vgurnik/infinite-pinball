@@ -32,8 +32,6 @@ class Config:
         self.divider_x = 300
         self.divider_y1 = 150
         self.divider_y2 = 300
-        self.ball_radius = 15
-        self.ball_mass = 1
 
         # Launch parameters.
         self.launch_charge_rate = 2000
@@ -45,8 +43,6 @@ class Config:
         self.flipper_width = 20
         self.flipper_stiffness = 70000000
         self.flipper_damping = 3000000
-        self.left_flipper_pos = (220, 750)
-        self.right_flipper_pos = (380, 750)
         self.left_flipper_default_angle = 30
         self.left_flipper_active_angle = -30
         self.right_flipper_default_angle = -30
@@ -87,10 +83,12 @@ class Config:
                  "params": [0.5], "description": "Score 50% more points"}
             ],
             "objects": [
-                {"name": "Bumper", "price": 75, "type": "buildable",
-                 "description": "Additional bumper"},
-                {"name": "Flipper", "price": 80, "type": "buildable",
-                 "description": "Additional flipper\nlolwhat"}
+                {"name": "Bumper", "price": 75, "type": "buildable", "object_type": "bumper", "class": "bumper_big",
+                 "description": "Additional big bumper"},
+                {"name": "Bumper", "price": 50, "type": "buildable", "object_type": "bumper", "class": "bumper_small",
+                 "description": "Additional small bumper"},
+                {"name": "Flipper", "price": 100, "type": "buildable",
+                 "description": "Additional flipper\nlol what\nthis will be a replaceable flipper"}
             ],
             "packs": [
                 {"name": "Card Pack", "price": 200, "item_type": "cards", "type": "pack",
@@ -104,14 +102,29 @@ class Config:
             ]
         }
 
-        # Custom bumpers.
-        self.bumpers = [
-            {"pos": (200, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
-            {"pos": (400, 300), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
-            {"pos": (300, 500), "radius": 30, "force": 1.3, "score": 100, "money": 10, "texture": "bumper"},
-            {"pos": (300, 100), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
-            {"pos": (150, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
-            {"pos": (450, 400), "radius": 15, "force": 1.1, "score": 50, "money": 0, "texture": "bumper_small"},
+        self.objects_settings = {
+            "ball": {"ball_standard": {"texture": "ball", "size": 15, "mass": 1, "effect": None}},
+            "bumper": {"bumper_big": {"texture": "bumper", "size": 30, "force": 1.3, "effect": "bump",
+                                      "params": [100, 10]},
+                       "bumper_small": {"texture": "bumper_small", "size": 15, "force": 1.1, "effect": "bump",
+                                        "params": [50, 0]}},
+            "flipper": {"flipper_standard": {"texture": "flipper_left", "force": 0.6, "effect": None}}
+        }
+
+        self.left_flipper_pos = (220, 750)
+        self.right_flipper_pos = (380, 750)
+
+        self.board_objects = [
+            {"pos": (200, 300), "type": "bumper", "class": "bumper_big"},
+            {"pos": (400, 300), "type": "bumper", "class": "bumper_big"},
+            {"pos": (300, 500), "type": "bumper", "class": "bumper_big"},
+            {"pos": (300, 100), "type": "bumper", "class": "bumper_small"},
+            {"pos": (150, 400), "type": "bumper", "class": "bumper_small"},
+            {"pos": (450, 400), "type": "bumper", "class": "bumper_small"},
+            {"pos": (150, 400), "type": "bumper", "class": "bumper_small"},
+            {"pos": (450, 400), "type": "bumper", "class": "bumper_small"},
+            {"pos": self.left_flipper_pos, "type": "flipper", "class": "flipper_standard", "is_left": True},
+            {"pos": self.right_flipper_pos, "type": "flipper", "class": "flipper_standard", "is_left": False},
         ]
 
         # Derived values.
@@ -143,4 +156,4 @@ class Config:
         self.launch_indicator_pos = (self.screen_width - self.launch_indicator_size[0] - 20,
                                      self.screen_height - self.launch_indicator_size[1] - 20)
         self.ball_start = ((self.right_wall_x + self.launch_ramp_wall_x) / 2,
-                           self.bottom_wall_y - self.ball_radius - 15)
+                           self.bottom_wall_y - 30)

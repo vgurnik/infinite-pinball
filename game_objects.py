@@ -13,6 +13,7 @@ class Ball:
         self.body = pymunk.Body(self.mass, inertia)
         self.body.position = pos
         self.shape = pymunk.Circle(self.body, self.radius)
+        self.shape.type = 'ball'
         self.shape.elasticity = 0.95
         self.shape.friction = 0.9
         self.shape.collision_type = 1  # for collisions with bumpers
@@ -37,7 +38,6 @@ class Bumper:
         self.space = space
         self.pos = bumper_def["pos"]
         self.radius = bumper_def["size"]
-        self.type = 'bumper'
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
@@ -45,6 +45,7 @@ class Bumper:
         self.shape.friction = 0.5
         self.shape.collision_type = 2
         # Attach custom properties.
+        self.shape.type = 'bumper'
         self.shape.effect = get_object_function(bumper_def["effect"])
         self.shape.effect_params = bumper_def.get("params", [])
         space.add(self.body, self.shape)
@@ -76,7 +77,6 @@ class Flipper:
         self.config = config
         self.is_left = is_left
         self.mass = 100
-        self.type = 'flipper'
         self.effect = flipper_def["effect"]
         self.length = config.flipper_length
         self.width = config.flipper_width
@@ -88,6 +88,7 @@ class Flipper:
         self.body.position = pos
         self.shape = pymunk.Poly(self.body, vertices)
         self.shape.collision_type = 2
+        self.shape.type = 'flipper'
         self.shape.effect = get_object_function(flipper_def["effect"])
         self.shape.effect_params = flipper_def.get("params", [])
         self.shape.elasticity = flipper_def["force"]

@@ -24,6 +24,7 @@ class PinballRound:
         # Create static boundaries and ramp gates.
         StaticObjects.create_boundaries(self.space, self.config)
         self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config)
+        self.shield = StaticObjects.create_shield(self.space, self.config)
 
         # Create bumpers.
         self.objects = []
@@ -68,11 +69,13 @@ class PinballRound:
         self.immediate['money'] = 0
         x = 0
         y = 0
+        arbiter_type = ''
         for shape in arbiter.shapes:
             if shape.collision_type == 1:
                 if getattr(shape, "bumped", None) is not None:
                     setattr(shape, "bumped", 0.1)
                 pos = shape.body.position
+                arbiter_type = shape.type
                 x = pos.x + 20
                 y = pos.y
                 if shape.effect:
@@ -82,7 +85,7 @@ class PinballRound:
                     shape.effect(self.game_instance, *shape.effect_params)
         for effect in self.applied_effects:
             if effect["negative_effect"] is None:
-                effect["effect"](self.game_instance, *effect["params"])
+                effect["effect"](self.game_instance, arbiter_type, *effect["params"])
         if self.immediate['score']:
             if self.config.score_multiplier != 1:
                 s_str = f"+{self.immediate['score']} X {self.config.score_multiplier}"
@@ -157,7 +160,7 @@ class PinballRound:
         exit_option = "exit"
 
         while running:
-            dt = 1.0 / (self.real_fps if self.real_fps > 0 else self.config.fps)
+            dt = 1.0 / (self.real_fps if self.real_fps > 50 else self.config.fps)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -220,6 +223,10 @@ class PinballRound:
                     exit_option = "round_over"
                     break
 
+            if not self.ball_launched and self.balls_left <= 0:
+                exit_option = "round_over"
+                break
+
             # Ramp gate control.
             if self.ball.body.position.x > self.config.right_wall_x:
                 xb = self.ball.body.position.x
@@ -252,7 +259,7 @@ class PinballRound:
             self.inventory.update(dt)
 
             self.draw(dt)
-            clock.tick(self.config.fps)
+            clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
             self.real_fps = clock.get_fps()
 
         for applied_effect in self.applied_effects:

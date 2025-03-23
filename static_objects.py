@@ -68,3 +68,13 @@ class StaticObjects:
         recline_shape.sensor = True
         space.add(recline_shape)
         return gate_shape, recline_shape
+
+    @staticmethod
+    def create_shield(space, config):
+        shield = pymunk.Segment(space.static_body, (config.left_flipper_pos[0], config.left_flipper_pos[1] + 50),
+                                (config.right_flipper_pos[0], config.right_flipper_pos[1] + 50), 5)
+        shield.elasticity = 1.5
+        shield.friction = 0
+        shield.sensor = True
+        space.add(shield)
+        return shield

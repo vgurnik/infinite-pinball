@@ -4,7 +4,6 @@ from multiline_text import multiline
 
 
 def overlay_menu(screen, title, options):
-    clock = pygame.time.Clock()
     selected = 0
     overlay = pygame.Surface((screen.get_width(), screen.get_height()))
     overlay.set_alpha(180)
@@ -51,7 +50,6 @@ def overlay_menu(screen, title, options):
             screen.blit(text, rect)
             option_rects.append(rect)
         pygame.display.flip()
-        clock.tick(30)
 
 
 class ContextWindow:

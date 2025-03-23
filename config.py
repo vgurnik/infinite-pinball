@@ -60,15 +60,15 @@ class Config:
                           500000,
                           2000000,
                           10000000]
-        self.base_award = 100
-        self.extra_award_per_order = 5
+        self.base_award = 50
+        self.extra_award_per_order = 100
         self.score_multiplier = 1
 
         # Shop settings.
         self.shop_items = {
             "cards": [
-                {"name": "Shield", "price": 60, "type": "active_card", "effect": "change_ball_amount", "params": [1],
-                 "description": "Allow the ball to bounce\nfrom the bottom for 5 s"},
+                {"name": "Shield", "price": 60, "type": "active_card", "effect": "shield", "duration": 10,
+                 "description": "Allow the ball to bounce\nfrom the bottom for 10 s"},
                 {"name": "SlowMo", "price": 90, "type": "active_card", "effect": "time_warp", "params": [0.5],
                  "duration": 10, "description": "Slow down time\nfor 10 s"},
                 {"name": "Mega Bump", "price": 120, "type": "active_card", "effect": "bumper_empower",
@@ -83,7 +83,7 @@ class Config:
                  "params": [2], "description": "Get 2 extra inventory slots\nwhile this card is in your inventory"},
             ],
             "vouchers": [
-                {"name": "+Ball", "price": 50, "type": "immediate", "effect": "change_ball_amount", "params": [1],
+                {"name": "+Ball", "price": 150, "type": "immediate", "effect": "change_ball_amount", "params": [1],
                  "description": "Additional ball"},
                 {"name": "Multiplier", "price": 100, "type": "immediate", "effect": "change_score_multiplier",
                  "params": [0.5, 's'], "description": "Score 50% more points"}

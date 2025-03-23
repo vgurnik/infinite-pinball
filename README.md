@@ -12,13 +12,13 @@ Maybe this shall be a game someday
 - [ ] Texturize GUI
 - [ ] Texturize cards
 - [ ] Add active effects visualization
-- [ ] Add more card-object-effect options
 #### 3
 - [ ] Balance scoring
 - [ ] Balance economy
-- [ ] Implement special effects (combos)
 - [ ] Finish starting field
+- [ ] Add more card-object-effect options
 #### 4
+- [ ] Implement special effects (combos)
 - [ ] Add starting field options
 - [ ] Add unlockables (fields, cards, difficulties)
 - [ ] ***Add even more card-object-effect options***

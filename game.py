@@ -297,6 +297,7 @@ class PinballGame:
                 continue
             elif choice == "Start Game":
                 self.config = Config()
+                self.inventory.clear()
                 self.money = 0
                 self.round = 0
                 self.score_needed = self.config.min_score[0]

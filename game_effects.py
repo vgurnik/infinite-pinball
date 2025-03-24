@@ -33,17 +33,17 @@ def overlay_menu(screen, title, options):
                         selected = i
 
         screen.blit(overlay, (0, 0))
-        font = pygame.font.SysFont("Arial", 36)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
         title_text = font.render(title, True, (255, 255, 255))
         title_rect = title_text.get_rect(center=(screen.get_width() // 2, 150))
         screen.blit(title_text, title_rect)
         option_rects = []
         for idx, option in enumerate(options):
             if idx == selected:
-                opt_font = pygame.font.SysFont("Arial", 42)
+                opt_font = pygame.font.Font("assets/terminal-grotesque.ttf", 42)
                 color = (255, 255, 0)
             else:
-                opt_font = pygame.font.SysFont("Arial", 36)
+                opt_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
                 color = (255, 255, 255)
             text = opt_font.render(option, True, color)
             rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
@@ -67,7 +67,7 @@ class ContextWindow:
 
     def draw(self, surface):
         if self.visible:
-            font = pygame.font.SysFont("Arial", 20)
+            font = pygame.font.Font("assets/terminal-grotesque.ttf", 20)
             text_surface = multiline(self.text, font, (0, 0, 0), (200, 200, 200))
             rect = text_surface.get_rect().inflate((6, 6))
             if self.x + rect.width > surface.get_width():
@@ -106,7 +106,7 @@ class HitEffect(BaseEffect):
         super().__init__(pos, lifetime)
         self.text = text
         self.color = color
-        self.font = pygame.font.SysFont("Arial", 24)
+        self.font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
@@ -150,7 +150,7 @@ class DisappearingItem(BaseEffect):
             pygame.draw.rect(new_surface, color, rect, border_radius=5)
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
         # Draw the item name centered at the top of the card.
-        font = pygame.font.SysFont("Arial", 20)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 20)
         text_surface = font.render(self.item.name, True, (0, 0, 0))
         new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)

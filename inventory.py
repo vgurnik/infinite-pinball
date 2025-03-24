@@ -19,6 +19,7 @@ class InventoryItem:
         self.effect = {
             "effect": get_card_function(properties.get("effect", None)),
             "negative_effect": get_card_function(properties.get("effect", None), negative=True),
+            "trigger": properties.get("trigger", "passive"),
             "duration": properties.get("duration", 0),
             "params": properties.get("params", [])
         }
@@ -58,7 +59,7 @@ class InventoryItem:
             pygame.draw.rect(surface, color, rect, border_radius=5)
             pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
         # Draw the item name centered at the top of the card.
-        font = pygame.font.SysFont("Arial", 20)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 20)
         text_surface = font.render(self.name, True, (0, 0, 0))
         x = rect.x + (rect.width - text_surface.get_width()) / 2
         y = rect.y + 5
@@ -184,7 +185,7 @@ class PlayerInventory(Inventory):
                 if self.deletion_zone.collidepoint(mouse_pos):
                     self.context.set_visibility(False)
                     return {"try_selling": in_quiestion}
-                if mouse_pos[0] > self.width and in_quiestion.properties["type"] == "active_card":
+                if mouse_pos[0] > self.width and in_quiestion.properties["type"] == "card":
                     self.context.set_visibility(False)
                     return {"try_using": in_quiestion}
                 # After dropping, re-sort the items based on their current y-positions.
@@ -209,12 +210,15 @@ class PlayerInventory(Inventory):
                 self.context.set_visibility(True)
 
     def draw(self, surface):
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 25)
         alpha_surface = pygame.Surface(self.deletion_zone.size)
         alpha_surface.fill((255, 100, 100))
         alpha_surface.set_alpha(50)
-        font = pygame.font.SysFont("Arial", 25)
         text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0), (255, 100, 100))
         alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
                                           (self.deletion_zone.height - text_surface.get_height()) / 2))
         surface.blit(alpha_surface, self.deletion_zone.topleft)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 16)
+        fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255), (20, 20, 70), 1)
+        surface.blit(fullness, (self.position.x, self.position.y - 20))
         super().draw(surface)

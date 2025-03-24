@@ -62,27 +62,30 @@ class Config:
                           10000000]
         self.base_award = 50
         self.extra_award_per_order = 100
+        self.extra_award_per_ball = 100
         self.score_multiplier = 1
 
         # Shop settings.
         self.shop_items = {
             "cards": [
-                {"name": "Shield", "price": 60, "type": "active_card", "effect": "shield", "duration": 10,
+                {"name": "Shield", "price": 60, "type": "card", "effect": "shield", "duration": 10, "trigger": "once",
                  "description": "Allow the ball to bounce\nfrom the bottom for 10 s"},
-                {"name": "SlowMo", "price": 90, "type": "active_card", "effect": "time_warp", "params": [0.5],
-                 "duration": 10, "description": "Slow down time\nfor 10 s"},
-                {"name": "Mega Bump", "price": 120, "type": "active_card", "effect": "bumper_empower",
+                {"name": "SlowMo", "price": 90, "type": "card", "effect": "time_warp", "params": [0.5],
+                 "trigger": "once", "duration": 10, "description": "Slow down time\nfor 10 s"},
+                {"name": "Mega Bump", "price": 120, "type": "card", "effect": "bumper_empower", "trigger": "once",
                  "params": [2], "duration": 10, "description": "Increase the strength of all bumpers\nx2 for 10 s"},
-                {"name": "Bonus", "price": 150, "type": "active_card", "effect": "change_score_multiplier",
+                {"name": "Bonus", "price": 150, "type": "card", "effect": "change_score_multiplier", "trigger": "once",
                  "params": [5, 'm'], "duration": 5, "description": "Increase points scored\nx5 for 5 s"},
-                {"name": "Bonus Ball", "price": 150, "type": "passive_card", "effect": "change_ball_amount",
+                {"name": "Bonus Ball", "price": 150, "type": "card", "effect": "change_ball_amount",
                  "params": [1], "description": "Get an additional ball\nwhile this card is in your inventory"},
-                {"name": "Doubler", "price": 150, "type": "passive_card", "effect": "change_score_multiplier",
+                {"name": "Doubler", "price": 150, "type": "card", "effect": "change_score_multiplier",
                  "params": [2, 'm'], "description": "Earn double score\nwhile this card is in your inventory"},
-                {"name": "Extra slot", "price": 150, "type": "passive_card", "effect": "inventory_size",
+                {"name": "Extra slot", "price": 150, "type": "card", "effect": "inventory_size",
                  "params": [2], "description": "Get 2 extra inventory slots\nwhile this card is in your inventory"},
             ],
             "vouchers": [
+                {"name": "+Inventory slot", "price": 300, "type": "immediate", "effect": "inventory_size",
+                 "params": [1], "description": "Additional inventory slot"},
                 {"name": "+Ball", "price": 150, "type": "immediate", "effect": "change_ball_amount", "params": [1],
                  "description": "Additional ball"},
                 {"name": "Multiplier", "price": 100, "type": "immediate", "effect": "change_score_multiplier",

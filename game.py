@@ -40,7 +40,7 @@ class PinballGame:
 
     def preferences_menu(self):
         clock = pygame.time.Clock()
-        font = pygame.font.SysFont("Arial", 28)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 28)
         pref_running = True
         while pref_running:
             self.screen.fill((20, 20, 70))
@@ -69,26 +69,26 @@ class PinballGame:
     def shop_screen(self):
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
-        font = pygame.font.SysFont("Arial", 24)
-        big_font = pygame.font.SysFont("Arial", 36)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
+        big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
         shop = Inventory()
         for i in range(2):
-            item = random.randint(0, len(self.config.shop_items["cards"])-1)
+            item = random.randint(0, len(self.config.shop_items["cards"]) - 1)
             item = self.config.shop_items["cards"][item]
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
         for i in range(3):
-            item = random.randint(0, len(self.config.shop_items["objects"])-1)
+            item = random.randint(0, len(self.config.shop_items["objects"]) - 1)
             item = self.config.shop_items["objects"][item]
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
         for i in range(1):
-            item = random.randint(0, len(self.config.shop_items["vouchers"])-1)
+            item = random.randint(0, len(self.config.shop_items["vouchers"]) - 1)
             item = self.config.shop_items["vouchers"][item]
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_effects[0] + 100 + i * 130, self.config.shop_pos_effects[1])))
         for i in range(2):
-            item = random.randint(0, len(self.config.shop_items["packs"])-1)
+            item = random.randint(0, len(self.config.shop_items["packs"]) - 1)
             item = self.config.shop_items["packs"][item]
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
@@ -123,8 +123,8 @@ class PinballGame:
                 item = shop.handle_event(event)
                 if item is not None:
                     if self.money >= item.properties["price"]:
-                        if item.properties["type"] in ["active_card", "passive_card", "buildable"]:
-                            if item.properties["type"] == "passive_card":
+                        if item.properties["type"] in ["card", "buildable"]:
+                            if item.effect["effect"] is not None and item.effect["trigger"] == "passive":
                                 execution = item.effect["effect"](self, *item.effect["params"])
                             else:
                                 execution = True
@@ -138,7 +138,7 @@ class PinballGame:
                                     message = "Not enough inventory space!"
                                 elif not execution:
                                     message = f"Effect of {item.name} cannot be applied!"
-                                if item.properties["type"] == "passive_card" and execution \
+                                if item.effect["trigger"] == "passive" and execution \
                                         and item.effect["negative_effect"]:
                                     # Theoretically impossible to have this return False, but just in case be mindful.<-
                                     item.effect["negative_effect"](self, *item.effect["params"])
@@ -156,7 +156,7 @@ class PinballGame:
                 if ret:
                     if "try_selling" in ret:
                         item = ret["try_selling"]
-                        if item.effect["negative_effect"] is None\
+                        if item.effect["negative_effect"] is None \
                                 or item.effect["negative_effect"](self, *item.effect["params"]):
                             self.money += item.properties["price"] // 2
                             self.inventory.remove_item(item)
@@ -198,7 +198,7 @@ class PinballGame:
         # Here you could let the player add or remove objects, rearrange bumpers, etc.
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
-        font = pygame.font.SysFont("Arial", 36)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
         overlay = pygame.Surface((self.config.screen_width, self.config.screen_height))
         overlay.set_alpha(80)
         overlay.fill((50, 50, 50))
@@ -218,7 +218,8 @@ class PinballGame:
                 self.inventory.handle_event(event)
             self.screen.blit(overlay, (0, 0))
             text = font.render("Field Modification Mode - Press ESC or ENTER to exit", True, (255, 255, 255))
-            self.screen.blit(text, (self.config.screen_width//2 - text.get_width()//2, self.config.screen_height//2))
+            self.screen.blit(text,
+                             (self.config.screen_width // 2 - text.get_width() // 2, self.config.screen_height // 2))
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
             pygame.display.flip()
@@ -227,15 +228,50 @@ class PinballGame:
 
     def round_results_overlay(self, score, min_score):
         extra_orders = int(math.log10(score / min_score)) if score >= min_score else 0
-        award = self.config.base_award + extra_orders * self.config.extra_award_per_order
+        award = self.config.base_award + extra_orders * self.config.extra_award_per_order \
+                                       + self.round_instance.balls_left * self.config.extra_award_per_ball
         if score >= min_score:
             self.money += award
-        clock = pygame.time.Clock()
-        font = pygame.font.SysFont("Arial", 36)
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
-        overlay.fill((20, 20, 20, 80))
+        overlay.fill((20, 20, 20))
+        overlay.set_alpha(200)
+        self.screen.blit(overlay, (self.config.ui_width, 0))
+        if score < min_score:
+            result = 'lose'
+            texts = [
+                "Game Over!",
+                f"Score: {int(score) if score == int(score) else score}",
+                f"Required Minimum Score: {min_score}",
+                f"Total Money: {self.money}",
+                "Press ENTER to return to main menu"
+            ]
+            for i, line in enumerate(texts):
+                txt = font.render(line, True, (255, 100, 100))
+                self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
+                                       150 + i * 45))
+        else:
+            result = 'win'
+            texts = [
+                "Round Complete!",
+                f"Score: {int(score) if score == int(score) else score}",
+                f"Required Minimum Score: {min_score}",
+                f"Award: {self.config.base_award}",
+                f"Total Money: {self.money}",
+                "Press ENTER to continue..."
+            ]
+            if extra_orders * self.config.extra_award_per_order > 0:
+                texts.insert(4, f"Award for extra score: {extra_orders * self.config.extra_award_per_order}")
+            if self.round_instance.balls_left > 0:
+                texts.insert(4, f"Award for balls left: {self.round_instance.balls_left * self.config.extra_award_per_ball}")
+            for i, line in enumerate(texts):
+                if i == 0:
+                    txt = font.render(line, True, (0, 255, 0))
+                else:
+                    txt = font.render(line, True, (255, 255, 255))
+                self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
+                                       150 + i * 45))
         waiting = True
-        result = 'lose'
         while waiting:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -246,40 +282,7 @@ class PinballGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         waiting = False
-            self.screen.blit(overlay, (self.config.ui_width, 0))
-            if score < min_score:
-                result = 'lose'
-                texts = [
-                    "Game Over!",
-                    f"Score: {score}",
-                    f"Required Minimum Score: {min_score}",
-                    f"Total Money: {self.money}",
-                    "Press ENTER to return to main menu"
-                ]
-                for i, line in enumerate(texts):
-                    txt = font.render(line, True, (255, 100, 100))
-                    self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
-                                           150 + i * 45))
-            else:
-                result = 'win'
-                texts = [
-                    "Round Complete!",
-                    f"Score: {score}",
-                    f"Required Minimum Score: {min_score}",
-                    f"Award: {self.config.base_award}",
-                    f"Award for extra score: {award - self.config.base_award}",
-                    f"Total Money: {self.money}",
-                    "Press ENTER to continue..."
-                ]
-                for i, line in enumerate(texts):
-                    if i == 0:
-                        txt = font.render(line, True, (0, 255, 0))
-                    else:
-                        txt = font.render(line, True, (255, 255, 255))
-                    self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
-                                           150 + i * 45))
             pygame.display.flip()
-            clock.tick(self.config.fps)
         return result
 
     def run(self):
@@ -313,7 +316,7 @@ class PinballGame:
                     if self.round < 10:
                         self.score_needed = self.config.min_score[self.round]
                     else:
-                        self.score_needed = 10**(self.round - 2)
+                        self.score_needed = 10 ** (self.round - 2)
                     while result in ['win', 'back']:
                         result = self.shop_screen()
                         if result == 'field_setup':

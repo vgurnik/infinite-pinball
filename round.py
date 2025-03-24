@@ -71,7 +71,7 @@ class PinballRound:
         y = 0
         arbiter_type = ''
         for shape in arbiter.shapes:
-            if shape.collision_type == 1:
+            if shape.collision_type == 2:
                 if getattr(shape, "bumped", None) is not None:
                     setattr(shape, "bumped", 0.1)
                 pos = shape.body.position
@@ -80,11 +80,11 @@ class PinballRound:
                 y = pos.y
                 if shape.effect:
                     shape.effect(self.game_instance, *shape.effect_params)
-            elif shape.collision_type == 2:
+            elif shape.collision_type == 1:
                 if shape.effect:
                     shape.effect(self.game_instance, *shape.effect_params)
         for effect in self.applied_effects:
-            if effect["negative_effect"] is None:
+            if effect["trigger"] == "collision":
                 effect["effect"](self.game_instance, arbiter_type, *effect["params"])
         if self.immediate['score']:
             if self.config.score_multiplier != 1:
@@ -138,8 +138,24 @@ class PinballRound:
             fill_height = ind_h * charge_ratio
             pygame.draw.rect(self.screen, (0, 255, 0), (ind_x, ind_y + ind_h - fill_height, ind_w, fill_height))
 
-        # Display UI text.
-        font = pygame.font.SysFont("Arial", 24)
+        # Display UI
+        font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
+
+        result = None
+        if self.score >= self.game_instance.score_needed:
+            big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+            finish_button_text = big_font.render("Finish", True, (0, 0, 0))
+            finish_button_rect = finish_button_text.get_rect()
+            finish_button_rect.topleft = self.config.ui_continue_pos
+            finish_button_rect.width = self.config.ui_butt_width
+            n = 0
+            if finish_button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+                if pygame.mouse.get_pressed()[0]:
+                    result = "round_over"
+                n = 3
+            pygame.draw.rect(self.screen, (255, 255, 0), finish_button_rect.inflate(20 + n, 10 + n), border_radius=5)
+            self.screen.blit(finish_button_text, finish_button_rect)
+
         min_score_text = font.render(f"Required score: {self.game_instance.score_needed}", True, (255, 255, 255))
         score_text = font.render(f"Score: {int(self.score) if self.score == int(self.score) else self.score}",
                                  True, (255, 255, 255))
@@ -153,6 +169,8 @@ class PinballRound:
         self.inventory.draw(self.screen)
 
         pygame.display.flip()
+        if result:
+            return result
 
     def run(self):
         clock = pygame.time.Clock()
@@ -186,25 +204,23 @@ class PinballRound:
                 if ret:
                     if "try_selling" in ret:
                         item = ret["try_selling"]
-                        if item.properties["type"] != "passive_card" or \
+                        if item.effect["trigger"] != "passive" or \
                                 item.effect["negative_effect"](self.game_instance, *item.effect["params"]):
                             self.game_instance.money += item.properties["price"] // 2
                             self.inventory.remove_item(item)
                     elif "try_using" in ret:
                         item = ret["try_using"]
                         if item.effect["effect"] is not None:
-                            if item.effect["duration"] != 0:
-                                self.applied_effects.append(item.effect)
-                                if item.effect["negative_effect"] is not None:
-                                    item.effect["effect"](self.game_instance, *item.effect["params"])
-                                self.inventory.remove_item(item)
-                                self.hit_effects.append(DisappearingItem(item, 0.5))
-                            else:
+                            if item.effect["trigger"] == "immediate":
                                 if item.effect["effect"](self.game_instance, *item.effect["params"]):
                                     self.inventory.remove_item(item)
                                     self.hit_effects.append(DisappearingItem(item, 0.5))
-                                else:
-                                    item.effect["negative_effect"](self.game_instance, *item.effect["params"])
+                            elif item.effect["trigger"] != "passive":
+                                self.applied_effects.append(item.effect)
+                                if item.effect["trigger"] == "once":
+                                    item.effect["effect"](self.game_instance, *item.effect["params"])
+                                self.inventory.remove_item(item)
+                                self.hit_effects.append(DisappearingItem(item, 0.5))
 
             if not self.ball_launched and self.launch_key_down:
                 self.launch_charge += dt * self.config.launch_charge_rate
@@ -258,7 +274,9 @@ class PinballRound:
 
             self.inventory.update(dt)
 
-            self.draw(dt)
+            if self.draw(dt) == "round_over":
+                running = False
+                exit_option = "round_over"
             clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
             self.real_fps = clock.get_fps()
 

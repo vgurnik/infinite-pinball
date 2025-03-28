@@ -1,11 +1,13 @@
-import pygame
 import sys
 import math
 import random
+import pygame
 from config import Config
+from field import Field
+from ui import Ui
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
-from game_effects import overlay_menu, DisappearingItem
+from game_effects import DisappearingItem
 
 
 class PinballGame:
@@ -13,11 +15,14 @@ class PinballGame:
         pygame.init()
         self.config = Config()
         self.screen = pygame.display.set_mode((self.config.screen_width, self.config.screen_height))
+        self.textures = self.load_textures()
+        self.field = Field(self)
+        self.ui = Ui(self)
         pygame.display.set_caption("Infinite Pinball")
+
         self.money = 0
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
-        self.textures = self.load_textures()
         self.inventory = PlayerInventory(position=self.config.ui_inventory_pos,
                                          width=self.config.ui_width, height=self.config.ui_inventory_height)
         self.round_instance = None
@@ -34,8 +39,8 @@ class PinballGame:
         return textures
 
     def main_menu(self):
-        choice = overlay_menu(self.screen, "Main Menu",
-                              ["Start Game", "Preferences", "Exit", "Debug_Shop"])
+        choice = self.ui.overlay_menu(self.screen, "Main Menu",
+                                      ["Start Game", "Preferences", "Exit", "Debug_Shop"])
         return choice
 
     def preferences_menu(self):
@@ -69,8 +74,7 @@ class PinballGame:
     def shop_screen(self):
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
-        font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
-        big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+        self.ui.change_mode("shop")
         shop = Inventory()
         for i in range(2):
             item = random.randint(0, len(self.config.shop_items["cards"]) - 1)
@@ -93,33 +97,19 @@ class PinballGame:
             shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                 self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
 
-        play_button_text = big_font.render("Play", True, (0, 0, 0))
-        play_button_rect = play_button_text.get_rect()
-        play_button_rect.topleft = self.config.ui_continue_pos
-        play_button_rect.width = self.config.ui_butt_width
-        field_button_text = big_font.render("Field", True, (0, 0, 0))
-        field_button_rect = field_button_text.get_rect()
-        field_button_rect.topleft = self.config.ui_field_config_pos
-        field_button_rect.width = self.config.ui_butt_width
-
         message = ""
         effects = []
         while True:
             for event in pygame.event.get():
+                ui_return = self.ui.handle_event(event)
+                if ui_return is not None:
+                    return ui_return
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         return "continue"
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    mpos = pygame.mouse.get_pos()
-                    if play_button_rect.inflate(20, 10).collidepoint(mpos):
-                        pygame.time.delay(200)
-                        return "continue"
-                    if field_button_rect.inflate(20, 10).collidepoint(mpos):
-                        pygame.time.delay(200)
-                        return "field_setup"
                 item = shop.handle_event(event)
                 if item is not None:
                     if self.money >= item.properties["price"]:
@@ -161,29 +151,21 @@ class PinballGame:
                             self.money += item.properties["price"] // 2
                             self.inventory.remove_item(item)
                             message = f"Sold {item.name} for {item.properties['price'] // 2}!"
+
             self.screen.fill((20, 20, 70))
-            n = 0
-            if play_button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
-                n = 3
-            pygame.draw.rect(self.screen, (255, 255, 0), play_button_rect.inflate(20 + n, 10 + n), border_radius=5)
-            self.screen.blit(play_button_text, play_button_rect)
-            n = 0
-            if field_button_rect.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
-                n = 3
-            pygame.draw.rect(self.screen, (255, 0, 100), field_button_rect.inflate(20 + n, 10 + n), border_radius=5)
-            self.screen.blit(field_button_text, field_button_rect)
+            self.ui.draw(self.screen)
+
+            big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
             header = big_font.render("In-Game Shop", True, (255, 255, 255))
             self.screen.blit(header, self.config.shop_pos)
-            if message:
-                msg_text = font.render(message, True, (0, 255, 0))
-                self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
-            score_text = font.render(f"Next score: {self.score_needed}", True, (255, 255, 255))
-            money_text = font.render(f"$ {self.money}", True, (255, 255, 255))
-            self.screen.blit(score_text, self.config.ui_min_score_pos)
-            self.screen.blit(money_text, self.config.ui_money_pos)
-
             shop.update(dt)
             shop.draw(self.screen)
+
+            if message:
+                font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
+                msg_text = font.render(message, True, (0, 255, 0))
+                self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
+
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
             for effect in effects[:]:
@@ -198,6 +180,7 @@ class PinballGame:
         # Here you could let the player add or remove objects, rearrange bumpers, etc.
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
+
         font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
         overlay = pygame.Surface((self.config.screen_width, self.config.screen_height))
         overlay.set_alpha(80)
@@ -210,7 +193,7 @@ class PinballGame:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        choice = overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                        choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
                         if choice == "Exit to Main Menu":
                             return 'menu'
                     elif event.key == pygame.K_RETURN:
@@ -232,6 +215,10 @@ class PinballGame:
                                        + self.round_instance.balls_left * self.config.extra_award_per_ball
         if score >= min_score:
             self.money += award
+
+        self.ui.change_mode('results')
+        self.ui.draw(self.screen)
+
         font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
         overlay.fill((20, 20, 20))
@@ -290,17 +277,18 @@ class PinballGame:
             choice = self.main_menu()
             if choice == "Exit":
                 break
-            elif choice == "Preferences":
+            if choice == "Preferences":
                 self.preferences_menu()
                 continue
-            elif choice == "Debug_Shop":
+            if choice == "Debug_Shop":
                 self.money = 10000
                 self.shop_screen()
                 self.money = 0
                 continue
-            elif choice == "Start Game":
+            if choice == "Start Game":
                 self.config = Config()
                 self.inventory.clear()
+                self.field = Field(self)
                 self.money = 0
                 self.round = 0
                 self.score_needed = self.config.min_score[0]

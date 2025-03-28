@@ -142,7 +142,8 @@ class PlayerInventory(Inventory):
         self.slot_height = slot_height
         self.slot_margin = slot_margin
         self.max_size = 7
-        self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100, self.width, 100)
+        self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100,
+                                         self.width - self.position.x * 2, 100)
 
     def recalculate_targets(self):
         if len(self.items) == 0:
@@ -218,6 +219,7 @@ class PlayerInventory(Inventory):
         alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
                                           (self.deletion_zone.height - text_surface.get_height()) / 2))
         surface.blit(alpha_surface, self.deletion_zone.topleft)
+
         font = pygame.font.Font("assets/terminal-grotesque.ttf", 16)
         fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255), (20, 20, 70), 1)
         surface.blit(fullness, (self.position.x, self.position.y - 20))

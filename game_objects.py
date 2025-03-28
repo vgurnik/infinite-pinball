@@ -22,14 +22,14 @@ class Ball:
         space.add(self.body, self.shape)
         self.texture = texture
 
-    def draw(self, screen, offset_x=0):
+    def draw(self, screen):
         if self.texture:
             rotated = pygame.transform.rotozoom(self.texture, 0, self.radius * 2 / 16)
-            rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
+            rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
             pygame.draw.circle(screen, (200, 50, 50),
-                               (int(self.body.position.x + offset_x), int(self.body.position.y)), self.radius)
+                               (int(self.body.position.x), int(self.body.position.y)), self.radius)
 
 
 class Bumper:
@@ -56,7 +56,7 @@ class Bumper:
         if self.shape.bumped > 0:
             self.shape.bumped = max(0, self.shape.bumped - dt)
 
-    def draw(self, screen, offset_x=0):
+    def draw(self, screen):
         if self.textures:
             if self.shape.bumped:
                 rotated = pygame.transform.rotozoom(self.textures["bumped"], 0,
@@ -64,11 +64,11 @@ class Bumper:
             else:
                 rotated = pygame.transform.rotozoom(self.textures["idle"], 0,
                                                     self.radius * 2 / self.textures["idle"].get_size()[0])
-            rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
+            rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
             pygame.draw.circle(screen, (50, 200, 50),
-                               (int(self.body.position.x + offset_x), int(self.body.position.y)), self.radius)
+                               (int(self.body.position.x), int(self.body.position.y)), self.radius)
 
 
 class Flipper:
@@ -140,11 +140,11 @@ class Flipper:
         """Determine active state based on the spring's rest_angle."""
         return self.spring.rest_angle == self.active_angle
 
-    def draw(self, screen, offset_x=0):
+    def draw(self, screen):
         if self.texture:
             rotated = pygame.transform.rotozoom(self.texture, -math.degrees(self.body.angle), self.length / 40)
-            rect = rotated.get_rect(center=(self.body.position.x + offset_x, self.body.position.y))
+            rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
-            points = [(p.x + offset_x, p.y) for p in self.shape.get_vertices()]
+            points = [(p.x, p.y) for p in self.shape.get_vertices()]
             pygame.draw.polygon(screen, (200, 200, 50), points)

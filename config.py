@@ -1,5 +1,10 @@
+from pathlib import Path
+
+
 class Config:
     def __init__(self):
+        self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
+
         # Screen and simulation settings.
         self.screen_width = 1280
         self.screen_height = 720

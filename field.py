@@ -24,7 +24,7 @@ class Field:
                 bumper_def["pos"] = obj["pos"]
                 bumper = game_objects.Bumper(self.space, bumper_def,
                                              texture={"idle": self.textures.get(bumper_def["texture"]),
-                                                       "bumped": self.textures.get(bumper_def["texture"]+"_bumped")})
+                                                      "bumped": self.textures.get(bumper_def["texture"]+"_bumped")})
                 self.objects.append(bumper)
             elif obj["type"] == "flipper":
                 flipper_def = self.config.objects_settings["flipper"][obj["class"]]

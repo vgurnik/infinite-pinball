@@ -1,6 +1,12 @@
 # Infinite Pinball
 Maybe this shall be a game someday
 
+build:
+```bash
+pip install pygame pymunk pyinstaller
+pyinstaller main.spec
+```
+
 ### TODO:
 #### 1
 - [x] Add build mode
@@ -30,5 +36,5 @@ Maybe this shall be a game someday
 - [ ] ***Add even more card-object-effect options***
 #### ?
 - [ ] Add sounds
-- [ ] Pack the app conveniently
+- [x] Pack the app conveniently
 - [ ] Add localization

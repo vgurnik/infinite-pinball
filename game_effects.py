@@ -1,4 +1,5 @@
 import pygame
+from pathlib import Path
 from multiline_text import multiline
 
 
@@ -17,7 +18,7 @@ class ContextWindow:
 
     def draw(self, surface):
         if self.visible:
-            font = pygame.font.Font("assets/terminal-grotesque.ttf", 20)
+            font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
             text_surface = multiline(self.text, font, (0, 0, 0), (200, 200, 200))
             rect = text_surface.get_rect().inflate((6, 6))
             if self.x + rect.width > surface.get_width():
@@ -56,7 +57,8 @@ class HitEffect(BaseEffect):
         super().__init__(pos, lifetime)
         self.text = text
         self.color = color
-        self.font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
+        self.font = pygame.font.Font(Path(__file__).resolve().with_name(
+            "assets").joinpath('terminal-grotesque.ttf'), 24)
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
@@ -100,7 +102,7 @@ class DisappearingItem(BaseEffect):
             pygame.draw.rect(new_surface, color, rect, border_radius=5)
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
         # Draw the item name centered at the top of the card.
-        font = pygame.font.Font("assets/terminal-grotesque.ttf", 20)
+        font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
         text_surface = font.render(self.item.name, True, (0, 0, 0))
         new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)

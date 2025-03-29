@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+from pathlib import Path
 import pygame
 from config import Config
 from field import Field
@@ -29,13 +30,15 @@ class PinballGame:
 
     @staticmethod
     def load_textures():
+        asset_folder = Path(__file__).resolve().with_name("assets")
         # Load textures
-        textures = {"ball": pygame.image.load("assets/ball.bmp").convert_alpha(),
-                    "flipper_left": pygame.image.load("assets/flipper_left.bmp").convert_alpha(),
-                    "bumper": pygame.image.load("assets/bumper_big.bmp").convert_alpha(),
-                    "bumper_bumped": pygame.image.load("assets/bumper_big_bumped.bmp").convert_alpha(),
-                    "bumper_small": pygame.image.load("assets/bumper_small.bmp").convert_alpha(),
-                    "bumper_small_bumped": pygame.image.load("assets/bumper_small_bumped.bmp").convert_alpha()}
+        textures = {"ball": pygame.image.load(asset_folder.joinpath("ball.bmp")).convert_alpha(),
+                    "flipper_left": pygame.image.load(asset_folder.joinpath("flipper_left.bmp")).convert_alpha(),
+                    "bumper": pygame.image.load(asset_folder.joinpath("bumper_big.bmp")).convert_alpha(),
+                    "bumper_bumped": pygame.image.load(asset_folder.joinpath("bumper_big_bumped.bmp")).convert_alpha(),
+                    "bumper_small": pygame.image.load(asset_folder.joinpath("bumper_small.bmp")).convert_alpha(),
+                    "bumper_small_bumped": pygame.image.load(asset_folder.joinpath("bumper_small_bumped.bmp")
+                                                             ).convert_alpha()}
         return textures
 
     def main_menu(self):
@@ -45,7 +48,7 @@ class PinballGame:
 
     def preferences_menu(self):
         clock = pygame.time.Clock()
-        font = pygame.font.Font("assets/terminal-grotesque.ttf", 28)
+        font = pygame.font.Font(self.config.fontfile, 28)
         pref_running = True
         while pref_running:
             self.screen.fill((20, 20, 70))
@@ -158,14 +161,14 @@ class PinballGame:
             self.screen.fill((20, 20, 70))
             self.ui.draw(self.screen)
 
-            big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+            big_font = pygame.font.Font(self.config.fontfile, 36)
             header = big_font.render("In-Game Shop", True, (255, 255, 255))
             self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
             shop.update(dt)
             shop.draw(self.screen)
 
             if message:
-                font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
+                font = pygame.font.Font(self.config.fontfile, 24)
                 msg_text = font.render(message, True, (0, 255, 0))
                 self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
 
@@ -240,11 +243,11 @@ class PinballGame:
         self.ui.change_mode('results')
         self.ui.draw(self.screen)
 
-        font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+        font = pygame.font.Font(self.config.fontfile, 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
         overlay.fill((20, 20, 20))
         overlay.set_alpha(200)
-        self.screen.blit(overlay, (self.config.ui_width, 0))
+        self.screen.blit(overlay, self.config.field_pos)
         if score < min_score:
             result = 'lose'
             texts = [

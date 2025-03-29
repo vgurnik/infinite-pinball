@@ -1,10 +1,12 @@
-import pygame
 import sys
+from pathlib import Path
+import pygame
 
 
 class Ui:
     @staticmethod
     def overlay_menu(screen, title, options):
+        fontfile = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
         selected = 0
         overlay = pygame.Surface((screen.get_width(), screen.get_height()))
         overlay.set_alpha(180)
@@ -34,17 +36,17 @@ class Ui:
                             selected = i
 
             screen.blit(overlay, (0, 0))
-            font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+            font = pygame.font.Font(fontfile, 36)
             title_text = font.render(title, True, (255, 255, 255))
             title_rect = title_text.get_rect(center=(screen.get_width() // 2, 150))
             screen.blit(title_text, title_rect)
             option_rects = []
             for idx, option in enumerate(options):
                 if idx == selected:
-                    opt_font = pygame.font.Font("assets/terminal-grotesque.ttf", 42)
+                    opt_font = pygame.font.Font(fontfile, 42)
                     color = (255, 255, 0)
                 else:
-                    opt_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+                    opt_font = pygame.font.Font(fontfile, 36)
                     color = (255, 255, 255)
                 text = opt_font.render(option, True, color)
                 rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
@@ -67,8 +69,8 @@ class Ui:
 
     def draw(self, surface):
         # Display UI
-        font = pygame.font.Font("assets/terminal-grotesque.ttf", 24)
-        big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
+        font = pygame.font.Font(self.config.fontfile, 24)
+        big_font = pygame.font.Font(self.config.fontfile, 36)
         ui_surface = pygame.Surface((self.config.ui_width, self.config.screen_height))
         ui_surface.fill((20, 10, 60))
 

@@ -56,6 +56,7 @@ class Ui:
         self.game_instance = game_instance
         self.config = game_instance.config
         self.mode = 'round'
+        self.position = self.config.ui_pos
         self.play_button = None
         self.field_button = None
         self.finish_button = None
@@ -78,7 +79,7 @@ class Ui:
                 self.finish_button.topleft = self.config.ui_continue_pos
                 self.finish_button.width = self.config.ui_butt_width
                 n = 0
-                if self.finish_button.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+                if self.finish_button.inflate(20, 10).move(self.position).collidepoint(pygame.mouse.get_pos()):
                     n = 3
                 pygame.draw.rect(ui_surface, (255, 255, 0),
                                  self.finish_button.inflate(20 + n, 10 + n), border_radius=5)
@@ -93,44 +94,26 @@ class Ui:
             ui_surface.blit(score_text, self.config.ui_score_pos)
             ui_surface.blit(min_score_text, self.config.ui_min_score_pos)
 
-        elif self.mode == 'shop':
-            play_button_text = big_font.render("Play", True, (0, 0, 0))
+        elif self.mode in ['shop', 'field_modification']:
+            if self.mode == 'shop':
+                play_button_text = big_font.render("Play", True, (0, 0, 0))
+                field_button_text = big_font.render("Field", True, (0, 0, 0))
+            else:
+                play_button_text = big_font.render("Play", True, (0, 0, 0))
+                field_button_text = big_font.render("Back", True, (0, 0, 0))
             self.play_button = play_button_text.get_rect()
             self.play_button.topleft = self.config.ui_continue_pos
             self.play_button.width = self.config.ui_butt_width
-            field_button_text = big_font.render("Field", True, (0, 0, 0))
             self.field_button = field_button_text.get_rect()
             self.field_button.topleft = self.config.ui_field_config_pos
             self.field_button.width = self.config.ui_butt_width
             n = 0
-            if self.play_button.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+            if self.play_button.inflate(20, 10).move(self.position).collidepoint(pygame.mouse.get_pos()):
                 n = 3
             pygame.draw.rect(ui_surface, (255, 255, 0), self.play_button.inflate(20 + n, 10 + n), border_radius=5)
             ui_surface.blit(play_button_text, self.play_button)
             n = 0
-            if self.field_button.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
-                n = 3
-            pygame.draw.rect(ui_surface, (255, 0, 100), self.field_button.inflate(20 + n, 10 + n), border_radius=5)
-            ui_surface.blit(field_button_text, self.field_button)
-            score_text = font.render(f"Next score: {self.game_instance.score_needed}", True, (255, 255, 255))
-            ui_surface.blit(score_text, self.config.ui_min_score_pos)
-
-        elif self.mode == 'field_modification':
-            play_button_text = big_font.render("Play", True, (0, 0, 0))
-            self.play_button = play_button_text.get_rect()
-            self.play_button.topleft = self.config.ui_continue_pos
-            self.play_button.width = self.config.ui_butt_width
-            field_button_text = big_font.render("Back", True, (0, 0, 0))
-            self.field_button = field_button_text.get_rect()
-            self.field_button.topleft = self.config.ui_field_config_pos
-            self.field_button.width = self.config.ui_butt_width
-            n = 0
-            if self.play_button.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
-                n = 3
-            pygame.draw.rect(ui_surface, (255, 255, 0), self.play_button.inflate(20 + n, 10 + n), border_radius=5)
-            ui_surface.blit(play_button_text, self.play_button)
-            n = 0
-            if self.field_button.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+            if self.field_button.inflate(20, 10).move(self.position).collidepoint(pygame.mouse.get_pos()):
                 n = 3
             pygame.draw.rect(ui_surface, (255, 0, 100), self.field_button.inflate(20 + n, 10 + n), border_radius=5)
             ui_surface.blit(field_button_text, self.field_button)
@@ -139,14 +122,17 @@ class Ui:
 
         money_text = font.render(f"$ {self.game_instance.money}", True, (255, 255, 255))
         ui_surface.blit(money_text, self.config.ui_money_pos)
-        surface.blit(ui_surface, (0, 0))
+        surface.blit(ui_surface, self.position)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             mpos = pygame.mouse.get_pos()
-            if self.mode in ['shop', 'field_modification'] and self.play_button.inflate(20, 10).collidepoint(mpos):
+            if self.mode in ['shop', 'field_modification'] and\
+                self.play_button.inflate(20, 10).move(self.position).collidepoint(mpos):
                 return "continue"
-            if self.mode in ['shop', 'field_modification'] and self.field_button.inflate(20, 10).collidepoint(mpos):
+            if self.mode in ['shop', 'field_modification'] and\
+                self.field_button.inflate(20, 10).move(self.position).collidepoint(mpos):
                 return "field_setup"
-            if self.mode == 'round_finishable' and self.finish_button.inflate(20, 10).collidepoint(mpos):
+            if self.mode == 'round_finishable' and\
+                self.finish_button.inflate(20, 10).move(self.position).collidepoint(mpos):
                 return "round_over"

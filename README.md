@@ -3,7 +3,7 @@ Maybe this shall be a game someday
 
 ### TODO:
 #### 1
-- [ ] Add build mode
+- [x] Add build mode
   - [x] Separate field and UI
 - [x] Actually add card effects
   - [x] Add event system
@@ -11,6 +11,7 @@ Maybe this shall be a game someday
 - [x] Add descriptions (context)
 #### 2
 - [ ] Finish texturing the field
+  - [x] Resolution rescale
 - [ ] Texturize GUI
 - [ ] Texturize cards
 - [ ] Add active effects visualization
@@ -20,6 +21,7 @@ Maybe this shall be a game someday
 - [ ] Finish starting field
   - [ ] Add building restrictions
 - [ ] Add more card-object-effect options
+  - [ ] Implement rarity
 #### 4
 - [ ] Add saves
 - [ ] Implement special effects (combos)

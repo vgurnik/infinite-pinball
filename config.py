@@ -1,13 +1,14 @@
 class Config:
     def __init__(self):
         # Screen and simulation settings.
-        self.screen_width = 950
-        self.screen_height = 850
+        self.screen_width = 1280
+        self.screen_height = 720
         self.fps = 180
         self.gravity = (0, 900)
 
         # UI panel settings.
-        self.ui_width = 220
+        self.ui_pos = (50, 0)
+        self.ui_width = 250
         self.ui_min_score_pos = (10, 10)
         self.ui_score_pos = (10, 40)
         self.ui_money_pos = (10, 70)
@@ -15,15 +16,15 @@ class Config:
         self.ui_butt_width = 160
         self.ui_continue_pos = (20, 150)
         self.ui_field_config_pos = (20, 220)
-        self.ui_inventory_pos = (10, 300)
-        self.ui_inventory_height = 300
+        self.ui_inventory_pos = (60, 300)
+        self.ui_inventory_height = 200
 
         # Table boundaries.
-        self.field_pos = (220, 0)
-        self.left_wall_x = 50
-        self.top_wall_y = 50
-        self.field_width = 500
-        self.field_height = 700
+        self.field_pos = (350, 0)
+        self.left_wall_x = 10
+        self.top_wall_y = 10
+        self.field_width = 600
+        self.field_height = 600
         self.launch_opening_height = 100
         self.bottom_opening_distance = 200
         self.bottom_opening_height = 60
@@ -121,28 +122,26 @@ class Config:
             "flipper": {"flipper_standard": {"texture": "flipper_left", "size": 80, "force": 0.6, "effect": None}}
         }
 
-        self.left_flipper_pos = (220, 750)
-        self.right_flipper_pos = (380, 750)
+        self.left_flipper_pos = (230, 650)
+        self.right_flipper_pos = (370, 650)
 
         self.board_objects = [
             {"pos": (200, 300), "type": "bumper", "class": "bumper_big"},
             {"pos": (400, 300), "type": "bumper", "class": "bumper_big"},
-            {"pos": (300, 500), "type": "bumper", "class": "bumper_big"},
+            {"pos": (300, 470), "type": "bumper", "class": "bumper_big"},
             {"pos": (300, 100), "type": "bumper", "class": "bumper_small"},
-            {"pos": (150, 400), "type": "bumper", "class": "bumper_small"},
-            {"pos": (450, 400), "type": "bumper", "class": "bumper_small"},
-            {"pos": (150, 400), "type": "bumper", "class": "bumper_small"},
-            {"pos": (450, 400), "type": "bumper", "class": "bumper_small"},
+            {"pos": (100, 400), "type": "bumper", "class": "bumper_small"},
+            {"pos": (500, 400), "type": "bumper", "class": "bumper_small"},
             {"pos": self.left_flipper_pos, "type": "flipper", "class": "flipper_standard", "is_left": True},
             {"pos": self.right_flipper_pos, "type": "flipper", "class": "flipper_standard", "is_left": False},
         ]
 
         # Derived values.
-        self.shop_pos = (self.ui_width + 200, 50)
-        self.shop_pos_objects = (self.ui_width + 30, 150)
-        self.shop_pos_cards = (self.shop_pos_objects[0] + 400, 150)
-        self.shop_pos_effects = (self.ui_width + 30, 350)
-        self.shop_pos_packs = (self.shop_pos_effects[0] + 400, 350)
+        self.shop_pos = (self.ui_pos[0] + self.ui_width + 10, self.ui_pos[1] + 50)
+        self.shop_pos_objects = (self.shop_pos[0] + 30, 150)
+        self.shop_pos_cards = (self.shop_pos_objects[0] + 300, 150)
+        self.shop_pos_effects = (self.shop_pos[0] + 100, 350)
+        self.shop_pos_packs = (self.shop_pos_effects[0] + 300, 350)
         self.right_wall_x = self.left_wall_x + self.field_width
         self.bottom_wall_y = self.top_wall_y + self.field_height
         self.launch_opening_top = self.top_wall_y + self.launch_opening_height

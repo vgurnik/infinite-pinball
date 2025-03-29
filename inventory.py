@@ -137,16 +137,18 @@ class PlayerInventory(Inventory):
     Inherited PlayerInventory class where items are permutable.
     Items are arranged strictly vertically and can be dragged to re-order.
     """
-    def __init__(self, position, width, height, slot_height=170, slot_margin=10):
+    def __init__(self, game_instance, slot_height=170, slot_margin=10):
         super().__init__()
-        self.position = pygame.math.Vector2(position)
-        self.width = width
-        self.height = height
+        self.game_instance = game_instance
+        self.config = game_instance.config
+        self.position = pygame.math.Vector2(self.config.ui_inventory_pos)
+        self.width = self.config.ui_width
+        self.height = self.config.ui_inventory_height
         self.slot_height = slot_height
         self.slot_margin = slot_margin
         self.max_size = 7
         self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100,
-                                         self.width - self.position.x * 2, 100)
+                                         self.width - (self.position.x - self.config.ui_pos[0]) * 2, 100)
 
     def recalculate_targets(self):
         if len(self.items) == 0:
@@ -220,15 +222,15 @@ class PlayerInventory(Inventory):
 
     def draw(self, surface):
         font = pygame.font.Font("assets/terminal-grotesque.ttf", 25)
-        alpha_surface = pygame.Surface(self.deletion_zone.size)
-        alpha_surface.fill((255, 100, 100))
-        alpha_surface.set_alpha(50)
-        text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0), (255, 100, 100))
+        alpha_surface = pygame.Surface(self.deletion_zone.size, pygame.SRCALPHA)
+        alpha_surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(alpha_surface, (255, 100, 100, 100), alpha_surface.get_rect(), border_radius=10)
+        text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0, 255))
         alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
                                           (self.deletion_zone.height - text_surface.get_height()) / 2))
         surface.blit(alpha_surface, self.deletion_zone.topleft)
 
         font = pygame.font.Font("assets/terminal-grotesque.ttf", 16)
-        fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255), (20, 10, 60), 1)
+        fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255, 255), justification=1)
         surface.blit(fullness, (self.position.x, self.position.y - 20))
         super().draw(surface)

@@ -37,6 +37,8 @@ class Field:
                     self.right_flipper = flipper
                 self.objects.append(flipper)
 
+        self.space.step(0.1)
+
         self.hovered_item = None
         self._hovered_object = None
 

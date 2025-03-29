@@ -14,7 +14,8 @@ class PinballGame:
     def __init__(self):
         pygame.init()
         self.config = Config()
-        self.screen = pygame.display.set_mode((self.config.screen_width, self.config.screen_height))
+        self.screen = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
+                                              pygame.SCALED | pygame.RESIZABLE)
         self.textures = self.load_textures()
         self.field = Field(self)
         self.ui = Ui(self)
@@ -23,8 +24,7 @@ class PinballGame:
         self.money = 0
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
-        self.inventory = PlayerInventory(position=self.config.ui_inventory_pos,
-                                         width=self.config.ui_width, height=self.config.ui_inventory_height)
+        self.inventory = PlayerInventory(self)
         self.round_instance = None
 
     @staticmethod
@@ -71,32 +71,34 @@ class PinballGame:
             pygame.display.flip()
             clock.tick(self.config.fps)
 
-    def shop_screen(self, shop=None):
+    def shop_screen(self, _shop=None):
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
         self.ui.change_mode("shop")
-        if shop is None:
+        if _shop is None:
             shop = Inventory()
-        for i in range(2):
-            item = random.randint(0, len(self.config.shop_items["cards"]) - 1)
-            item = self.config.shop_items["cards"][item]
-            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
-        for i in range(3):
-            item = random.randint(0, len(self.config.shop_items["objects"]) - 1)
-            item = self.config.shop_items["objects"][item]
-            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
-        for i in range(1):
-            item = random.randint(0, len(self.config.shop_items["vouchers"]) - 1)
-            item = self.config.shop_items["vouchers"][item]
-            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                self.config.shop_pos_effects[0] + 100 + i * 130, self.config.shop_pos_effects[1])))
-        for i in range(2):
-            item = random.randint(0, len(self.config.shop_items["packs"]) - 1)
-            item = self.config.shop_items["packs"][item]
-            shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
+            for i in range(3):
+                item = random.randint(0, len(self.config.shop_items["cards"]) - 1)
+                item = self.config.shop_items["cards"][item]
+                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                    self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
+            for i in range(2):
+                item = random.randint(0, len(self.config.shop_items["objects"]) - 1)
+                item = self.config.shop_items["objects"][item]
+                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                    self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
+            for i in range(1):
+                item = random.randint(0, len(self.config.shop_items["vouchers"]) - 1)
+                item = self.config.shop_items["vouchers"][item]
+                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                    self.config.shop_pos_effects[0] + i * 130, self.config.shop_pos_effects[1])))
+            for i in range(2):
+                item = random.randint(0, len(self.config.shop_items["packs"]) - 1)
+                item = self.config.shop_items["packs"][item]
+                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                    self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
+        else:
+            shop = _shop
 
         message = ""
         effects = []
@@ -158,7 +160,7 @@ class PinballGame:
 
             big_font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
             header = big_font.render("In-Game Shop", True, (255, 255, 255))
-            self.screen.blit(header, self.config.shop_pos)
+            self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
             shop.update(dt)
             shop.draw(self.screen)
 
@@ -219,6 +221,7 @@ class PinballGame:
                     else:
                         self.field.hovered_item = None
 
+            self.screen.fill((20, 20, 70))
             self.ui.draw(self.screen)
             self.field.draw(self.screen)
             self.inventory.update(dt)

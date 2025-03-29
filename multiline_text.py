@@ -71,7 +71,7 @@ def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rec
 
 
 def multiline(string: str, font: pygame.font.Font,
-              font_color: tuple, bg_color: tuple, justification=0):
+              font_color: tuple, bg_color: tuple = (0, 0, 0, 0), justification=0):
     """Returns a surface containing the passed text string, word-wrapping as necessary. The text
     will be anti-aliased, the rect will generate to fit the text.
 
@@ -106,7 +106,7 @@ def multiline(string: str, font: pygame.font.Font,
             surfaces.append(None)
         accumulated_height += font.size(line)[1]
     # Let's try to write the text out on the surface.
-    surface = pygame.Surface((max_width, accumulated_height))
+    surface = pygame.Surface((max_width, accumulated_height), pygame.SRCALPHA)
     surface.fill(bg_color)
     for i, tmp_surface in enumerate(surfaces):
         if tmp_surface:

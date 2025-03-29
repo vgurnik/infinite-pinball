@@ -2,6 +2,7 @@ import math
 import pygame
 import pymunk
 from effects import get_object_function
+import misc
 
 
 class GameObject:
@@ -36,7 +37,7 @@ class Ball(GameObject):
 
     def draw(self, screen):
         if self.texture:
-            rotated = pygame.transform.rotozoom(self.texture, 0, self.radius * 2 / 16)
+            rotated = misc.scale(self.texture, (self.radius * 2, self.radius * 2))
             rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
@@ -71,11 +72,9 @@ class Bumper(GameObject):
     def draw(self, screen):
         if self.texture:
             if self.shape.bumped:
-                rotated = pygame.transform.rotozoom(self.texture["bumped"], 0,
-                                                    self.radius * 2 / self.texture["bumped"].get_size()[0])
+                rotated = misc.scale(self.texture["bumped"], (self.radius * 2, self.radius * 2))
             else:
-                rotated = pygame.transform.rotozoom(self.texture["idle"], 0,
-                                                    self.radius * 2 / self.texture["idle"].get_size()[0])
+                rotated = misc.scale(self.texture["idle"], (self.radius * 2, self.radius * 2))
             rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
@@ -155,8 +154,8 @@ class Flipper(GameObject):
 
     def draw(self, screen):
         if self.texture:
-            rotated = pygame.transform.rotozoom(self.texture, -math.degrees(self.body.angle), self.length / 40)
-            rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
+            rotated = misc.rotoscale(self.texture, -math.degrees(self.body.angle), (self.length, self.width))
+            rect = rotated.get_rect(center=(round(self.body.position.x*2)/2, round(self.body.position.y*2)/2))
             screen.blit(rotated, rect)
         else:
             points = [(p.x, p.y) for p in self.shape.get_vertices()]

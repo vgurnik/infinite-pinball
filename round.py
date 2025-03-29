@@ -115,6 +115,7 @@ class PinballRound:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return == "round_over":
+                    self.field.space.remove(self.ball.body, self.ball.shape)
                     exit_option = ui_return
                     running = False
                     break
@@ -178,6 +179,7 @@ class PinballRound:
                     break
 
             if not self.ball_launched and self.balls_left <= 0:
+                self.field.space.remove(self.ball.body, self.ball.shape)
                 exit_option = "round_over"
                 break
 

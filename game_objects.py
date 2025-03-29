@@ -4,9 +4,22 @@ import pymunk
 from effects import get_object_function
 
 
-class Ball:
+class GameObject:
     def __init__(self, space, config, pos, texture=None):
         self.space = space
+        self.config = config
+        self.texture = texture
+        self.radius = config["size"]
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.body.position = pos
+
+    def move(self, pos):
+        self.body.position = pos
+
+
+class Ball(GameObject):
+    def __init__(self, space, config, pos, texture=None):
+        super().__init__(space, config, pos, texture)
         self.mass = config["mass"]
         self.radius = config["size"]
         inertia = pymunk.moment_for_circle(self.mass, 0, self.radius)
@@ -20,7 +33,6 @@ class Ball:
         self.shape.effect = get_object_function(config["effect"])
         self.shape.effect_params = config.get("params", [])
         space.add(self.body, self.shape)
-        self.texture = texture
 
     def draw(self, screen):
         if self.texture:
@@ -32,24 +44,24 @@ class Ball:
                                (int(self.body.position.x), int(self.body.position.y)), self.radius)
 
 
-class Bumper:
-    def __init__(self, space, bumper_def, textures=None):
-        self.config = bumper_def
+class Bumper(GameObject):
+    def __init__(self, space, config, texture=None):
+        super().__init__(space, config, (0, 0), texture)
+        self.config = config
         self.space = space
-        self.pos = bumper_def["pos"]
-        self.radius = bumper_def["size"]
+        self.pos = config["pos"]
+        self.radius = config["size"]
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
-        self.shape.elasticity = bumper_def["force"]
+        self.shape.elasticity = config["force"]
         self.shape.friction = 0.5
         self.shape.collision_type = 2
         # Attach custom properties.
         self.shape.type = 'bumper'
-        self.shape.effect = get_object_function(bumper_def["effect"])
-        self.shape.effect_params = bumper_def.get("params", [])
+        self.shape.effect = get_object_function(config["effect"])
+        self.shape.effect_params = config.get("params", [])
         space.add(self.body, self.shape)
-        self.textures = textures
         self.shape.bumped = 0
 
     def update(self, dt):
@@ -57,13 +69,13 @@ class Bumper:
             self.shape.bumped = max(0, self.shape.bumped - dt)
 
     def draw(self, screen):
-        if self.textures:
+        if self.texture:
             if self.shape.bumped:
-                rotated = pygame.transform.rotozoom(self.textures["bumped"], 0,
-                                                    self.radius * 2 / self.textures["bumped"].get_size()[0])
+                rotated = pygame.transform.rotozoom(self.texture["bumped"], 0,
+                                                    self.radius * 2 / self.texture["bumped"].get_size()[0])
             else:
-                rotated = pygame.transform.rotozoom(self.textures["idle"], 0,
-                                                    self.radius * 2 / self.textures["idle"].get_size()[0])
+                rotated = pygame.transform.rotozoom(self.texture["idle"], 0,
+                                                    self.radius * 2 / self.texture["idle"].get_size()[0])
             rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
             screen.blit(rotated, rect)
         else:
@@ -71,8 +83,9 @@ class Bumper:
                                (int(self.body.position.x), int(self.body.position.y)), self.radius)
 
 
-class Flipper:
+class Flipper(GameObject):
     def __init__(self, space, flipper_def, is_left, config, texture=None):
+        super().__init__(space, flipper_def, (0, 0), texture)
         self.space = space
         self.config = config
         self.is_left = is_left

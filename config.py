@@ -97,8 +97,8 @@ class Config:
                  "description": "Additional big bumper"},
                 {"name": "Small Bumper", "price": 50, "type": "buildable", "object_type": "bumper",
                  "class": "bumper_small", "description": "Additional small bumper"},
-                {"name": "Flipper", "price": 100, "type": "buildable",
-                 "description": "Additional flipper\nlol what\nthis will be a replaceable flipper"}
+                {"name": "Flipper", "price": 100, "type": "buildable", "object_type": "flipper",
+                 "class": "flipper_standard", "description": "Replaceable flipper\nThis can only replace a flipper"}
             ],
             "packs": [
                 {"name": "Card Pack", "price": 200, "item_type": "cards", "type": "pack",
@@ -118,7 +118,7 @@ class Config:
                                       "params": [100, 10]},
                        "bumper_small": {"texture": "bumper_small", "size": 15, "force": 1.1, "effect": "bump",
                                         "params": [50, 0]}},
-            "flipper": {"flipper_standard": {"texture": "flipper_left", "force": 0.6, "effect": None}}
+            "flipper": {"flipper_standard": {"texture": "flipper_left", "size": 80, "force": 0.6, "effect": None}}
         }
 
         self.left_flipper_pos = (220, 750)

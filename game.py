@@ -71,11 +71,12 @@ class PinballGame:
             pygame.display.flip()
             clock.tick(self.config.fps)
 
-    def shop_screen(self):
+    def shop_screen(self, shop=None):
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
         self.ui.change_mode("shop")
-        shop = Inventory()
+        if shop is None:
+            shop = Inventory()
         for i in range(2):
             item = random.randint(0, len(self.config.shop_items["cards"]) - 1)
             item = self.config.shop_items["cards"][item]
@@ -103,13 +104,13 @@ class PinballGame:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return is not None:
-                    return ui_return
+                    return ui_return, shop
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        return "continue"
+                        return "continue", shop
                 item = shop.handle_event(event)
                 if item is not None:
                     if self.money >= item.properties["price"]:
@@ -177,17 +178,16 @@ class PinballGame:
             clock.tick(self.config.fps)
 
     def field_modification_screen(self):
-        # Here you could let the player add or remove objects, rearrange bumpers, etc.
         clock = pygame.time.Clock()
         dt = 1.0 / self.config.fps
+        self.ui.change_mode("field_modification")
 
-        font = pygame.font.Font("assets/terminal-grotesque.ttf", 36)
-        overlay = pygame.Surface((self.config.screen_width, self.config.screen_height))
-        overlay.set_alpha(80)
-        overlay.fill((50, 50, 50))
         waiting = True
         while waiting:
             for event in pygame.event.get():
+                ui_return = self.ui.handle_event(event)
+                if ui_return is not None:
+                    return {"continue": "back", "field_setup": "win"}[ui_return]
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -198,11 +198,29 @@ class PinballGame:
                             return 'menu'
                     elif event.key == pygame.K_RETURN:
                         waiting = False
-                self.inventory.handle_event(event)
-            self.screen.blit(overlay, (0, 0))
-            text = font.render("Field Modification Mode - Press ESC or ENTER to exit", True, (255, 255, 255))
-            self.screen.blit(text,
-                             (self.config.screen_width // 2 - text.get_width() // 2, self.config.screen_height // 2))
+                ret = self.inventory.handle_event(event)
+                if ret:
+                    if "try_selling" in ret:
+                        item = ret["try_selling"]
+                        if item.effect["negative_effect"] is None \
+                                or item.effect["negative_effect"](self, *item.effect["params"]):
+                            self.money += item.properties["price"] // 2
+                            self.inventory.remove_item(item)
+                        else:
+                            pass
+                    elif "try_using" in ret:
+                        item = ret["try_using"]
+                        if item.properties["type"] == "buildable":
+                            if self.field.place(item):
+                                self.inventory.remove_item(item)
+                    if "hovering" in ret:
+                        item = ret["hovering"]
+                        self.field.hovered_item = item
+                    else:
+                        self.field.hovered_item = None
+
+            self.ui.draw(self.screen)
+            self.field.draw(self.screen)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
             pygame.display.flip()
@@ -282,7 +300,12 @@ class PinballGame:
                 continue
             if choice == "Debug_Shop":
                 self.money = 10000
-                self.shop_screen()
+                self.field = Field(self)
+                result = 'win'
+                while result in ['win', 'back']:
+                    result, shop = self.shop_screen()
+                    if result == 'field_setup':
+                        result = self.field_modification_screen()
                 self.money = 0
                 continue
             if choice == "Start Game":
@@ -305,8 +328,9 @@ class PinballGame:
                         self.score_needed = self.config.min_score[self.round]
                     else:
                         self.score_needed = 10 ** (self.round - 2)
+                    shop = None
                     while result in ['win', 'back']:
-                        result = self.shop_screen()
+                        result, shop = self.shop_screen(shop)
                         if result == 'field_setup':
                             result = self.field_modification_screen()
                     if result == 'menu':

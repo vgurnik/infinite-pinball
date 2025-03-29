@@ -25,6 +25,7 @@ class InventoryItem:
         }
         self.dragging = False
         self.highlighted = False
+        self.visibility = True
 
     def update(self, dt):
         if not self.dragging:
@@ -36,6 +37,8 @@ class InventoryItem:
         self.rect.topleft = (int(self.pos.x), int(self.pos.y))
 
     def draw(self, surface):
+        if not self.visibility:
+            return
         if self.highlighted:
             rect = self.rect.inflate(10, 10)
         else:
@@ -181,12 +184,13 @@ class PlayerInventory(Inventory):
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1 and self.dragging_item:
                 self.dragging_item.dragging = False
+                self.dragging_item.visibility = True
                 in_quiestion = self.dragging_item
                 self.dragging_item = None
                 if self.deletion_zone.collidepoint(mouse_pos):
                     self.context.set_visibility(False)
                     return {"try_selling": in_quiestion}
-                if mouse_pos[0] > self.width and in_quiestion.properties["type"] == "card":
+                if mouse_pos[0] > self.width and in_quiestion.properties["type"] in ["card", "buildable"]:
                     self.context.set_visibility(False)
                     return {"try_using": in_quiestion}
                 # After dropping, re-sort the items based on their current y-positions.
@@ -195,6 +199,10 @@ class PlayerInventory(Inventory):
         elif event.type == pygame.MOUSEMOTION:
             if self.dragging_item:
                 self.dragging_item.pos = pygame.math.Vector2(mouse_pos) + self.dragging_item.offset
+                if self.dragging_item.properties["type"] == "buildable" and mouse_pos[0] > self.width:
+                    self.context.set_visibility(False)
+                    self.dragging_item.visibility = False
+                    return {"hovering": self.dragging_item}
             for item in self.items:
                 item.highlighted = False
             for item in reversed(self.items):
@@ -221,6 +229,6 @@ class PlayerInventory(Inventory):
         surface.blit(alpha_surface, self.deletion_zone.topleft)
 
         font = pygame.font.Font("assets/terminal-grotesque.ttf", 16)
-        fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255), (20, 20, 70), 1)
+        fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255), (20, 10, 60), 1)
         surface.blit(fullness, (self.position.x, self.position.y - 20))
         super().draw(surface)

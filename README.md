@@ -4,7 +4,9 @@ Maybe this shall be a game someday
 ### TODO:
 #### 1
 - [ ] Add build mode
+  - [x] Separate field and UI
 - [x] Actually add card effects
+  - [x] Add event system
 - [ ] Add pack opening
 - [x] Add descriptions (context)
 #### 2
@@ -16,8 +18,10 @@ Maybe this shall be a game someday
 - [ ] Balance scoring
 - [ ] Balance economy
 - [ ] Finish starting field
+  - [ ] Add building restrictions
 - [ ] Add more card-object-effect options
 #### 4
+- [ ] Add saves
 - [ ] Implement special effects (combos)
 - [ ] Add starting field options
 - [ ] Add unlockables (fields, cards, difficulties)

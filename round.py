@@ -54,16 +54,23 @@ class PinballRound:
             if effect["trigger"] == "collision":
                 effect["effect"](self.game_instance, arbiter_type, *effect["params"])
         if self.immediate['score']:
+            add = self.immediate['score'] * self.config.score_multiplier
+            s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
+                else self.immediate['score']
+            m_v = int(self.config.score_multiplier) if self.config.score_multiplier == int(
+                self.config.score_multiplier) else self.config.score_multiplier
             if self.config.score_multiplier != 1:
-                s_str = f"+{self.immediate['score']} X {self.config.score_multiplier}"
+                s_str = f"{'+' if add >= 0 else '-'}{s_v} X {m_v}"
             else:
-                s_str = f"+{self.immediate['score']}"
+                s_str = f"{'+' if add >= 0 else '-'}{s_v}"
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), s_str, (0, 255, 0)))
             y += 20
             self.score += self.immediate['score'] * self.config.score_multiplier
         if self.immediate['money']:
+            m_v = int(self.immediate['money']) if self.immediate['money'] == int(self.immediate['money']) \
+                else self.immediate['money']
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]),
-                                              f"+{self.immediate['money']}", (255, 255, 0)))
+                                              f"{'+' if self.immediate['money'] >= 0 else '-'}{m_v}", (255, 255, 0)))
             self.game_instance.money += self.immediate['money']
         return True
 

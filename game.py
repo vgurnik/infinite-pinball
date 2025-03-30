@@ -34,6 +34,8 @@ class PinballGame:
         # Load textures
         textures = {"ball": pygame.image.load(asset_folder.joinpath("ball.bmp")).convert_alpha(),
                     "flipper_left": pygame.image.load(asset_folder.joinpath("flipper_left.bmp")).convert_alpha(),
+                    "longboi": pygame.image.load(asset_folder.joinpath("longboi.bmp")).convert_alpha(),
+                    "pro_flipper": pygame.image.load(asset_folder.joinpath("pro_flipper.bmp")).convert_alpha(),
                     "bumper": pygame.image.load(asset_folder.joinpath("bumper_big.bmp")).convert_alpha(),
                     "bumper_bumped": pygame.image.load(asset_folder.joinpath("bumper_big_bumped.bmp")).convert_alpha(),
                     "bumper_small": pygame.image.load(asset_folder.joinpath("bumper_small.bmp")).convert_alpha(),

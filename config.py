@@ -46,8 +46,6 @@ class Config:
         self.launch_indicator_size = (20, 40)
 
         # Flipper parameters.
-        self.flipper_length = 80
-        self.flipper_width = 20
         self.flipper_stiffness = 80000000
         self.flipper_damping = 3500000
         self.left_flipper_default_angle = 30
@@ -104,7 +102,11 @@ class Config:
                 {"name": "Small Bumper", "price": 50, "type": "buildable", "object_type": "bumper",
                  "class": "bumper_small", "description": "Additional small bumper"},
                 {"name": "Flipper", "price": 100, "type": "buildable", "object_type": "flipper",
-                 "class": "flipper_standard", "description": "Replaceable flipper\nThis can only replace a flipper"}
+                 "class": "flipper_standard", "description": "Standard flipper"},
+                {"name": "Long boi", "price": 200, "type": "buildable", "object_type": "flipper",
+                 "class": "longboi", "description": "Long easier flipper, but each hit\nwill cost you $1"},
+                {"name": "Pro flipper", "price": 200, "type": "buildable", "object_type": "flipper",
+                 "class": "flipper_money", "description": "Flipper for professionals\nEarn $10 per hit"}
             ],
             "packs": [
                 {"name": "Card Pack", "price": 200, "item_type": "cards", "type": "pack",
@@ -124,11 +126,16 @@ class Config:
                                       "params": [100, 10]},
                        "bumper_small": {"texture": "bumper_small", "size": 15, "force": 1.1, "effect": "bump",
                                         "params": [50, 0]}},
-            "flipper": {"flipper_standard": {"texture": "flipper_left", "size": 80, "force": 0.6, "effect": None}}
+            "flipper": {"flipper_standard": {"texture": "flipper_left", "force": 0.6, "size": (80, 20),
+                                             "effect": None},
+                        "flipper_money": {"texture": "pro_flipper", "force": 0.7, "size": (60, 20),
+                                          "effect": "earn", "params": [10]},
+                        "longboi": {"texture": "longboi", "force": 0.5, "size": (90, 20),
+                                    "effect": "earn", "params": [-1]}}
         }
 
-        self.left_flipper_pos = (230, 650)
-        self.right_flipper_pos = (370, 650)
+        self.left_flipper_pos = (190, 630)
+        self.right_flipper_pos = (410, 630)
 
         self.board_objects = [
             {"pos": (200, 300), "type": "bumper", "class": "bumper_big"},
@@ -154,11 +161,11 @@ class Config:
         self.bottom_opening_top = self.bottom_opening_bottom - self.bottom_opening_height
         self.launch_ramp_wall_x = self.right_wall_x + self.launch_ramp_width
         self.recline_left_start = (self.left_wall_x, self.bottom_wall_y - 50)
-        self.recline_left_end = (self.left_flipper_pos[0] - self.flipper_length / 2 - 10,
-                                 self.left_flipper_pos[1] - self.flipper_width / 2)
+        self.recline_left_end = (self.left_flipper_pos[0] - 10,
+                                 self.left_flipper_pos[1])
         self.recline_right_start = (self.right_wall_x, self.bottom_wall_y - 50)
-        self.recline_right_end = (self.right_flipper_pos[0] + self.flipper_length / 2 + 10,
-                                  self.right_flipper_pos[1] - self.flipper_width / 2)
+        self.recline_right_end = (self.right_flipper_pos[0] + 10,
+                                  self.right_flipper_pos[1])
         self.curve_center_right = (self.launch_ramp_wall_x - self.curve_radius,
                                    self.top_wall_y + self.curve_radius)
         self.curve_center_left = (self.left_wall_x + self.curve_radius,

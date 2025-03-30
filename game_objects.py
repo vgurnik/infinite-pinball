@@ -10,7 +10,7 @@ class GameObject:
         self.space = space
         self.config = config
         self.texture = texture
-        self.radius = config["size"]
+        self.radius = config["size"] if isinstance(config["size"], int) else max(config["size"])
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = pos
 
@@ -22,7 +22,6 @@ class Ball(GameObject):
     def __init__(self, space, config, pos, texture=None):
         super().__init__(space, config, pos, texture)
         self.mass = config["mass"]
-        self.radius = config["size"]
         inertia = pymunk.moment_for_circle(self.mass, 0, self.radius)
         self.body = pymunk.Body(self.mass, inertia)
         self.body.position = pos
@@ -51,7 +50,6 @@ class Bumper(GameObject):
         self.config = config
         self.space = space
         self.pos = config["pos"]
-        self.radius = config["size"]
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
@@ -98,14 +96,16 @@ class Flipper(GameObject):
         self.is_left = is_left
         self.mass = 100
         self.effect = flipper_def["effect"]
-        self.length = config.flipper_length
-        self.width = config.flipper_width
+        self.length, self.width = flipper_def["size"]
         vertices = [(-self.length/2, -self.width/2), (self.length/2, -self.width/2),
                     (self.length/2, self.width/2), (-self.length/2, self.width/2)]
         moment = pymunk.moment_for_poly(self.mass, vertices)
         self.body = pymunk.Body(self.mass, moment)
         pos = flipper_def["pos"]
-        self.body.position = pos
+        if is_left:
+            self.body.position = (pos[0] + self.length/2, pos[1] + self.width/2)
+        else:
+            self.body.position = (pos[0] - self.length/2, pos[1] + self.width/2)
         self.shape = pymunk.Poly(self.body, vertices)
         self.shape.collision_type = 2
         self.shape.type = 'flipper'
@@ -117,12 +117,12 @@ class Flipper(GameObject):
 
         if not additional:
             if is_left:
-                pivot_point = (pos[0] - self.length/2, pos[1] - self.width/2)
+                pivot_point = (pos[0], pos[1])
                 pivot_anchor = (-self.length/2, -self.width/2)
                 self.default_angle = math.radians(config.left_flipper_default_angle)
                 self.active_angle = math.radians(config.left_flipper_active_angle)
             else:
-                pivot_point = (pos[0] + self.length/2, pos[1] - self.width/2)
+                pivot_point = (pos[0], pos[1])
                 pivot_anchor = (self.length/2, -self.width/2)
                 self.default_angle = math.radians(config.right_flipper_default_angle)
                 self.active_angle = math.radians(config.right_flipper_active_angle)

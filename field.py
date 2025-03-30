@@ -51,14 +51,10 @@ class Field:
         old_object = self._hovered_object
         self._hovered_object = new_object
         if old_object:
-            if hasattr(old_object, "limit_joint"):
-                self.space.remove(old_object.limit_joint)
-            if hasattr(old_object, "spring"):
-                self.space.remove(old_object.spring)
             self.space.remove(old_object.body, old_object.shape)
 
     def draw(self, surface, ball=None):
-        field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height))
+        field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
         self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
         draw_lf = True
@@ -70,6 +66,7 @@ class Field:
 
         self.hovered_object = None
         if self.hovered_item:
+            allowed = True
             props = self.hovered_item.properties
             pos = self.hovered_item.pos - self.hovered_item.offset - self.position
             if props["object_type"] == "flipper":
@@ -77,22 +74,27 @@ class Field:
                 config["pos"] = list(pos)
                 is_left = True
                 if self.try_placing(self.hovered_item):
-                    if pos.distance_to(self.config.right_flipper_pos) < 50:
+                    if pos.distance_to(self.config.right_flipper_pos) < 80:
                         draw_rf = False
                         config["pos"] = self.config.right_flipper_pos
                         is_left = False
-                    elif pos.distance_to(self.config.left_flipper_pos) < 50:
+                    elif pos.distance_to(self.config.left_flipper_pos) < 80:
                         draw_lf = False
                         config["pos"] = self.config.left_flipper_pos
+                else:
+                    allowed = False
                 self.hovered_object = game_objects.Flipper(self.space, config, is_left, self.config,
-                                                           texture=self.textures.get(config.get("texture")))
-                self.hovered_object.draw(field_surface)
+                                                           texture=self.textures.get(config.get("texture")),
+                                                           additional=True)
+                self.hovered_object.draw(field_surface, allowed)
             elif props["object_type"] == "bumper":
                 config = self.config.objects_settings["bumper"][props["class"]]
                 config["pos"] = list(pos)
                 self.hovered_object = game_objects.Bumper(self.space, config,
                                                           texture={"idle": self.textures.get(config.get("texture"))})
-                self.hovered_object.draw(field_surface)
+                if not self.try_placing(self.hovered_item):
+                    allowed = False
+                self.hovered_object.draw(field_surface, allowed)
 
         if draw_lf:
             self.left_flipper.draw(field_surface)
@@ -111,12 +113,16 @@ class Field:
             if pos.distance_to(self.config.right_flipper_pos) < 80:
                 return True
             return False
-        else:
-            size = self.config.objects_settings[item.properties["object_type"]][item.properties["class"]]["size"]
-            for obj in self.objects:
-                if pos.distance_to(obj.body.position) < 10 + size + obj.radius:
-                    return False
-            return True
+        if not (self.config.left_wall_x < pos[0] < self.config.right_wall_x and
+                self.config.top_wall_y < pos[1] < self.config.field_height):
+            return False
+        size = self.config.objects_settings[item.properties["object_type"]][item.properties["class"]]["size"]
+        if len(self.space.point_query(tuple(pos), 30 + size, pymunk.ShapeFilter(1))) > 1:
+            return False
+        for obj in self.objects:
+            if pos.distance_to(obj.body.position) < 30 + size + obj.radius:
+                return False
+        return True
 
     def place(self, item):
         self.hovered_item = None
@@ -130,13 +136,21 @@ class Field:
             config = self.config.objects_settings["flipper"][props["class"]]
             config["pos"] = list(pos)
             is_left = True
-            if pos.distance_to(self.config.right_flipper_pos) < 50:
+            if pos.distance_to(self.config.right_flipper_pos) < 80:
                 config["pos"] = self.config.right_flipper_pos
                 is_left = False
-            elif pos.distance_to(self.config.left_flipper_pos) < 50:
+            elif pos.distance_to(self.config.left_flipper_pos) < 80:
                 config["pos"] = self.config.left_flipper_pos
             obj = game_objects.Flipper(self.space, config, is_left, self.config,
                                        texture=self.textures.get(config.get("texture")))
+            if is_left:
+                self.objects.remove(self.left_flipper)
+                self.left_flipper.destroy()
+                self.left_flipper = obj
+            else:
+                self.objects.remove(self.right_flipper)
+                self.right_flipper.destroy()
+                self.right_flipper = obj
         elif props["object_type"] == "bumper":
             config = self.config.objects_settings["bumper"][props["class"]]
             config["pos"] = list(pos)

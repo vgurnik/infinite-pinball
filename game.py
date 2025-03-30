@@ -223,7 +223,8 @@ class PinballGame:
                         self.field.hovered_item = item
                     else:
                         self.field.hovered_item = None
-
+                else:
+                    self.field.hovered_item = None
             self.screen.fill((20, 20, 70))
             self.ui.draw(self.screen)
             self.field.draw(self.screen)

@@ -13,9 +13,14 @@ class GameObject:
         self.radius = config["size"] if isinstance(config["size"], int) else max(config["size"])
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = pos
+        self.cooldown = 0
 
     def move(self, pos):
         self.body.position = pos
+
+    def update(self, dt):
+        if self.cooldown > 0:
+            self.cooldown = max(0, self.cooldown - dt)
 
 
 class Ball(GameObject):
@@ -53,6 +58,7 @@ class Bumper(GameObject):
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
+        self.shape.parent = self
         self.shape.elasticity = config["force"]
         self.shape.friction = 0.5
         self.shape.collision_type = 2
@@ -61,15 +67,16 @@ class Bumper(GameObject):
         self.shape.effect = get_object_function(config["effect"])
         self.shape.effect_params = config.get("params", [])
         space.add(self.body, self.shape)
-        self.shape.bumped = 0
+        self.bumped = 0
 
     def update(self, dt):
-        if self.shape.bumped > 0:
-            self.shape.bumped = max(0, self.shape.bumped - dt)
+        super().update(dt)
+        if self.bumped > 0:
+            self.bumped = max(0, self.bumped - dt)
 
     def draw(self, screen, allowed=True):
         if self.texture:
-            if self.shape.bumped:
+            if self.bumped:
                 rotated = misc.scale(self.texture["bumped"], (self.radius * 2, self.radius * 2))
             else:
                 rotated = misc.scale(self.texture["idle"], (self.radius * 2, self.radius * 2))
@@ -107,6 +114,7 @@ class Flipper(GameObject):
         else:
             self.body.position = (pos[0] - self.length/2, pos[1] + self.width/2)
         self.shape = pymunk.Poly(self.body, vertices)
+        self.shape.parent = self
         self.shape.collision_type = 2
         self.shape.type = 'flipper'
         self.shape.effect = get_object_function(flipper_def["effect"])
@@ -150,6 +158,7 @@ class Flipper(GameObject):
             self.texture = pygame.transform.flip(self.texture, flip_x=True, flip_y=False)
 
     def update(self, dt):
+        super().update(dt)
         self.snap()
 
     def destroy(self):

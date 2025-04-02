@@ -87,6 +87,8 @@ class Config:
                  "params": [2, 'm'], "description": "Earn double score\nwhile this card is in your inventory"},
                 {"name": "Extra slot", "price": 150, "type": "card", "effect": "inventory_size",
                  "params": [2], "description": "Get 2 extra inventory slots\nwhile this card is in your inventory"},
+                {"name": "Destroyer", "price": 50, "type": "card", "effect": "delete_object",
+                 "description": "Destroy an object\nin field modification mode"},
             ],
             "vouchers": [
                 {"name": "+Inventory slot", "price": 300, "type": "immediate", "effect": "inventory_size",

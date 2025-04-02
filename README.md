@@ -23,11 +23,14 @@ pyinstaller main.spec
 - [ ] Add active effects visualization
 #### 3
 - [ ] Balance scoring
+  - [x] Implement effect cooldown
 - [ ] Balance economy
 - [ ] Finish starting field
   - [ ] Add building restrictions
 - [ ] Add more card-object-effect options
   - [ ] Implement rarity
+  - [ ] Implement multiple effects per card
+  - [ ] Implement card id to allow to affect effects
 #### 4
 - [ ] Add saves
 - [ ] Implement special effects (combos)

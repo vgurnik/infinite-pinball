@@ -39,17 +39,17 @@ class PinballRound:
         arbiter_type = ''
         for shape in arbiter.shapes:
             if shape.collision_type == 2:
-                if getattr(shape, "bumped", None) is not None:
-                    setattr(shape, "bumped", 0.1)
+                if getattr(shape.parent, "bumped", None) is not None:
+                    setattr(shape.parent, "bumped", 0.1)
                 pos = shape.body.position
                 arbiter_type = shape.type
                 x = pos.x + 20
                 y = pos.y
-                if shape.effect:
-                    shape.effect(self.game_instance, *shape.effect_params)
+                if shape.effect and shape.parent.cooldown == 0:
+                    shape.effect(self.game_instance, shape.parent, *shape.effect_params)
             elif shape.collision_type == 1:
                 if shape.effect:
-                    shape.effect(self.game_instance, *shape.effect_params)
+                    shape.effect(self.game_instance, shape.parent, *shape.effect_params)
         for effect in self.applied_effects:
             if effect["trigger"] == "collision":
                 effect["effect"](self.game_instance, arbiter_type, *effect["params"])
@@ -60,9 +60,9 @@ class PinballRound:
             m_v = int(self.config.score_multiplier) if self.config.score_multiplier == int(
                 self.config.score_multiplier) else self.config.score_multiplier
             if self.config.score_multiplier != 1:
-                s_str = f"{'+' if add >= 0 else '-'}{s_v} X {m_v}"
+                s_str = f"{'+' if add >= 0 else ''}{s_v} X {m_v}"
             else:
-                s_str = f"{'+' if add >= 0 else '-'}{s_v}"
+                s_str = f"{'+' if add >= 0 else ''}{s_v}"
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), s_str, (0, 255, 0)))
             y += 20
             self.score += self.immediate['score'] * self.config.score_multiplier
@@ -70,7 +70,7 @@ class PinballRound:
             m_v = int(self.immediate['money']) if self.immediate['money'] == int(self.immediate['money']) \
                 else self.immediate['money']
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]),
-                                              f"{'+' if self.immediate['money'] >= 0 else '-'}{m_v}", (255, 255, 0)))
+                                              f"{'+' if self.immediate['money'] >= 0 else ''}{m_v}", (255, 255, 0)))
             self.game_instance.money += self.immediate['money']
         return True
 

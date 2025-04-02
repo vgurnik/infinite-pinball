@@ -220,6 +220,11 @@ class PinballGame:
                         if item.properties["type"] == "buildable":
                             if self.field.place(item):
                                 self.inventory.remove_item(item)
+                        elif item.properties["type"] == "card":
+                            if item.effect["effect"].__module__ == "card_functions.delete_object":
+                                if self.field.delete(pygame.mouse.get_pos()):
+                                    item.effect["effect"](self, *item.effect["params"])
+                                    self.inventory.remove_item(item)
                     if "hovering" in ret:
                         item = ret["hovering"]
                         self.field.hovered_item = item

@@ -160,3 +160,13 @@ class Field:
             return False
         self.objects.append(obj)
         return True
+
+    def delete(self, mouse_pos):
+        for obj in self.objects[:]:
+            if obj.shape.point_query((mouse_pos[0] - self.position[0],
+                                      mouse_pos[1] - self.position[1])).distance <= obj.radius:
+                if obj.shape.type != 'flipper':
+                    self.objects.remove(obj)
+                    self.space.remove(obj.body, obj.shape)
+                    return True
+        return False

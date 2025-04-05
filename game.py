@@ -22,11 +22,13 @@ class PinballGame:
         self.ui = Ui(self)
         pygame.display.set_caption("Infinite Pinball")
 
+        self.reroll_cost = 10
         self.money = 0
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
         self.inventory = PlayerInventory(self)
         self.round_instance = None
+        self.real_fps = 0
 
     @staticmethod
     def load_textures():
@@ -78,28 +80,28 @@ class PinballGame:
 
     def shop_screen(self, _shop=None):
         clock = pygame.time.Clock()
-        dt = 1.0 / self.config.fps
+        dt = 1.0 / (self.real_fps if self.real_fps > 50 else self.config.fps)
         self.ui.change_mode("shop")
         if _shop is None:
             shop = Inventory()
             for i in range(3):
-                item = random.randint(0, len(self.config.shop_items["cards"]) - 1)
-                item = self.config.shop_items["cards"][item]
+                item = random.randint(0, len(self.config.shop_items["card"]) - 1)
+                item = self.config.shop_items["card"][item]
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
             for i in range(2):
-                item = random.randint(0, len(self.config.shop_items["objects"]) - 1)
-                item = self.config.shop_items["objects"][item]
+                item = random.randint(0, len(self.config.shop_items["buildable"]) - 1)
+                item = self.config.shop_items["buildable"][item]
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
             for i in range(1):
-                item = random.randint(0, len(self.config.shop_items["vouchers"]) - 1)
-                item = self.config.shop_items["vouchers"][item]
+                item = random.randint(0, len(self.config.shop_items["immediate"]) - 1)
+                item = self.config.shop_items["immediate"][item]
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_effects[0] + i * 130, self.config.shop_pos_effects[1])))
             for i in range(2):
-                item = random.randint(0, len(self.config.shop_items["packs"]) - 1)
-                item = self.config.shop_items["packs"][item]
+                item = random.randint(0, len(self.config.shop_items["pack"]) - 1)
+                item = self.config.shop_items["pack"][item]
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
         else:
@@ -111,7 +113,20 @@ class PinballGame:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return is not None:
-                    return ui_return, shop
+                    if ui_return == 'reroll':
+                        if self.money >= self.reroll_cost:
+                            self.money -= self.reroll_cost
+                            self.reroll_cost *= 2
+                            for item in shop.items:
+                                if item.properties["type"] in ["card", "buildable"]:
+                                    shop.remove_item(item)
+                                    pos = item.pos
+                                    _type = item.properties["type"]
+                                    item = random.randint(0, len(self.config.shop_items[_type]) - 1)
+                                    item = self.config.shop_items[_type][item]
+                                    shop.add_item(InventoryItem(item["name"], properties=item, target_position=pos))
+                    else:
+                        return ui_return, shop
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -142,7 +157,7 @@ class PinballGame:
                                     item.effect["negative_effect"](self, *item.effect["params"])
                         elif item.properties["type"] == "immediate":
                             if item.effect["effect"](self, *item.effect["params"]):
-                                effects.append(DisappearingItem(item, 0.5))
+                                effects.append(DisappearingItem(item, 0.1))
                                 shop.remove_item(item)
                                 self.money -= item.properties["price"]
                                 message = f"Purchased {item.name} for {item.properties['price']}!"
@@ -161,13 +176,15 @@ class PinballGame:
                             message = f"Sold {item.name} for {item.properties['price'] // 2}!"
 
             self.screen.fill((20, 20, 70))
-            self.ui.draw(self.screen)
 
             big_font = pygame.font.Font(self.config.fontfile, 36)
             header = big_font.render("In-Game Shop", True, (255, 255, 255))
             self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
             shop.update(dt)
             shop.draw(self.screen)
+
+            self.ui.draw(self.screen)
+            self.ui.update(dt)
 
             if message:
                 font = pygame.font.Font(self.config.fontfile, 24)
@@ -182,7 +199,8 @@ class PinballGame:
                 if effect.is_dead():
                     effects.remove(effect)
             pygame.display.flip()
-            clock.tick(self.config.fps)
+            clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
+            self.real_fps = clock.get_fps()
 
     def field_modification_screen(self):
         clock = pygame.time.Clock()
@@ -234,6 +252,7 @@ class PinballGame:
                     self.field.hovered_item = None
             self.screen.fill((20, 20, 70))
             self.ui.draw(self.screen)
+            self.ui.update(dt)
             self.field.draw(self.screen)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
@@ -250,6 +269,7 @@ class PinballGame:
 
         self.ui.change_mode('results')
         self.ui.draw(self.screen)
+        self.ui.update(0)
 
         font = pygame.font.Font(self.config.fontfile, 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
@@ -313,6 +333,7 @@ class PinballGame:
                 self.preferences_menu()
                 continue
             if choice == "Debug_Shop":
+                self.reroll_cost = self.config.reroll_cost
                 self.money = 10000
                 self.field = Field(self)
                 result = 'win'
@@ -343,6 +364,7 @@ class PinballGame:
                     else:
                         self.score_needed = 10 ** (self.round - 2)
                     shop = None
+                    self.reroll_cost = self.config.reroll_cost
                     while result in ['win', 'back']:
                         result, shop = self.shop_screen(shop)
                         if result == 'field_setup':

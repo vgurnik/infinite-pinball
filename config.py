@@ -18,11 +18,19 @@ class Config:
         self.ui_score_pos = (10, 40)
         self.ui_money_pos = (10, 70)
         self.ui_balls_pos = (10, 100)
-        self.ui_butt_width = 160
+        self.ui_butt_width_1 = 200
+        self.ui_butt_width_2 = 80
         self.ui_continue_pos = (20, 150)
         self.ui_field_config_pos = (20, 220)
+        self.ui_reroll_pos = (140, 220)
         self.ui_inventory_pos = (60, 300)
         self.ui_inventory_height = 200
+
+        self.play_description = "Continue to the\nnext round"
+        self.reroll_description = "Reroll buildables and cards\nfor ${}"
+        self.back_description = "Return to shop"
+        self.field_description = "Configure the playing field\nwith buildables and object removing cards"
+        self.finish_description = "Finish round early to get\nbonus $ for balls remaining"
 
         # Table boundaries.
         self.field_pos = (350, 0)
@@ -69,10 +77,11 @@ class Config:
         self.extra_award_per_order = 100
         self.extra_award_per_ball = 100
         self.score_multiplier = 1
+        self.reroll_cost = 10
 
         # Shop settings.
         self.shop_items = {
-            "cards": [
+            "card": [
                 {"name": "Shield", "price": 60, "type": "card", "effect": "shield", "duration": 10, "trigger": "once",
                  "description": "Allow the ball to bounce\nfrom the bottom for 10 s"},
                 {"name": "SlowMo", "price": 90, "type": "card", "effect": "time_warp", "params": [0.5],
@@ -90,7 +99,7 @@ class Config:
                 {"name": "Destroyer", "price": 50, "type": "card", "effect": "delete_object",
                  "description": "Destroy an object\nin field modification mode"},
             ],
-            "vouchers": [
+            "immediate": [
                 {"name": "+Inventory slot", "price": 300, "type": "immediate", "effect": "inventory_size",
                  "params": [1], "description": "Additional inventory slot"},
                 {"name": "+Ball", "price": 150, "type": "immediate", "effect": "change_ball_amount", "params": [1],
@@ -98,7 +107,7 @@ class Config:
                 {"name": "Multiplier", "price": 100, "type": "immediate", "effect": "change_score_multiplier",
                  "params": [0.5, 's'], "description": "Score 50% more points"}
             ],
-            "objects": [
+            "buildable": [
                 {"name": "Bumper", "price": 75, "type": "buildable", "object_type": "bumper", "class": "bumper_big",
                  "description": "Additional big bumper"},
                 {"name": "Small Bumper", "price": 50, "type": "buildable", "object_type": "bumper",
@@ -106,11 +115,11 @@ class Config:
                 {"name": "Flipper", "price": 100, "type": "buildable", "object_type": "flipper",
                  "class": "flipper_standard", "description": "Standard flipper"},
                 {"name": "Long boi", "price": 200, "type": "buildable", "object_type": "flipper",
-                 "class": "longboi", "description": "Long easier flipper, but each hit\nwill cost you $1"},
+                 "class": "longboi", "description": "Long easier flipper, but each hit\nwill cost you $10"},
                 {"name": "Pro flipper", "price": 200, "type": "buildable", "object_type": "flipper",
                  "class": "flipper_money", "description": "Flipper for professionals\nEarn $10 per hit"}
             ],
-            "packs": [
+            "pack": [
                 {"name": "Card Pack", "price": 200, "item_type": "cards", "type": "pack",
                  "description": "Choose 1 of 4 cards"},
                 {"name": "Big Card Pack", "price": 400, "item_type": "cards", "type": "pack",
@@ -133,7 +142,7 @@ class Config:
                         "flipper_money": {"texture": "pro_flipper", "force": 0.7, "size": (60, 20),
                                           "effect": "earn", "params": [10]},
                         "longboi": {"texture": "longboi", "force": 0.5, "size": (90, 20),
-                                    "effect": "earn", "params": [-1]}}
+                                    "effect": "earn", "params": [-10]}}
         }
 
         self.left_flipper_pos = (190, 630)

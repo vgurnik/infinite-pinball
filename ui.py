@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import pygame
+from game_effects import ContextWindow
 
 
 class Ui:
@@ -62,6 +63,8 @@ class Ui:
         self.play_button = None
         self.field_button = None
         self.finish_button = None
+        self.reroll_button = None
+        self.context = ContextWindow()
 
     def change_mode(self, mode):
         assert mode in ['shop', 'round', 'round_finishable', 'field_modification', 'results']
@@ -79,7 +82,7 @@ class Ui:
                 finish_button_text = big_font.render("Finish", True, (0, 0, 0))
                 self.finish_button = finish_button_text.get_rect()
                 self.finish_button.topleft = self.config.ui_continue_pos
-                self.finish_button.width = self.config.ui_butt_width
+                self.finish_button.width = self.config.ui_butt_width_1
                 n = 0
                 if self.finish_button.inflate(20, 10).move(self.position).collidepoint(pygame.mouse.get_pos()):
                     n = 3
@@ -100,15 +103,16 @@ class Ui:
             if self.mode == 'shop':
                 play_button_text = big_font.render("Play", True, (0, 0, 0))
                 field_button_text = big_font.render("Field", True, (0, 0, 0))
+                reroll_button_text = big_font.render("Reroll", True, (0, 0, 0))
             else:
                 play_button_text = big_font.render("Play", True, (0, 0, 0))
                 field_button_text = big_font.render("Back", True, (0, 0, 0))
             self.play_button = play_button_text.get_rect()
             self.play_button.topleft = self.config.ui_continue_pos
-            self.play_button.width = self.config.ui_butt_width
+            self.play_button.width = self.config.ui_butt_width_1
             self.field_button = field_button_text.get_rect()
             self.field_button.topleft = self.config.ui_field_config_pos
-            self.field_button.width = self.config.ui_butt_width
+            self.field_button.width = self.config.ui_butt_width_2
             n = 0
             if self.play_button.inflate(20, 10).move(self.position).collidepoint(pygame.mouse.get_pos()):
                 n = 3
@@ -119,22 +123,64 @@ class Ui:
                 n = 3
             pygame.draw.rect(ui_surface, (255, 0, 100), self.field_button.inflate(20 + n, 10 + n), border_radius=5)
             ui_surface.blit(field_button_text, self.field_button)
+            if self.mode == 'shop':
+                self.reroll_button = reroll_button_text.get_rect()
+                self.reroll_button.topleft = self.config.ui_reroll_pos
+                self.reroll_button.width = self.config.ui_butt_width_2
+                n = 0
+                if self.reroll_button.inflate(20, 10).move(self.position).collidepoint(pygame.mouse.get_pos()):
+                    n = 3
+                if self.game_instance.money >= self.game_instance.reroll_cost:
+                    color = (0, 255, 100)
+                else:
+                    color = (100, 150, 120)
+                pygame.draw.rect(ui_surface, color, self.reroll_button.inflate(20 + n, 10 + n), border_radius=5)
+                ui_surface.blit(reroll_button_text, self.reroll_button)
             score_text = font.render(f"Next score: {self.game_instance.score_needed}", True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_min_score_pos)
 
         money_text = font.render(f"$ {self.game_instance.money}", True, (255, 255, 255))
         ui_surface.blit(money_text, self.config.ui_money_pos)
         surface.blit(ui_surface, self.position)
+        self.context.draw(surface)
+
+    def update(self, dt):
+        mpos = pygame.mouse.get_pos()
+        if self.mode in ['shop', 'field_modification'] and \
+                self.play_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+            self.context.update(mpos, self.config.play_description)
+            self.context.set_visibility(True)
+        elif self.mode == 'shop' and \
+                self.field_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+            self.context.update(mpos, self.config.field_description)
+            self.context.set_visibility(True)
+        elif self.mode == 'field_modification' and \
+                self.field_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+            self.context.update(mpos, self.config.back_description)
+            self.context.set_visibility(True)
+        elif self.mode == 'shop' and \
+                self.reroll_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+            self.context.update(mpos, self.config.reroll_description.format(self.game_instance.reroll_cost))
+            self.context.set_visibility(True)
+        elif self.mode == 'round_finishable' and \
+                self.finish_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+            self.context.update(mpos, self.config.finish_description)
+            self.context.set_visibility(True)
+        else:
+            self.context.set_visibility(False)
 
     def handle_event(self, event):
+        mpos = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mpos = pygame.mouse.get_pos()
             if self.mode in ['shop', 'field_modification'] and\
-                self.play_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+                    self.play_button.inflate(20, 10).move(self.position).collidepoint(mpos):
                 return "continue"
             if self.mode in ['shop', 'field_modification'] and\
-                self.field_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+                    self.field_button.inflate(20, 10).move(self.position).collidepoint(mpos):
                 return "field_setup"
+            if self.mode == 'shop' and\
+                    self.reroll_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+                return "reroll"
             if self.mode == 'round_finishable' and\
-                self.finish_button.inflate(20, 10).move(self.position).collidepoint(mpos):
+                    self.finish_button.inflate(20, 10).move(self.position).collidepoint(mpos):
                 return "round_over"

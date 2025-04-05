@@ -25,6 +25,7 @@ pyinstaller main.spec
 - [ ] Balance scoring
   - [x] Implement effect cooldown
 - [ ] Balance economy
+  - [x] Implement shop rerolls
 - [ ] Finish starting field
   - [ ] Add building restrictions
 - [ ] Add more card-object-effect options

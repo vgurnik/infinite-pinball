@@ -47,6 +47,8 @@ class PinballRound:
                 y = pos.y
                 if shape.effect and shape.parent.cooldown == 0:
                     shape.effect(self.game_instance, shape.parent, *shape.effect_params)
+                if shape.parent.cooldown > 0:
+                    shape.parent.cooldown_timer = shape.parent.cooldown
             elif shape.collision_type == 1:
                 if shape.effect:
                     shape.effect(self.game_instance, shape.parent, *shape.effect_params)
@@ -107,6 +109,7 @@ class PinballRound:
             pygame.draw.rect(self.screen, (0, 255, 0), (ind_x, ind_y + ind_h - fill_height, ind_w, fill_height))
 
         self.ui.draw(self.screen)
+        self.ui.update(dt)
         self.inventory.draw(self.screen)
 
         pygame.display.flip()

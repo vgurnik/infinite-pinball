@@ -14,13 +14,16 @@ class GameObject:
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = pos
         self.cooldown = 0
+        self.cooldown_timer = 0
 
     def move(self, pos):
         self.body.position = pos
 
     def update(self, dt):
-        if self.cooldown > 0:
-            self.cooldown = max(0, self.cooldown - dt)
+        if self.cooldown_timer > 0:
+            self.cooldown_timer = max(0, self.cooldown_timer - dt)
+        if self.cooldown_timer == 0:
+            self.cooldown = 0
 
 
 class Ball(GameObject):

@@ -124,13 +124,25 @@ class Inventory:
                 self.context.set_visibility(False)
         return None
 
-    def set_layout(self, positions):
-        """
-        Arrange items according to a provided list of target positions.
-        Each position should be a tuple (x, y) corresponding to each item in order.
-        """
-        for item, pos in zip(self.items, positions):
-            item.target_position = pygame.math.Vector2(pos)
+
+class PackInventory(Inventory):
+    def __init__(self, game_instance, width=400, slot_margin=10):
+        super().__init__()
+        self.game_instance = game_instance
+        self.config = game_instance.config
+        self.position = pygame.math.Vector2(self.config.pack_opening_pos)
+        self.width = width
+        self.slot_margin = slot_margin
+
+    def recalculate_targets(self):
+        if len(self.items) == 0:
+            return
+        # Arrange items horizontally.
+        spacing = min(150. + self.slot_margin, self.width / len(self.items))
+        for index, item in enumerate(self.items):
+            target_x = self.position.x + index * spacing
+            target_y = self.position.y
+            item.target_position = pygame.math.Vector2(target_x, target_y)
 
 
 class PlayerInventory(Inventory):

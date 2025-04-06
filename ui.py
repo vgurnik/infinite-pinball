@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import pygame
 from game_effects import ContextWindow
+from inventory import InventoryItem, PackInventory
 
 
 class Ui:
@@ -54,6 +55,71 @@ class Ui:
                 screen.blit(text, rect)
                 option_rects.append(rect)
             pygame.display.flip()
+
+    def open_pack(self, items, start, kind, amount):
+        clock = pygame.time.Clock()
+        big_font = pygame.font.Font(self.config.fontfile, 36)
+        dt = 1.0 / self.config.fps
+        opening_inventory = PackInventory(self.game_instance, len(items) * 150)
+        for item in items:
+            opening_inventory.add_item(InventoryItem(item["name"], properties=item, target_position=start))
+        taken = 0
+        skip_button_text = big_font.render("Skip", True, (0, 0, 0))
+        skip_button = skip_button_text.get_rect()
+        skip_button.topleft = (opening_inventory.position[0] + (opening_inventory.width - skip_button.width) / 2,
+                               opening_inventory.position[1] + 200)
+        while taken < amount:
+            opening_inventory.recalculate_targets()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        return "skip"
+                item = opening_inventory.handle_event(event)
+                if item is not None:
+                    if kind == 'oneof':
+                        if self.game_instance.inventory.add_item(item):
+                            opening_inventory.remove_item(item)
+                            taken += 1
+                    elif kind == 'all':
+                        to_remove = []
+                        for item in opening_inventory.items:
+                            if self.game_instance.inventory.add_item(item):
+                                to_remove.append(item)
+                            else:
+                                for i in to_remove:
+                                    self.game_instance.inventory.remove_item(i)
+                                break
+                        else:
+                            taken = amount
+
+            self.game_instance.screen.fill((20, 20, 70))
+
+            header = big_font.render("In-Game Shop", True, (255, 255, 255))
+            self.game_instance.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
+            self.game_instance.ui.draw(self.game_instance.screen)
+            self.game_instance.ui.update(dt)
+            self.game_instance.inventory.update(dt)
+            self.game_instance.inventory.draw(self.game_instance.screen)
+
+            opening_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
+            opening_surface.fill((20, 20, 20, 150))
+            opening_inventory.update(dt)
+            opening_inventory.draw(opening_surface)
+            n = 0
+            if skip_button.inflate(20, 10).collidepoint(pygame.mouse.get_pos()):
+                if pygame.mouse.get_pressed()[0]:
+                    return "skip"
+                n = 3
+            pygame.draw.rect(opening_surface, (0, 255, 100), skip_button.inflate(20 + n, 10 + n), border_radius=5)
+            opening_surface.blit(skip_button_text, skip_button)
+
+            self.game_instance.screen.blit(opening_surface, (0, 0))
+            pygame.display.flip()
+            clock.tick(self.config.fps)
+        return "continue"
 
     def __init__(self, game_instance):
         self.game_instance = game_instance

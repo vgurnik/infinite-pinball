@@ -13,8 +13,9 @@ pyinstaller main.spec
   - [x] Separate field and UI
 - [x] Actually add card effects
   - [x] Add event system
-- [ ] Add pack opening
+- [x] Add pack opening
 - [x] Add descriptions (context)
+- [ ] Add preferences
 #### 2
 - [ ] Finish texturing the field
   - [x] Resolution rescale

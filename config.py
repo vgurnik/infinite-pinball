@@ -120,14 +120,18 @@ class Config:
                  "class": "flipper_money", "description": "Flipper for professionals\nEarn $10 per hit"}
             ],
             "pack": [
-                {"name": "Card Pack", "price": 200, "item_type": "cards", "type": "pack",
-                 "description": "Choose 1 of 4 cards"},
-                {"name": "Big Card Pack", "price": 400, "item_type": "cards", "type": "pack",
-                 "description": "Choose 1 of 6 cards"},
-                {"name": "Object Pack", "price": 100, "item_type": "objects", "type": "pack",
-                 "description": "Choose 1 of 4 objects"},
-                {"name": "Big Object Pack", "price": 200, "item_type": "objects", "type": "pack",
-                 "description": "Choose 1 of 6 objects"},
+                {"name": "Card Pack", "price": 200, "item_type": "card", "type": "pack", "kind": "oneof",
+                 "amount": [1, 4], "description": "Choose 1 of 4 cards"},
+                {"name": "Big Card Pack", "price": 400, "item_type": "card", "type": "pack", "kind": "oneof",
+                 "amount": [1, 6], "description": "Choose 1 of 6 cards"},
+                {"name": "Object Pack", "price": 100, "item_type": "buildable", "type": "pack", "kind": "oneof",
+                 "amount": [1, 4], "description": "Choose 1 of 4 objects"},
+                {"name": "Big Object Pack", "price": 200, "item_type": "buildable", "type": "pack", "kind": "oneof",
+                 "amount": [1, 6], "description": "Choose 1 of 6 objects"},
+                {"name": "Mega Card Pack", "price": 400, "item_type": "card", "type": "pack", "kind": "oneof",
+                 "amount": [2, 4], "description": "Choose 2 of 4 cards"},
+                {"name": "Mega Object Pack", "price": 100, "item_type": "buildable", "type": "pack", "kind": "oneof",
+                 "amount": [2, 4], "description": "Choose 2 of 4 objects"},
             ]
         }
 
@@ -161,6 +165,7 @@ class Config:
 
         # Derived values.
         self.shop_pos = (self.ui_pos[0] + self.ui_width + 10, self.ui_pos[1] + 50)
+        self.pack_opening_pos = (self.shop_pos[0] + 50, self.shop_pos[1] + 200)
         self.shop_pos_objects = (self.shop_pos[0] + 30, 150)
         self.shop_pos_cards = (self.shop_pos_objects[0] + 300, 150)
         self.shop_pos_effects = (self.shop_pos[0] + 100, 350)

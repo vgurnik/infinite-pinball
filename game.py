@@ -120,11 +120,16 @@ class PinballGame:
                             for item in shop.items:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                                    pos = item.pos
-                                    _type = item.properties["type"]
-                                    item = random.randint(0, len(self.config.shop_items[_type]) - 1)
-                                    item = self.config.shop_items[_type][item]
-                                    shop.add_item(InventoryItem(item["name"], properties=item, target_position=pos))
+                            for i in range(3):
+                                item = random.randint(0, len(self.config.shop_items["card"]) - 1)
+                                item = self.config.shop_items["card"][item]
+                                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                                    self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
+                            for i in range(2):
+                                item = random.randint(0, len(self.config.shop_items["buildable"]) - 1)
+                                item = self.config.shop_items["buildable"][item]
+                                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
+                                    self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
                     else:
                         return ui_return, shop
                 if event.type == pygame.QUIT:
@@ -163,6 +168,18 @@ class PinballGame:
                                 message = f"Purchased {item.name} for {item.properties['price']}!"
                             else:
                                 message = f"Effect of {item.name} cannot be applied!"
+                        elif item.properties["type"] == "pack":
+                            self.money -= item.properties["price"]
+                            shop.remove_item(item)
+                            if item.properties["kind"] == "oneof":
+                                items = []
+                                collection = self.config.shop_items[item.properties["item_type"]]
+                                for i in range(item.properties["amount"][1]):
+                                    pack_item = collection[random.randint(0, len(collection) - 1)]
+                                    items.append(pack_item)
+                            else:
+                                items = []
+                            self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0])
                     else:
                         message = f"Not enough money for {item.name}."
                 ret = self.inventory.handle_event(event)

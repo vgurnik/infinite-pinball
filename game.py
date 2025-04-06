@@ -9,18 +9,23 @@ from ui import Ui
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
+from misc import scale, mouse_scale
 
 
 class PinballGame:
     def __init__(self):
         pygame.init()
         self.config = Config()
-        self.screen = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
-                                              pygame.SCALED | pygame.RESIZABLE)
+        self.screen_size = self.config.base_resolution
+        self.display = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
+                                               (pygame.FULLSCREEN if self.config.fullscreen else 0))
+        self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
         self.textures = self.load_textures()
         self.field = Field(self)
         self.ui = Ui(self)
         pygame.display.set_caption("Infinite Pinball")
+        icon = pygame.image.load(Path(__file__).resolve().with_name("assets").joinpath('ball.ico'))
+        pygame.display.set_icon(icon)
 
         self.reroll_cost = 10
         self.money = 0
@@ -46,35 +51,112 @@ class PinballGame:
         return textures
 
     def main_menu(self):
-        choice = self.ui.overlay_menu(self.screen, "Main Menu",
+        if self.config.debug_mode:
+            choice = self.ui.overlay_menu(self.screen, "Main Menu",
                                       ["Start Game", "Preferences", "Exit", "Debug_Shop"])
+        else:
+            choice = self.ui.overlay_menu(self.screen, "Main Menu",
+                                      ["Start Game", "Preferences", "Exit"])
         return choice
 
     def preferences_menu(self):
         clock = pygame.time.Clock()
         font = pygame.font.Font(self.config.fontfile, 28)
+        bigger_font = pygame.font.Font(self.config.fontfile, 30)
         pref_running = True
+        resolution_index = self.config.resolutions.index(self.screen_size)
+        options = ["resolution", "fullscreen", "debug_mode", "back"]
+        selected_option = 0
+
         while pref_running:
+            reload = False
             self.screen.fill((20, 20, 70))
             pref_text = font.render("Preferences", True, (255, 255, 255))
-            balls_text = font.render(f"Number of Balls: {self.config.balls} (Left/Right to change)",
-                                     True, (255, 255, 255))
-            back_text = font.render("Press ESC to go back", True, (255, 255, 255))
+            resolution_text = font.render(f"Resolution: {self.config.resolutions[resolution_index]}", True,
+                                          (255, 255, 255))
+            fullscreen_text = font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
+                                          (255, 255, 255))
+            debug_text = font.render(f"Debug Mode: {'On' if self.config.debug_mode else 'Off'}", True, (255, 255, 255))
+            back_text = font.render("Go back", True, (255, 255, 255))
+
+            if selected_option == 0:
+                resolution_text = bigger_font.render(f"Resolution: {self.config.resolutions[resolution_index]}", True,
+                                                     (255, 255, 0))
+            elif selected_option == 1:
+                fullscreen_text = bigger_font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
+                                                     (255, 255, 0))
+            elif selected_option == 2:
+                debug_text = bigger_font.render(f"Debug Mode: {'On' if self.config.debug_mode else 'Off'}", True,
+                                                (255, 255, 0))
+            elif selected_option == 3:
+                back_text = bigger_font.render("Go back", True, (255, 255, 0))
+
             self.screen.blit(pref_text, (self.config.screen_width // 2 - pref_text.get_width() // 2, 100))
-            self.screen.blit(balls_text, (self.config.screen_width // 2 - balls_text.get_width() // 2, 200))
-            self.screen.blit(back_text, (self.config.screen_width // 2 - back_text.get_width() // 2, 300))
+            self.screen.blit(resolution_text, (self.config.screen_width // 2 - resolution_text.get_width() // 2, 200))
+            self.screen.blit(fullscreen_text, (self.config.screen_width // 2 - fullscreen_text.get_width() // 2, 250))
+            self.screen.blit(debug_text, (self.config.screen_width // 2 - debug_text.get_width() // 2, 300))
+            self.screen.blit(back_text, (self.config.screen_width // 2 - back_text.get_width() // 2, 350))
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        if self.config.balls > 1:
-                            self.config.balls -= 1
-                    elif event.key == pygame.K_RIGHT:
-                        self.config.balls += 1
-                    elif event.key == pygame.K_ESCAPE:
+                    if event.key == pygame.K_UP:
+                        selected_option = (selected_option - 1) % len(options)
+                    elif event.key == pygame.K_DOWN:
+                        selected_option = (selected_option + 1) % len(options)
+                    elif event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                        if options[selected_option] == "resolution":
+                            resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1)) %\
+                                               len(self.config.resolutions)
+                            self.screen_size = self.config.resolutions[resolution_index]
+                            reload = True
+                        elif options[selected_option] == "fullscreen":
+                            self.config.fullscreen = not self.config.fullscreen
+                            reload = True
+                        elif options[selected_option] == "debug_mode":
+                            self.config.debug_mode = not self.config.debug_mode
+                        elif options[selected_option] == "back":
+                            pref_running = False
+                    elif event.key == pygame.K_ESCAPE or (event.key == pygame.K_RETURN and
+                                                          options[selected_option] == "back"):
                         pref_running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    _, mouse_y = mouse_scale(event.pos)
+                    if 200 <= mouse_y <= 230:
+                        selected_option = 0
+                    elif 250 <= mouse_y <= 280:
+                        selected_option = 1
+                    elif 300 <= mouse_y <= 330:
+                        selected_option = 2
+                    elif 350 <= mouse_y <= 380:
+                        selected_option = 3
+                    if options[selected_option] == "resolution":
+                        resolution_index = (resolution_index + 1) % len(self.config.resolutions)
+                        self.screen_size = self.config.resolutions[resolution_index]
+                        reload = True
+                    elif options[selected_option] == "fullscreen":
+                        self.config.fullscreen = not self.config.fullscreen
+                        reload = True
+                    elif options[selected_option] == "debug_mode":
+                        self.config.debug_mode = not self.config.debug_mode
+                    elif options[selected_option] == "back":
+                        pref_running = False
+                elif event.type == pygame.MOUSEMOTION:
+                    _, mouse_y = mouse_scale(event.pos)
+                    if 200 <= mouse_y <= 230:
+                        selected_option = 0
+                    elif 250 <= mouse_y <= 280:
+                        selected_option = 1
+                    elif 300 <= mouse_y <= 330:
+                        selected_option = 2
+                    elif 350 <= mouse_y <= 380:
+                        selected_option = 3
+            if reload:
+                self.display = pygame.display.set_mode(self.screen_size, (
+                    pygame.FULLSCREEN if self.config.fullscreen else 0))
+            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
             clock.tick(self.config.fps)
 
@@ -215,6 +297,7 @@ class PinballGame:
                 effect.draw(self.screen)
                 if effect.is_dead():
                     effects.remove(effect)
+            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
             clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
             self.real_fps = clock.get_fps()
@@ -257,7 +340,7 @@ class PinballGame:
                                 self.inventory.remove_item(item)
                         elif item.properties["type"] == "card":
                             if item.effect["effect"].__module__ == "card_functions.delete_object":
-                                if self.field.delete(pygame.mouse.get_pos()):
+                                if self.field.delete(mouse_scale(pygame.mouse.get_pos())):
                                     item.effect["effect"](self, *item.effect["params"])
                                     self.inventory.remove_item(item)
                     if "hovering" in ret:
@@ -273,6 +356,7 @@ class PinballGame:
             self.field.draw(self.screen)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
+            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
             clock.tick(self.config.fps)
         return 'back'
@@ -338,6 +422,7 @@ class PinballGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         waiting = False
+            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
         return result
 

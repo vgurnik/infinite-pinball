@@ -3,6 +3,7 @@ import pygame
 from game_effects import ContextWindow
 from multiline_text import multiline
 from effects import get_card_function
+from misc import mouse_scale
 
 
 class InventoryItem:
@@ -32,7 +33,7 @@ class InventoryItem:
         if not self.dragging:
             # Smoothly move toward the target position.
             self.pos += (self.target_position - self.pos) * 50 * dt
-            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = mouse_scale(pygame.mouse.get_pos())
             if not self.rect.collidepoint(mouse_pos):
                 self.highlighted = False
         self.rect.topleft = (int(self.pos.x), int(self.pos.y))
@@ -105,12 +106,12 @@ class Inventory:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # left click
-                mouse_pos = pygame.mouse.get_pos()
+                mouse_pos = mouse_scale(pygame.mouse.get_pos())
                 for item in reversed(self.items):
                     if item.rect.collidepoint(mouse_pos):
                         return item
         elif event.type == pygame.MOUSEMOTION:
-            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = mouse_scale(pygame.mouse.get_pos())
             for item in self.items:
                 item.highlighted = False
             for item in reversed(self.items):
@@ -186,7 +187,7 @@ class PlayerInventory(Inventory):
         self.recalculate_targets()
 
     def handle_event(self, event):
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = mouse_scale(pygame.mouse.get_pos())
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # left click
                 # Iterate in reverse so that top-most drawn items are prioritized.

@@ -15,7 +15,7 @@ pyinstaller main.spec
   - [x] Add event system
 - [x] Add pack opening
 - [x] Add descriptions (context)
-- [ ] Add preferences
+- [x] Add preferences
 #### 2
 - [ ] Finish texturing the field
   - [x] Resolution rescale
@@ -43,3 +43,4 @@ pyinstaller main.spec
 - [ ] Add sounds
 - [x] Pack the app conveniently
 - [ ] Add localization
+- [ ] Add SCALED resolution maybe, works strangely

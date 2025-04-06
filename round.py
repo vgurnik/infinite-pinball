@@ -2,6 +2,7 @@ import sys
 import pygame
 from game_effects import HitEffect, DisappearingItem
 from game_objects import Ball
+from misc import scale
 
 
 class PinballRound:
@@ -112,6 +113,7 @@ class PinballRound:
         self.ui.update(dt)
         self.inventory.draw(self.screen)
 
+        self.game_instance.display.blit(scale(self.screen, self.game_instance.screen_size), (0, 0))
         pygame.display.flip()
 
     def run(self):

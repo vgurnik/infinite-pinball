@@ -1,9 +1,14 @@
 from pathlib import Path
+import pygame
 
 
 class Config:
     def __init__(self):
         self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
+        self.debug_mode = True
+        self.fullscreen = False
+        self.resolutions = pygame.display.list_modes()
+        self.base_resolution = (1280, 720)
 
         # Screen and simulation settings.
         self.screen_width = 1280

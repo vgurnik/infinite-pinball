@@ -56,7 +56,8 @@ class Field:
     def draw(self, surface, ball=None):
         field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
-        self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
+        if self.config.debug_mode:
+            self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
         draw_lf = True
         draw_rf = True
 

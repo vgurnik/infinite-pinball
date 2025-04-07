@@ -8,7 +8,7 @@ pyinstaller main.spec
 ```
 
 ### TODO:
-#### 1
+#### 1 ✔
 - [x] Add build mode
   - [x] Separate field and UI
 - [x] Actually add card effects
@@ -20,21 +20,23 @@ pyinstaller main.spec
 - [ ] Finish texturing the field
   - [x] Resolution rescale
 - [ ] Texturize GUI
+  - [x] Separate buttons finally
 - [ ] Texturize cards
 - [ ] Add active effects visualization
 #### 3
-- [ ] Balance scoring
-  - [x] Implement effect cooldown
-- [ ] Balance economy
-  - [x] Implement shop rerolls
-- [ ] Finish starting field
-  - [ ] Add building restrictions
+- [ ] Add saves
 - [ ] Add more card-object-effect options
   - [ ] Implement rarity
   - [ ] Implement multiple effects per card
   - [ ] Implement card id to allow to affect effects
 #### 4
-- [ ] Add saves
+- [ ] Balance scoring
+  - [x] Implement effect cooldown
+  - [ ] Add building restrictions
+- [ ] Balance economy
+  - [x] Implement shop rerolls
+- [ ] Finish starting field
+#### 5
 - [ ] Implement special effects (combos)
 - [ ] Add starting field options
 - [ ] Add unlockables (fields, cards, difficulties)

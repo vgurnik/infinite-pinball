@@ -1,5 +1,8 @@
 import sys
 import pygame
+
+import effects
+import game
 from game_effects import HitEffect, DisappearingItem
 from game_objects import Ball
 from misc import scale
@@ -37,25 +40,27 @@ class PinballRound:
         self.immediate['money'] = 0
         x = 0
         y = 0
-        arbiter_type = ''
+        arbiter_object = None
         for shape in arbiter.shapes:
-            if shape.collision_type == 2:
-                if getattr(shape.parent, "bumped", None) is not None:
-                    setattr(shape.parent, "bumped", 0.1)
-                pos = shape.body.position
-                arbiter_type = shape.type
-                x = pos.x + 20
-                y = pos.y
-                if shape.effect and shape.parent.cooldown == 0:
-                    shape.effect(self.game_instance, shape.parent, *shape.effect_params)
-                if shape.parent.cooldown > 0:
-                    shape.parent.cooldown_timer = shape.parent.cooldown
-            elif shape.collision_type == 1:
-                if shape.effect:
-                    shape.effect(self.game_instance, shape.parent, *shape.effect_params)
-        for effect in self.applied_effects:
-            if effect["trigger"] == "collision":
-                effect["effect"](self.game_instance, arbiter_type, *effect["params"])
+            match shape.collision_type:
+                case 1:
+                    for effect in shape.parent.effects:
+                        if effect["trigger"] == "collision":
+                            effects.call(effect, self.game_instance, arbiter=shape.parent)
+                case 2:
+                    if getattr(shape.parent, "bumped", None) is not None:
+                        setattr(shape.parent, "bumped", 0.1)
+                    pos = shape.body.position
+                    arbiter_object = shape.parent
+                    x = pos.x + 20
+                    y = pos.y
+                    if shape.parent.cooldown == 0:
+                        for effect in shape.parent.effects:
+                            if effect["trigger"] == "collision":
+                                effects.call(effect, self.game_instance, arbiter=arbiter_object)
+                    if shape.parent.cooldown > 0:
+                        shape.parent.cooldown_timer = shape.parent.cooldown
+        self.game_instance.callback("collision", arbiter_object)
         if self.immediate['score']:
             add = self.immediate['score'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
@@ -83,7 +88,7 @@ class PinballRound:
         self.field.draw(self.screen, self.ball)
 
         # Update board objects
-        for obj in self.field.objects[:]:
+        for obj in self.field.objects:
             obj.update(dt)
 
         # Draw hit effects.
@@ -96,8 +101,7 @@ class PinballRound:
         for applied_effect in self.applied_effects[:]:
             applied_effect["duration"] -= dt
             if applied_effect["duration"] <= 0:
-                if applied_effect["negative_effect"] is not None:
-                    applied_effect["negative_effect"](self.game_instance, *applied_effect["params"])
+                effects.recall(applied_effect, self.game_instance)
                 self.applied_effects.remove(applied_effect)
 
         # Draw the launch indicator.
@@ -132,47 +136,41 @@ class PinballRound:
                     exit_option = ui_return
                     running = False
                     break
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
-                        if choice == "Exit to Main Menu":
-                            exit_option = "menu"
-                            running = False
-                            break
-                    elif event.key == pygame.K_SPACE and not self.ball_launched:
-                        self.launch_key_down = True
-                elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_SPACE and not self.ball_launched:
-                        if self.launch_key_down:
-                            if self.ball.body.position.y > self.config.bottom_wall_y - 50:
-                                impulse = min(self.launch_charge, self.config.launch_max_impulse)
-                                self.ball.body.apply_impulse_at_local_point((0, -impulse), (0, 0))
-                            self.launch_charge = 0
-                            self.launch_key_down = False
+                match event.type:
+                    case pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    case pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                            if choice == "Exit to Main Menu":
+                                exit_option = "menu"
+                                running = False
+                                break
+                        elif event.key == pygame.K_SPACE and not self.ball_launched:
+                            self.launch_key_down = True
+                    case pygame.KEYUP:
+                        if event.key == pygame.K_SPACE and not self.ball_launched:
+                            if self.launch_key_down:
+                                if self.ball.body.position.y > self.config.bottom_wall_y - 50:
+                                    impulse = min(self.launch_charge, self.config.launch_max_impulse)
+                                    self.ball.body.apply_impulse_at_local_point((0, -impulse), (0, 0))
+                                self.launch_charge = 0
+                                self.launch_key_down = False
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret:
                         item = ret["try_selling"]
-                        if item.effect["trigger"] != "passive" or \
-                                item.effect["negative_effect"](self.game_instance, *item.effect["params"]):
+                        if item.sell(self.game_instance):
                             self.game_instance.money += item.properties["price"] // 2
                             self.inventory.remove_item(item)
                     elif "try_using" in ret:
                         item = ret["try_using"]
-                        if item.effect["effect"] is not None:
-                            if item.effect["trigger"] == "immediate":
-                                if item.effect["effect"](self.game_instance, *item.effect["params"]):
-                                    self.inventory.remove_item(item)
-                                    self.hit_effects.append(DisappearingItem(item, 0.5))
-                            elif item.effect["trigger"] != "passive":
-                                self.applied_effects.append(item.effect)
-                                if item.effect["trigger"] == "once":
-                                    item.effect["effect"](self.game_instance, *item.effect["params"])
-                                self.inventory.remove_item(item)
-                                self.hit_effects.append(DisappearingItem(item, 0.5))
+                        success, lasting = item.use(self.game_instance)
+                        if success:
+                            self.applied_effects += lasting
+                            self.inventory.remove_item(item)
+                            self.hit_effects.append(DisappearingItem(item, 0.5))
 
             if not self.ball_launched and self.launch_key_down:
                 self.launch_charge += dt * self.config.launch_charge_rate
@@ -224,8 +222,9 @@ class PinballRound:
                 else self.field.right_flipper.default_angle)
 
             self.field.space.step(dt)
-            if self.ball.body.velocity.length > 2000:
-                self.ball.body.velocity = self.ball.body.velocity * (2000 / self.ball.body.velocity.length)
+            if self.ball.body.velocity.length > self.config.max_ball_velocity:
+                self.ball.body.velocity = self.ball.body.velocity * (self.config.max_ball_velocity /
+                                                                     self.ball.body.velocity.length)
 
             if self.score >= self.game_instance.score_needed:
                 self.ui.change_mode("round_finishable")
@@ -239,6 +238,5 @@ class PinballRound:
             self.real_fps = clock.get_fps()
 
         for applied_effect in self.applied_effects:
-            if applied_effect["negative_effect"] is not None:
-                applied_effect["negative_effect"](self, *applied_effect["params"])
+            effects.recall(applied_effect, self.game_instance)
         return exit_option, self.score

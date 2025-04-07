@@ -1,0 +1,260 @@
+{
+  "card": [
+    {
+      "name": "Shield",
+      "price": 60,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "shield",
+          "duration": 10,
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Allow the ball to bounce\nfrom the bottom for 10 s"
+    },
+    {
+      "name": "SlowMo",
+      "price": 90,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "time_warp",
+          "params": [0.5],
+          "usage": "active",
+          "trigger": "use",
+          "duration": 10
+        }
+      ],
+      "description": "Slow down time\nfor 10 s"
+    },
+    {
+      "name": "Mega Bump",
+      "price": 120,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "bumper_empower",
+          "usage": "active",
+          "trigger": "use",
+          "params": [2],
+          "duration": 10
+        }
+      ],
+      "description": "Increase the strength of all bumpers\nx2 for 10 s"
+    },
+    {
+      "name": "Bonus",
+      "price": 150,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "change_score_multiplier",
+          "usage": "active",
+          "trigger": "use",
+          "params": [5, "m"],
+          "duration": 5
+        }
+      ],
+      "description": "Increase points scored\nx5 for 5 s"
+    },
+    {
+      "name": "Bonus Ball",
+      "price": 150,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "change_ball_amount",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [1]
+        }
+      ],
+      "description": "Get an additional ball\nwhile this card is in your inventory"
+    },
+    {
+      "name": "Doubler",
+      "price": 150,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [2, "m"]
+        }
+      ],
+      "description": "Earn double score\nwhile this card is in your inventory"
+    },
+    {
+      "name": "Extra slot",
+      "price": 150,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "inventory_size",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [2]
+        }
+      ],
+      "description": "Get 2 extra inventory slots\nwhile this card is in your inventory"
+    },
+    {
+      "name": "Destroyer",
+      "price": 50,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "delete_object",
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Destroy an object\nin field modification mode"
+    }
+  ],
+  "immediate": [
+    {
+      "name": "+Inventory slot",
+      "price": 300,
+      "type": "immediate",
+      "effects": [
+        {
+          "effect": "inventory_size",
+          "params": [1],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Additional inventory slot"
+    },
+    {
+      "name": "+Ball",
+      "price": 150,
+      "type": "immediate",
+      "effects": [
+        {
+          "effect": "change_ball_amount",
+          "params": [1],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Additional ball"
+    },
+    {
+      "name": "Multiplier",
+      "price": 100,
+      "type": "immediate",
+      "effects": [
+        {
+          "effect": "change_score_multiplier",
+          "params": [0.5, "s"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Score 50% more points"
+    }
+  ],
+  "buildable": [
+    {
+      "name": "Bumper",
+      "price": 75,
+      "type": "buildable",
+      "object_type": "bumper",
+      "class": "bumper_big",
+      "description": "Additional big bumper"
+    },
+    {
+      "name": "Small Bumper",
+      "price": 50,
+      "type": "buildable",
+      "object_type": "bumper",
+      "class": "bumper_small",
+      "description": "Additional small bumper"
+    },
+    {
+      "name": "Flipper",
+      "price": 100,
+      "type": "buildable",
+      "object_type": "flipper",
+      "class": "flipper_standard",
+      "description": "Standard flipper"
+    },
+    {
+      "name": "Long boi",
+      "price": 200,
+      "type": "buildable",
+      "object_type": "flipper",
+      "class": "longboi",
+      "description": "Long easier flipper, but each hit\nwill cost you $10"
+    },
+    {
+      "name": "Pro flipper",
+      "price": 200,
+      "type": "buildable",
+      "object_type": "flipper",
+      "class": "flipper_money",
+      "description": "Flipper for professionals\nEarn $10 per hit"
+    }
+  ],
+  "pack": [
+    {
+      "name": "Card Pack",
+      "price": 200,
+      "item_type": "card",
+      "type": "pack",
+      "kind": "oneof",
+      "amount": [1, 4],
+      "description": "Choose 1 of 4 cards"
+    },
+    {
+      "name": "Big Card Pack",
+      "price": 400,
+      "item_type": "card",
+      "type": "pack",
+      "kind": "oneof",
+      "amount": [1, 6],
+      "description": "Choose 1 of 6 cards"
+    },
+    {
+      "name": "Object Pack",
+      "price": 100,
+      "item_type": "buildable",
+      "type": "pack",
+      "kind": "oneof",
+      "amount": [1, 4],
+      "description": "Choose 1 of 4 objects"
+    },
+    {
+      "name": "Big Object Pack",
+      "price": 200,
+      "item_type": "buildable",
+      "type": "pack",
+      "kind": "oneof",
+      "amount": [1, 6],
+      "description": "Choose 1 of 6 objects"
+    },
+    {
+      "name": "Mega Card Pack",
+      "price": 400,
+      "item_type": "card",
+      "type": "pack",
+      "kind": "oneof",
+      "amount": [2, 4],
+      "description": "Choose 2 of 4 cards"
+    },
+    {
+      "name": "Mega Object Pack",
+      "price": 100,
+      "item_type": "buildable",
+      "type": "pack",
+      "kind": "oneof",
+      "amount": [2, 4],
+      "description": "Choose 2 of 4 objects"
+    }
+  ]
+}

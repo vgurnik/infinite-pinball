@@ -25,9 +25,12 @@ pyinstaller main.spec
 - [ ] Add active effects visualization
 #### 3
 - [ ] Add saves
+- [ ] Add more balls
+  - [ ] Add multiball possibility and ability
 - [ ] Add more card-object-effect options
   - [ ] Implement rarity
-  - [ ] Implement multiple effects per card
+  - [x] Implement multiple effects per card
+  - [x] Rewrite effects as callbacks
   - [ ] Implement card id to allow to affect effects
 #### 4
 - [ ] Balance scoring

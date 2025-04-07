@@ -2,7 +2,7 @@ from pathlib import Path
 import pygame
 from game_effects import ContextWindow
 from multiline_text import multiline
-from effects import get_card_function
+import effects
 from misc import mouse_scale
 
 
@@ -18,16 +18,73 @@ class InventoryItem:
         self.target_position = pygame.math.Vector2(target_position)
         self.card_size = card_size
         self.rect = pygame.Rect(self.pos.x, self.pos.y, card_size[0], card_size[1])
-        self.effect = {
-            "effect": get_card_function(properties.get("effect", None)),
-            "negative_effect": get_card_function(properties.get("effect", None), negative=True),
-            "trigger": properties.get("trigger", "passive"),
-            "duration": properties.get("duration", 0),
-            "params": properties.get("params", [])
-        }
+        self.effects = [{
+            "effect_name": effect.get("effect", None),
+            "effect": effects.get_card_function(effect.get("effect", None)),
+            "negative_effect": effects.get_card_function(effect.get("effect", None), negative=True),
+            "trigger": effect.get("trigger", "use"),
+            "usage": effect.get("usage", "passive"),
+            "duration": effect.get("duration", 0),
+            "params": effect.get("params", [])
+        } for effect in properties.get("effects", [])]
         self.dragging = False
         self.highlighted = False
         self.visibility = True
+
+    def use(self, game):
+        """activate all usage:active trigger:use\n
+        recall all usage:passive trigger:use (=self.sell)\n
+        return all usage:active duration!=0 as lasting"""
+        called = []
+        lasting = []
+        for effect in self.effects:
+            if effect["usage"] == "active":
+                if effect["trigger"] == "use":
+                    if effects.call(effect, game):
+                        called.append(effect)
+                    else:
+                        break
+                if effect["duration"] != 0:
+                    lasting.append(effect)
+        else:
+            if self.sell(game):
+                return True, lasting
+        for effect in called:
+            if not effects.recall(effect, game):
+                raise RuntimeError("Failed to recall just called effect (?) probably a design error")
+        return False, []
+
+    def add(self, game):
+        """activate all usage:passive trigger:use"""
+        called = []
+        for effect in self.effects:
+            if effect["usage"] == "passive" and effect["trigger"] == "use":
+                if effects.call(effect, game):
+                    called.append(effect)
+                else:
+                    break
+        else:
+            return True
+        for effect in called:
+            if not effects.recall(effect, game):
+                raise RuntimeError("Failed to recall just called effect (?) probably a design error")
+        return False
+
+    def sell(self, game):
+        """recall all usage:passive trigger:use"""
+        recalled = []
+        for effect in self.effects:
+            if effect["usage"] == "passive" and effect["trigger"] == "use":
+                if effects.recall(effect, game):
+                    recalled.append(effect)
+                else:
+                    break
+        else:
+            return True
+        for effect in recalled:
+            if not effects.call(effect, game):
+                raise RuntimeError("Failed to call just recalled effect (?) probably a design error")
+        return False
 
     def update(self, dt):
         if not self.dragging:

@@ -1,5 +1,6 @@
 from pathlib import Path
 import pygame
+from json import load
 
 
 class Config:
@@ -15,6 +16,7 @@ class Config:
         self.screen_height = 720
         self.fps = 180
         self.gravity = (0, 900)
+        self.max_ball_velocity = 1000
 
         # UI panel settings.
         self.ui_pos = (50, 0)
@@ -59,7 +61,7 @@ class Config:
         self.launch_indicator_size = (20, 40)
 
         # Flipper parameters.
-        self.flipper_stiffness = 80000000
+        self.flipper_stiffness = 90000000
         self.flipper_damping = 3500000
         self.left_flipper_default_angle = 30
         self.left_flipper_active_angle = -30
@@ -84,75 +86,11 @@ class Config:
         self.score_multiplier = 1
         self.reroll_cost = 10
 
-        # Shop settings.
-        self.shop_items = {
-            "card": [
-                {"name": "Shield", "price": 60, "type": "card", "effect": "shield", "duration": 10, "trigger": "once",
-                 "description": "Allow the ball to bounce\nfrom the bottom for 10 s"},
-                {"name": "SlowMo", "price": 90, "type": "card", "effect": "time_warp", "params": [0.5],
-                 "trigger": "once", "duration": 10, "description": "Slow down time\nfor 10 s"},
-                {"name": "Mega Bump", "price": 120, "type": "card", "effect": "bumper_empower", "trigger": "once",
-                 "params": [2], "duration": 10, "description": "Increase the strength of all bumpers\nx2 for 10 s"},
-                {"name": "Bonus", "price": 150, "type": "card", "effect": "change_score_multiplier", "trigger": "once",
-                 "params": [5, 'm'], "duration": 5, "description": "Increase points scored\nx5 for 5 s"},
-                {"name": "Bonus Ball", "price": 150, "type": "card", "effect": "change_ball_amount",
-                 "params": [1], "description": "Get an additional ball\nwhile this card is in your inventory"},
-                {"name": "Doubler", "price": 150, "type": "card", "effect": "change_score_multiplier",
-                 "params": [2, 'm'], "description": "Earn double score\nwhile this card is in your inventory"},
-                {"name": "Extra slot", "price": 150, "type": "card", "effect": "inventory_size",
-                 "params": [2], "description": "Get 2 extra inventory slots\nwhile this card is in your inventory"},
-                {"name": "Destroyer", "price": 50, "type": "card", "effect": "delete_object",
-                 "description": "Destroy an object\nin field modification mode"},
-            ],
-            "immediate": [
-                {"name": "+Inventory slot", "price": 300, "type": "immediate", "effect": "inventory_size",
-                 "params": [1], "description": "Additional inventory slot"},
-                {"name": "+Ball", "price": 150, "type": "immediate", "effect": "change_ball_amount", "params": [1],
-                 "description": "Additional ball"},
-                {"name": "Multiplier", "price": 100, "type": "immediate", "effect": "change_score_multiplier",
-                 "params": [0.5, 's'], "description": "Score 50% more points"}
-            ],
-            "buildable": [
-                {"name": "Bumper", "price": 75, "type": "buildable", "object_type": "bumper", "class": "bumper_big",
-                 "description": "Additional big bumper"},
-                {"name": "Small Bumper", "price": 50, "type": "buildable", "object_type": "bumper",
-                 "class": "bumper_small", "description": "Additional small bumper"},
-                {"name": "Flipper", "price": 100, "type": "buildable", "object_type": "flipper",
-                 "class": "flipper_standard", "description": "Standard flipper"},
-                {"name": "Long boi", "price": 200, "type": "buildable", "object_type": "flipper",
-                 "class": "longboi", "description": "Long easier flipper, but each hit\nwill cost you $10"},
-                {"name": "Pro flipper", "price": 200, "type": "buildable", "object_type": "flipper",
-                 "class": "flipper_money", "description": "Flipper for professionals\nEarn $10 per hit"}
-            ],
-            "pack": [
-                {"name": "Card Pack", "price": 200, "item_type": "card", "type": "pack", "kind": "oneof",
-                 "amount": [1, 4], "description": "Choose 1 of 4 cards"},
-                {"name": "Big Card Pack", "price": 400, "item_type": "card", "type": "pack", "kind": "oneof",
-                 "amount": [1, 6], "description": "Choose 1 of 6 cards"},
-                {"name": "Object Pack", "price": 100, "item_type": "buildable", "type": "pack", "kind": "oneof",
-                 "amount": [1, 4], "description": "Choose 1 of 4 objects"},
-                {"name": "Big Object Pack", "price": 200, "item_type": "buildable", "type": "pack", "kind": "oneof",
-                 "amount": [1, 6], "description": "Choose 1 of 6 objects"},
-                {"name": "Mega Card Pack", "price": 400, "item_type": "card", "type": "pack", "kind": "oneof",
-                 "amount": [2, 4], "description": "Choose 2 of 4 cards"},
-                {"name": "Mega Object Pack", "price": 100, "item_type": "buildable", "type": "pack", "kind": "oneof",
-                 "amount": [2, 4], "description": "Choose 2 of 4 objects"},
-            ]
-        }
+        with open(Path(__file__).resolve().with_name("assets").joinpath('cards.json')) as file:
+            self.shop_items = load(file)
 
-        self.objects_settings = {
-            "ball": {"ball_standard": {"texture": "ball", "size": 15, "mass": 1, "effect": None}},
-            "bumper": {"bumper_big": {"texture": "bumper", "size": 30, "force": 1.3, "effect": "bump",
-                                      "params": [100, 10]},
-                       "bumper_small": {"texture": "bumper_small", "size": 15, "force": 1.1, "effect": "bump",
-                                        "params": [50, 0]}},
-            "flipper": {"flipper_standard": {"texture": "flipper_left", "force": 0.6, "size": (80, 20),
-                                             "effect": None},
-                        "flipper_money": {"texture": "pro_flipper", "force": 0.7, "size": (60, 20),
-                                          "effect": "earn", "params": [10]},
-                        "longboi": {"texture": "longboi", "force": 0.5, "size": (90, 20),
-                                    "effect": "earn", "params": [-10]}}
-        }
+        with open(Path(__file__).resolve().with_name("assets").joinpath('objects.json')) as file:
+            self.objects_settings = load(file)
 
         self.left_flipper_pos = (190, 630)
         self.right_flipper_pos = (410, 630)

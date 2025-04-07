@@ -1,3 +1,3 @@
-def effect(game_instance, obj, money):
+def effect(game_instance, money, arbiter):
     game_instance.round_instance.immediate["money"] += money
-    obj.cooldown = 0.5
+    arbiter.cooldown = 0.5

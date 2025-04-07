@@ -9,6 +9,7 @@ from ui import Ui
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
+import effects
 from misc import scale, mouse_scale
 
 
@@ -53,6 +54,15 @@ class PinballGame:
                                                              ).convert_alpha()}
         return textures
 
+    def callback(self, event, arbiter=None):
+        for card in self.inventory.items:
+            for effect in card.effects:
+                if effect["trigger"] == event:
+                    effects.call(effect, self, arbiter)
+        for effect in self.round_instance.applied_effects:
+            if effect["trigger"] == event:
+                effects.call(effect, self, arbiter)
+
     def main_menu(self):
         if self.debug_mode:
             choice = self.ui.overlay_menu(self.screen, "Main Menu",
@@ -81,18 +91,18 @@ class PinballGame:
                                           (255, 255, 255))
             debug_text = font.render(f"Debug Mode: {'On' if self.debug_mode else 'Off'}", True, (255, 255, 255))
             back_text = font.render("Go back", True, (255, 255, 255))
-
-            if selected_option == 0:
-                resolution_text = bigger_font.render(f"Resolution: {self.config.resolutions[resolution_index]}", True,
-                                                     (255, 255, 0))
-            elif selected_option == 1:
-                fullscreen_text = bigger_font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
-                                                     (255, 255, 0))
-            elif selected_option == 2:
-                debug_text = bigger_font.render(f"Debug Mode: {'On' if self.debug_mode else 'Off'}", True,
-                                                (255, 255, 0))
-            elif selected_option == 3:
-                back_text = bigger_font.render("Go back", True, (255, 255, 0))
+            match selected_option:
+                case 0:
+                    resolution_text = bigger_font.render(f"Resolution: {self.config.resolutions[resolution_index]}",
+                                                         True, (255, 255, 0))
+                case 1:
+                    fullscreen_text = bigger_font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}",
+                                                         True, (255, 255, 0))
+                case 2:
+                    debug_text = bigger_font.render(f"Debug Mode: {'On' if self.debug_mode else 'Off'}", True,
+                                                    (255, 255, 0))
+                case 3:
+                    back_text = bigger_font.render("Go back", True, (255, 255, 0))
 
             self.screen.blit(pref_text, (self.config.screen_width // 2 - pref_text.get_width() // 2, 100))
             self.screen.blit(resolution_text, (self.config.screen_width // 2 - resolution_text.get_width() // 2, 200))
@@ -101,61 +111,64 @@ class PinballGame:
             self.screen.blit(back_text, (self.config.screen_width // 2 - back_text.get_width() // 2, 350))
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        selected_option = (selected_option - 1) % len(options)
-                    elif event.key == pygame.K_DOWN:
-                        selected_option = (selected_option + 1) % len(options)
-                    elif event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
-                        if options[selected_option] == "resolution":
-                            resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1)) %\
-                                               len(self.config.resolutions)
-                            self.screen_size = self.config.resolutions[resolution_index]
-                            reload = True
-                        elif options[selected_option] == "fullscreen":
-                            self.config.fullscreen = not self.config.fullscreen
-                            reload = True
-                        elif options[selected_option] == "debug_mode":
-                            self.debug_mode = not self.debug_mode
-                        elif options[selected_option] == "back":
+                match event.type:
+                    case pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    case pygame.KEYDOWN:
+                        if event.key == pygame.K_UP:
+                            selected_option = (selected_option - 1) % len(options)
+                        elif event.key == pygame.K_DOWN:
+                            selected_option = (selected_option + 1) % len(options)
+                        elif event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                            match options[selected_option]:
+                                case "resolution":
+                                    resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1)) %\
+                                                       len(self.config.resolutions)
+                                    self.screen_size = self.config.resolutions[resolution_index]
+                                    reload = True
+                                case "fullscreen":
+                                    self.config.fullscreen = not self.config.fullscreen
+                                    reload = True
+                                case "debug_mode":
+                                    self.debug_mode = not self.debug_mode
+                                case "back":
+                                    pref_running = False
+                        elif event.key == pygame.K_ESCAPE or (event.key == pygame.K_RETURN and
+                                                              options[selected_option] == "back"):
                             pref_running = False
-                    elif event.key == pygame.K_ESCAPE or (event.key == pygame.K_RETURN and
-                                                          options[selected_option] == "back"):
-                        pref_running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    _, mouse_y = mouse_scale(event.pos)
-                    if 200 <= mouse_y <= 230:
-                        selected_option = 0
-                    elif 250 <= mouse_y <= 280:
-                        selected_option = 1
-                    elif 300 <= mouse_y <= 330:
-                        selected_option = 2
-                    elif 350 <= mouse_y <= 380:
-                        selected_option = 3
-                    if options[selected_option] == "resolution":
-                        resolution_index = (resolution_index + 1) % len(self.config.resolutions)
-                        self.screen_size = self.config.resolutions[resolution_index]
-                        reload = True
-                    elif options[selected_option] == "fullscreen":
-                        self.config.fullscreen = not self.config.fullscreen
-                        reload = True
-                    elif options[selected_option] == "debug_mode":
-                        self.debug_mode = not self.debug_mode
-                    elif options[selected_option] == "back":
-                        pref_running = False
-                elif event.type == pygame.MOUSEMOTION:
-                    _, mouse_y = mouse_scale(event.pos)
-                    if 200 <= mouse_y <= 230:
-                        selected_option = 0
-                    elif 250 <= mouse_y <= 280:
-                        selected_option = 1
-                    elif 300 <= mouse_y <= 330:
-                        selected_option = 2
-                    elif 350 <= mouse_y <= 380:
-                        selected_option = 3
+                    case pygame.MOUSEBUTTONDOWN:
+                        _, mouse_y = mouse_scale(event.pos)
+                        if 200 <= mouse_y <= 230:
+                            selected_option = 0
+                        elif 250 <= mouse_y <= 280:
+                            selected_option = 1
+                        elif 300 <= mouse_y <= 330:
+                            selected_option = 2
+                        elif 350 <= mouse_y <= 380:
+                            selected_option = 3
+                        match options[selected_option]:
+                            case "resolution":
+                                resolution_index = (resolution_index + 1) % len(self.config.resolutions)
+                                self.screen_size = self.config.resolutions[resolution_index]
+                                reload = True
+                            case "fullscreen":
+                                self.config.fullscreen = not self.config.fullscreen
+                                reload = True
+                            case "debug_mode":
+                                self.debug_mode = not self.debug_mode
+                            case "back":
+                                pref_running = False
+                    case pygame.MOUSEMOTION:
+                        _, mouse_y = mouse_scale(event.pos)
+                        if 200 <= mouse_y <= 230:
+                            selected_option = 0
+                        elif 250 <= mouse_y <= 280:
+                            selected_option = 1
+                        elif 300 <= mouse_y <= 330:
+                            selected_option = 2
+                        elif 350 <= mouse_y <= 380:
+                            selected_option = 3
             if reload:
                 self.display = pygame.display.set_mode(self.screen_size, (
                     pygame.FULLSCREEN if self.config.fullscreen else 0))
@@ -193,7 +206,7 @@ class PinballGame:
             shop = _shop
 
         message = ""
-        effects = []
+        visual_effects = []
         while True:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
@@ -227,10 +240,7 @@ class PinballGame:
                 if item is not None:
                     if self.money >= item.properties["price"]:
                         if item.properties["type"] in ["card", "buildable"]:
-                            if item.effect["effect"] is not None and item.effect["trigger"] == "passive":
-                                execution = item.effect["effect"](self, *item.effect["params"])
-                            else:
-                                execution = True
+                            execution = item.add(self)
                             addition = self.inventory.add_item(item)
                             if execution and addition:
                                 self.money -= item.properties["price"]
@@ -239,20 +249,18 @@ class PinballGame:
                             else:
                                 if not addition:
                                     message = "Not enough inventory space!"
-                                elif not execution:
-                                    message = f"Effect of {item.name} cannot be applied!"
-                                if item.effect["trigger"] == "passive" and execution \
-                                        and item.effect["negative_effect"]:
-                                    # Theoretically impossible to have this return False, but just in case be mindful.<-
-                                    item.effect["negative_effect"](self, *item.effect["params"])
+                                else:
+                                    message = f"{item.name} cannot be applied!"
+                                if execution and not item.sell(self):
+                                    raise RuntimeError("Item could not be added, but effects could not be recalled")
                         elif item.properties["type"] == "immediate":
-                            if item.effect["effect"](self, *item.effect["params"]):
-                                effects.append(DisappearingItem(item, 0.1))
+                            if item.use(self):
+                                visual_effects.append(DisappearingItem(item, 0.1))
                                 shop.remove_item(item)
                                 self.money -= item.properties["price"]
                                 message = f"Purchased {item.name} for {item.properties['price']}!"
                             else:
-                                message = f"Effect of {item.name} cannot be applied!"
+                                message = f"{item.name} cannot be applied!"
                         elif item.properties["type"] == "pack":
                             self.money -= item.properties["price"]
                             shop.remove_item(item)
@@ -263,19 +271,16 @@ class PinballGame:
                                     pack_item = collection[random.randint(0, len(collection) - 1)]
                                     items.append(pack_item)
                             else:
-                                items = []
+                                items = []      # TODO: other kinds of pack
                             self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0])
                     else:
                         message = f"Not enough money for {item.name}."
                 ret = self.inventory.handle_event(event)
                 if ret:
-                    if "try_selling" in ret:
-                        item = ret["try_selling"]
-                        if item.effect["negative_effect"] is None \
-                                or item.effect["negative_effect"](self, *item.effect["params"]):
-                            self.money += item.properties["price"] // 2
-                            self.inventory.remove_item(item)
-                            message = f"Sold {item.name} for {item.properties['price'] // 2}!"
+                    if "try_selling" in ret and ret["try_selling"].sell(self):
+                        self.money += ret["try_selling"].properties["price"] // 2
+                        self.inventory.remove_item(ret["try_selling"])
+                        message = f"Sold {ret['try_selling'].name} for {ret['try_selling'].properties['price'] // 2}!"
 
             self.screen.fill((20, 20, 70))
 
@@ -295,11 +300,13 @@ class PinballGame:
 
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
-            for effect in effects[:]:
+
+            for effect in visual_effects[:]:
                 effect.update(dt)
                 effect.draw(self.screen)
                 if effect.is_dead():
-                    effects.remove(effect)
+                    visual_effects.remove(effect)
+
             self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
             clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
@@ -316,36 +323,33 @@ class PinballGame:
                 ui_return = self.ui.handle_event(event)
                 if ui_return is not None:
                     return {"continue": "back", "field_setup": "win"}[ui_return]
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
-                        if choice == "Exit to Main Menu":
-                            return 'menu'
-                    elif event.key == pygame.K_RETURN:
-                        waiting = False
+                match event.type:
+                    case pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    case pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                            if choice == "Exit to Main Menu":
+                                return 'menu'
+                        elif event.key == pygame.K_RETURN:
+                            waiting = False
                 ret = self.inventory.handle_event(event)
                 if ret:
-                    if "try_selling" in ret:
-                        item = ret["try_selling"]
-                        if item.effect["negative_effect"] is None \
-                                or item.effect["negative_effect"](self, *item.effect["params"]):
-                            self.money += item.properties["price"] // 2
-                            self.inventory.remove_item(item)
-                        else:
-                            pass
+                    if "try_selling" in ret and ret["try_selling"].sell(self):
+                        self.money += ret["try_selling"].properties["price"] // 2
+                        self.inventory.remove_item(ret["try_selling"])
                     elif "try_using" in ret:
                         item = ret["try_using"]
-                        if item.properties["type"] == "buildable":
-                            if self.field.place(item):
-                                self.inventory.remove_item(item)
+                        if item.properties["type"] == "buildable" and self.field.place(item):
+                            self.inventory.remove_item(item)
                         elif item.properties["type"] == "card":
-                            if item.effect["effect"].__module__ == "card_functions.delete_object":
-                                if self.field.delete(mouse_scale(pygame.mouse.get_pos())):
-                                    item.effect["effect"](self, *item.effect["params"])
+                            for effect in item.effects:
+                                if effect["effect_name"] == "delete_object" and\
+                                        self.field.delete(mouse_scale(pygame.mouse.get_pos())):
+                                    item.use(self)      # TODO: if usage is not allowed, place object back
                                     self.inventory.remove_item(item)
+                                    break
                     if "hovering" in ret:
                         item = ret["hovering"]
                         self.field.hovered_item = item
@@ -417,14 +421,15 @@ class PinballGame:
         waiting = True
         while waiting:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    waiting = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                match event.type:
+                    case pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    case pygame.MOUSEBUTTONDOWN:
                         waiting = False
+                    case pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            waiting = False
             self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
         return result

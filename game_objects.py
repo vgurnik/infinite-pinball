@@ -1,7 +1,7 @@
 import math
 import pygame
 import pymunk
-from effects import get_object_function
+import effects
 import misc
 
 
@@ -10,6 +10,12 @@ class GameObject:
         self.space = space
         self.config = config
         self.texture = texture
+        self.effects = [{
+            "effect_name": effect.get("effect", None),
+            "effect": effects.get_object_function(effect.get("effect", None)),
+            "trigger": effect.get("trigger", "collision"),
+            "params": effect.get("params", [])
+        } for effect in config.get("effects", [])]
         self.radius = config["size"] if isinstance(config["size"], int) else max(config["size"])
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = pos
@@ -34,12 +40,11 @@ class Ball(GameObject):
         self.body = pymunk.Body(self.mass, inertia)
         self.body.position = pos
         self.shape = pymunk.Circle(self.body, self.radius)
+        self.shape.parent = self
         self.shape.type = 'ball'
         self.shape.elasticity = 0.95
         self.shape.friction = 0.9
         self.shape.collision_type = 1  # for collisions with bumpers
-        self.shape.effect = get_object_function(config["effect"])
-        self.shape.effect_params = config.get("params", [])
         space.add(self.body, self.shape)
 
     def draw(self, screen):
@@ -67,8 +72,6 @@ class Bumper(GameObject):
         self.shape.collision_type = 2
         # Attach custom properties.
         self.shape.type = 'bumper'
-        self.shape.effect = get_object_function(config["effect"])
-        self.shape.effect_params = config.get("params", [])
         space.add(self.body, self.shape)
         self.bumped = 0
 
@@ -105,7 +108,6 @@ class Flipper(GameObject):
         self.config = config
         self.is_left = is_left
         self.mass = 100
-        self.effect = flipper_def["effect"]
         self.length, self.width = flipper_def["size"]
         vertices = [(-self.length/2, -self.width/2), (self.length/2, -self.width/2),
                     (self.length/2, self.width/2), (-self.length/2, self.width/2)]
@@ -120,8 +122,6 @@ class Flipper(GameObject):
         self.shape.parent = self
         self.shape.collision_type = 2
         self.shape.type = 'flipper'
-        self.shape.effect = get_object_function(flipper_def["effect"])
-        self.shape.effect_params = flipper_def.get("params", [])
         self.shape.elasticity = flipper_def["force"]
         self.shape.friction = 0.1
         space.add(self.body, self.shape)

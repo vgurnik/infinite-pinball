@@ -3,11 +3,13 @@ import pymunk
 import pymunk.pygame_util
 import game_objects
 from static_objects import StaticObjects
+import misc
 
 
 class Field:
     def __init__(self, game_instance):
         self.config = game_instance.config
+        self.game_instance = game_instance
         self.space = pymunk.Space()
         self.space.gravity = self.config.gravity
         self.position = self.config.field_pos
@@ -56,8 +58,10 @@ class Field:
     def draw(self, surface, ball=None):
         field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
-        if self.config.debug_mode:
+        if self.game_instance.debug_mode:
             self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
+        if self.textures.get("field"):
+            field_surface.blit(misc.scale(self.textures.get("field"), self.config.field_size), (0, 0))
         draw_lf = True
         draw_rf = True
 
@@ -101,7 +105,8 @@ class Field:
             self.left_flipper.draw(field_surface)
         if draw_rf:
             self.right_flipper.draw(field_surface)
-
+        if not self.ramp_gate.sensor and self.textures.get("ramps"):
+            field_surface.blit(misc.scale(self.textures.get("ramps"), self.config.field_size), (0, 0))
         if ball:
             ball.draw(field_surface)
         surface.blit(field_surface, self.position)

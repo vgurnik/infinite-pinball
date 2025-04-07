@@ -252,4 +252,15 @@ class Ui:
                 return "reroll"
             if self.mode == 'round_finishable' and self.play_button.is_pressed():
                 return "round_over"
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r and self.game_instance.debug_mode:
+                self.game_instance.textures = self.game_instance.load_textures()
+                self.game_instance.field.textures = self.game_instance.textures
+                print('textures reloaded')
+            if event.key == pygame.K_EQUALS and self.game_instance.debug_mode:
+                self.game_instance.money += 1000
+                print('+$1000')
+            if event.key == pygame.K_MINUS and self.game_instance.debug_mode:
+                self.game_instance.round_instance.score += 1000
+                print('+1000 score')
         return None

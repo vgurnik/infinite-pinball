@@ -102,7 +102,8 @@ class PinballRound:
 
         # Draw the launch indicator.
         if not self.ball_launched:
-            ind_x, ind_y = self.config.launch_indicator_pos
+            ind_x, ind_y = (self.config.launch_indicator_pos[0] + self.field.position[0],
+                            self.config.launch_indicator_pos[1] + self.field.position[1])
             ind_w, ind_h = self.config.launch_indicator_size
             pygame.draw.rect(self.screen, (255, 255, 255), (ind_x, ind_y, ind_w, ind_h), 2)
             charge_ratio = self.launch_charge / self.config.launch_max_impulse

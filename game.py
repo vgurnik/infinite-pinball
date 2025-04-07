@@ -17,6 +17,7 @@ class PinballGame:
         pygame.init()
         self.config = Config()
         self.screen_size = self.config.base_resolution
+        self.debug_mode = self.config.debug_mode
         self.display = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
                                                (pygame.FULLSCREEN if self.config.fullscreen else 0))
         self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
@@ -39,7 +40,9 @@ class PinballGame:
     def load_textures():
         asset_folder = Path(__file__).resolve().with_name("assets")
         # Load textures
-        textures = {"ball": pygame.image.load(asset_folder.joinpath("ball.bmp")).convert_alpha(),
+        textures = {"field": pygame.image.load(asset_folder.joinpath("field.bmp")).convert_alpha(),
+                    "ramps": pygame.image.load(asset_folder.joinpath("ramps.bmp")).convert_alpha(),
+                    "ball": pygame.image.load(asset_folder.joinpath("ball.bmp")).convert_alpha(),
                     "flipper_left": pygame.image.load(asset_folder.joinpath("flipper_left.bmp")).convert_alpha(),
                     "longboi": pygame.image.load(asset_folder.joinpath("longboi.bmp")).convert_alpha(),
                     "pro_flipper": pygame.image.load(asset_folder.joinpath("pro_flipper.bmp")).convert_alpha(),
@@ -51,7 +54,7 @@ class PinballGame:
         return textures
 
     def main_menu(self):
-        if self.config.debug_mode:
+        if self.debug_mode:
             choice = self.ui.overlay_menu(self.screen, "Main Menu",
                                       ["Start Game", "Preferences", "Exit", "Debug_Shop"])
         else:
@@ -76,7 +79,7 @@ class PinballGame:
                                           (255, 255, 255))
             fullscreen_text = font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
                                           (255, 255, 255))
-            debug_text = font.render(f"Debug Mode: {'On' if self.config.debug_mode else 'Off'}", True, (255, 255, 255))
+            debug_text = font.render(f"Debug Mode: {'On' if self.debug_mode else 'Off'}", True, (255, 255, 255))
             back_text = font.render("Go back", True, (255, 255, 255))
 
             if selected_option == 0:
@@ -86,7 +89,7 @@ class PinballGame:
                 fullscreen_text = bigger_font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
                                                      (255, 255, 0))
             elif selected_option == 2:
-                debug_text = bigger_font.render(f"Debug Mode: {'On' if self.config.debug_mode else 'Off'}", True,
+                debug_text = bigger_font.render(f"Debug Mode: {'On' if self.debug_mode else 'Off'}", True,
                                                 (255, 255, 0))
             elif selected_option == 3:
                 back_text = bigger_font.render("Go back", True, (255, 255, 0))
@@ -116,7 +119,7 @@ class PinballGame:
                             self.config.fullscreen = not self.config.fullscreen
                             reload = True
                         elif options[selected_option] == "debug_mode":
-                            self.config.debug_mode = not self.config.debug_mode
+                            self.debug_mode = not self.debug_mode
                         elif options[selected_option] == "back":
                             pref_running = False
                     elif event.key == pygame.K_ESCAPE or (event.key == pygame.K_RETURN and
@@ -140,7 +143,7 @@ class PinballGame:
                         self.config.fullscreen = not self.config.fullscreen
                         reload = True
                     elif options[selected_option] == "debug_mode":
-                        self.config.debug_mode = not self.config.debug_mode
+                        self.debug_mode = not self.debug_mode
                     elif options[selected_option] == "back":
                         pref_running = False
                 elif event.type == pygame.MOUSEMOTION:
@@ -362,7 +365,7 @@ class PinballGame:
         return 'back'
 
     def round_results_overlay(self, score, min_score):
-        extra_orders = int(math.log10(score / min_score)) if score >= min_score else 0
+        extra_orders = int(math.log2(score / min_score)) if score >= min_score else 0
         award = self.config.base_award + extra_orders * self.config.extra_award_per_order \
                                        + self.round_instance.balls_left * self.config.extra_award_per_ball
         if score >= min_score:

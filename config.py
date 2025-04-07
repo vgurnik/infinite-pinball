@@ -5,7 +5,7 @@ import pygame
 class Config:
     def __init__(self):
         self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
-        self.debug_mode = True
+        self.debug_mode = False
         self.fullscreen = False
         self.resolutions = pygame.display.list_modes()
         self.base_resolution = (1280, 720)
@@ -39,7 +39,7 @@ class Config:
 
         # Table boundaries.
         self.field_pos = (350, 0)
-        self.left_wall_x = 10
+        self.left_wall_x = 15
         self.top_wall_y = 10
         self.field_width = 600
         self.field_height = 600
@@ -79,7 +79,7 @@ class Config:
                           2000000,
                           10000000]
         self.base_award = 50
-        self.extra_award_per_order = 100
+        self.extra_award_per_order = 50
         self.extra_award_per_ball = 100
         self.score_multiplier = 1
         self.reroll_cost = 10
@@ -195,7 +195,8 @@ class Config:
         self.ramp_gate_end = (self.right_wall_x, self.launch_opening_top)
         self.ramp_recline_start = (self.right_wall_x, self.bottom_opening_bottom)
         self.ramp_recline_end = (self.launch_ramp_wall_x, self.bottom_opening_bottom - 30)
-        self.launch_indicator_pos = (self.screen_width - self.launch_indicator_size[0] - 20,
-                                     self.screen_height - self.launch_indicator_size[1] - 20)
+        self.field_size = (self.launch_ramp_wall_x + 15, self.bottom_wall_y + 110)
+        self.launch_indicator_pos = (self.field_size[0] - self.launch_indicator_size[0] - 20,
+                                     self.field_size[1] - self.launch_indicator_size[1] - 20)
         self.ball_start = ((self.right_wall_x + self.launch_ramp_wall_x) / 2,
                            self.bottom_wall_y - 30)

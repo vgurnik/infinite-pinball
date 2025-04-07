@@ -17,7 +17,7 @@ pyinstaller main.spec
 - [x] Add descriptions (context)
 - [x] Add preferences
 #### 2
-- [ ] Finish texturing the field
+- [x] Finish texturing the field
   - [x] Resolution rescale
 - [ ] Texturize GUI
   - [x] Separate buttons finally

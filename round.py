@@ -2,7 +2,7 @@ import sys
 import pygame
 
 import effects
-import game
+from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
 from game_objects import Ball
 from misc import scale
@@ -29,7 +29,7 @@ class PinballRound:
         self.score = 0
         self.balls_left = self.config.balls
         self.hit_effects = []
-        self.applied_effects = []
+        self.applied_cards = PlayerInventory(self.game_instance, overrides=self.config.applied_effects_settings)
         self.immediate = {}
 
         # Collision handler for objects.
@@ -91,18 +91,17 @@ class PinballRound:
         for obj in self.field.objects:
             obj.update(dt)
 
-        # Draw hit effects.
-        for effect in self.hit_effects[:]:
-            effect.update(dt)
-            effect.draw(self.screen)
-            if effect.is_dead():
-                self.hit_effects.remove(effect)
 
-        for applied_effect in self.applied_effects[:]:
-            applied_effect["duration"] -= dt
-            if applied_effect["duration"] <= 0:
-                effects.recall(applied_effect, self.game_instance)
-                self.applied_effects.remove(applied_effect)
+        for card in self.applied_cards.items[:]:
+            any_active = False
+            for effect in card.effects:
+                effect["duration"] = max(0, effect["duration"] - dt)
+                if effect["duration"] > 0:
+                    any_active = True
+            if not any_active:
+                card.end_use(self.game_instance)
+                self.applied_cards.remove_item(card)
+                self.hit_effects.append(DisappearingItem(card, 0.5))
 
         # Draw the launch indicator.
         if not self.ball_launched:
@@ -117,6 +116,14 @@ class PinballRound:
         self.ui.draw(self.screen)
         self.ui.update(dt)
         self.inventory.draw(self.screen)
+        self.applied_cards.draw(self.screen)
+
+        # Draw hit effects.
+        for effect in self.hit_effects[:]:
+            effect.update(dt)
+            effect.draw(self.screen)
+            if effect.is_dead():
+                self.hit_effects.remove(effect)
 
         self.game_instance.display.blit(scale(self.screen, self.game_instance.screen_size), (0, 0))
         pygame.display.flip()
@@ -166,9 +173,13 @@ class PinballRound:
                             self.inventory.remove_item(item)
                     elif "try_using" in ret:
                         item = ret["try_using"]
-                        success, lasting = item.use(self.game_instance)
-                        if success:
-                            self.applied_effects += lasting
+                        allow = False
+                        for effect in item.effects:
+                            if effect["usage"] == "active":
+                                allow = True
+                        if allow and item.use(self.game_instance):
+                            self.applied_cards.add_item(item)
+                            self.applied_cards.recalculate_targets()
                             self.inventory.remove_item(item)
                             self.hit_effects.append(DisappearingItem(item, 0.5))
 
@@ -230,6 +241,7 @@ class PinballRound:
                 self.ui.change_mode("round_finishable")
 
             self.inventory.update(dt)
+            self.applied_cards.update(dt)
 
             if self.draw(dt) == "round_over":
                 running = False
@@ -237,6 +249,6 @@ class PinballRound:
             clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
             self.real_fps = clock.get_fps()
 
-        for applied_effect in self.applied_effects:
-            effects.recall(applied_effect, self.game_instance)
+        for applied_effect in self.applied_cards.items:
+            applied_effect.end_use(self.game_instance)
         return exit_option, self.score

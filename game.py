@@ -59,9 +59,10 @@ class PinballGame:
             for effect in card.effects:
                 if effect["trigger"] == event:
                     effects.call(effect, self, arbiter)
-        for effect in self.round_instance.applied_effects:
-            if effect["trigger"] == event:
-                effects.call(effect, self, arbiter)
+        for card in self.round_instance.applied_cards.items[:]:
+            for effect in card.effects:
+                if effect["trigger"] == event and effect["duration"] > 0:
+                    effects.call(effect, self, arbiter)
 
     def main_menu(self):
         if self.debug_mode:

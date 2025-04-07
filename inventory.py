@@ -1,4 +1,5 @@
 from pathlib import Path
+import math
 import pygame
 from game_effects import ContextWindow
 from multiline_text import multiline
@@ -27,32 +28,41 @@ class InventoryItem:
             "duration": effect.get("duration", 0),
             "params": effect.get("params", [])
         } for effect in properties.get("effects", [])]
+        self.active = False
+        self.duration = 0
         self.dragging = False
         self.highlighted = False
         self.visibility = True
 
     def use(self, game):
         """activate all usage:active trigger:use\n
-        recall all usage:passive trigger:use (=self.sell)\n
-        return all usage:active duration!=0 as lasting"""
+        recall all usage:passive trigger:use (=self.sell)"""
         called = []
-        lasting = []
         for effect in self.effects:
-            if effect["usage"] == "active":
-                if effect["trigger"] == "use":
-                    if effects.call(effect, game):
-                        called.append(effect)
-                    else:
-                        break
-                if effect["duration"] != 0:
-                    lasting.append(effect)
+            if effect["usage"] == "active" and effect["trigger"] == "use":
+                if effects.call(effect, game):
+                    called.append(effect)
+                else:
+                    break
         else:
             if self.sell(game):
-                return True, lasting
+                self.active = True
+                self.duration = 0
+                for effect in self.effects:
+                    self.duration = max(self.duration, effect["duration"])
+                return True
         for effect in called:
             if not effects.recall(effect, game):
                 raise RuntimeError("Failed to recall just called effect (?) probably a design error")
-        return False, []
+        return False
+
+    def end_use(self, game):
+        """recall all usage:active trigger:use"""
+        for effect in self.effects:
+            if effect["usage"] == "active" and effect["trigger"] == "use":
+                if not effects.recall(effect, game):
+                    raise RuntimeError("Failed to recall lasting effect (?) probably a design error")
+        return True
 
     def add(self, game):
         """activate all usage:passive trigger:use"""
@@ -126,6 +136,25 @@ class InventoryItem:
         x = rect.x + (rect.width - text_surface.get_width()) / 2
         y = rect.y + 5
         surface.blit(text_surface, (x, y))
+
+        if self.active:
+            max_left = 0
+            for effect in self.effects:
+                max_left = max(max_left, effect["duration"])
+            angle = int(360 * (1 - max_left / self.duration))
+            if angle > 0:
+                overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+                center = (rect.width // 2, rect.height // 2)
+                radius = (rect.width ** 2 + rect.height ** 2) ** 0.5 / 2
+                points = [center]
+                for a in range(-90, -90 + angle + 1, 1):
+                    rad = math.radians(a)
+                    x = center[0] + radius * math.cos(rad)
+                    y = center[1] + radius * math.sin(rad)
+                    points.append((x, y))
+
+                pygame.draw.polygon(overlay, (0, 0, 0, 100), points)
+                surface.blit(overlay, rect.topleft)
 
 
 class Inventory:
@@ -208,18 +237,24 @@ class PlayerInventory(Inventory):
     Inherited PlayerInventory class where items are permutable.
     Items are arranged strictly vertically and can be dragged to re-order.
     """
-    def __init__(self, game_instance, slot_height=170, slot_margin=10):
+    def __init__(self, game_instance, slot_height=170, slot_margin=10, overrides=None):
         super().__init__()
         self.game_instance = game_instance
         self.config = game_instance.config
         self.position = pygame.math.Vector2(self.config.ui_inventory_pos)
         self.width = self.config.ui_width
         self.height = self.config.ui_inventory_height
-        self.slot_height = slot_height
-        self.slot_margin = slot_margin
         self.max_size = 7
         self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100,
                                          self.width - (self.position.x - self.config.ui_pos[0]) * 2, 100)
+        if overrides is not None:
+            self.position = pygame.math.Vector2(overrides.get("pos", self.position))
+            self.width = overrides.get("width", self.width)
+            self.height = overrides.get("height", self.height)
+            self.max_size = overrides.get("max_size", self.max_size)
+            self.deletion_zone = None
+        self.slot_height = slot_height
+        self.slot_margin = slot_margin
 
     def recalculate_targets(self):
         if len(self.items) == 0:
@@ -236,8 +271,7 @@ class PlayerInventory(Inventory):
             super().add_item(item)
             self.recalculate_targets()
             return True
-        else:
-            return False
+        return False
 
     def remove_item(self, item: InventoryItem):
         super().remove_item(item)
@@ -294,15 +328,16 @@ class PlayerInventory(Inventory):
 
     def draw(self, surface):
         font = pygame.font.Font(self.config.fontfile, 25)
-        alpha_surface = pygame.Surface(self.deletion_zone.size, pygame.SRCALPHA)
-        alpha_surface.fill((0, 0, 0, 0))
-        pygame.draw.rect(alpha_surface, (255, 100, 100, 100), alpha_surface.get_rect(), border_radius=10)
-        text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0, 255))
-        alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
-                                          (self.deletion_zone.height - text_surface.get_height()) / 2))
-        surface.blit(alpha_surface, self.deletion_zone.topleft)
+        if self.deletion_zone is not None:
+            alpha_surface = pygame.Surface(self.deletion_zone.size, pygame.SRCALPHA)
+            alpha_surface.fill((0, 0, 0, 0))
+            pygame.draw.rect(alpha_surface, (255, 100, 100, 100), alpha_surface.get_rect(), border_radius=10)
+            text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0, 255))
+            alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
+                                              (self.deletion_zone.height - text_surface.get_height()) / 2))
+            surface.blit(alpha_surface, self.deletion_zone.topleft)
 
-        font = pygame.font.Font(self.config.fontfile, 16)
-        fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255, 255), justification=1)
-        surface.blit(fullness, (self.position.x, self.position.y - 20))
+            font = pygame.font.Font(self.config.fontfile, 16)
+            fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255, 255), justification=1)
+            surface.blit(fullness, (self.position.x, self.position.y - 20))
         super().draw(surface)

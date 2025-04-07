@@ -22,7 +22,7 @@ pyinstaller main.spec
 - [ ] Texturize GUI
   - [x] Separate buttons finally
 - [ ] Texturize cards
-- [ ] Add active effects visualization
+- [x] Add active effects visualization
 #### 3
 - [ ] Add saves
 - [ ] Add more balls

@@ -16,7 +16,7 @@ class Config:
         self.screen_height = 720
         self.fps = 180
         self.gravity = (0, 900)
-        self.max_ball_velocity = 1000
+        self.max_ball_velocity = 1500
 
         # UI panel settings.
         self.ui_pos = (50, 0)
@@ -138,3 +138,10 @@ class Config:
                                      self.field_size[1] - self.launch_indicator_size[1] - 20)
         self.ball_start = ((self.right_wall_x + self.launch_ramp_wall_x) / 2,
                            self.bottom_wall_y - 30)
+
+        self.applied_effects_settings = {
+            "pos": (self.field_pos[0] + self.field_size[0] + 50, 50),
+            "width": 200,
+            "height": 600,
+            "max_size": 1e10
+        }

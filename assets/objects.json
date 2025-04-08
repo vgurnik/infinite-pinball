@@ -1,9 +1,23 @@
 {
   "ball": {
-    "ball_standard": {
+    "standard": {
       "texture": "ball",
       "size": 15,
-      "mass": 1
+      "mass": 1,
+      "max_speed": 1500
+    },
+    "agile": {
+      "texture": "ball",
+      "size": 10,
+      "mass": 0.5,
+      "max_speed": 2500
+    },
+    "bumper": {
+      "texture": "bumper_small",
+      "size": 15,
+      "mass": 1,
+      "max_speed": 1200,
+      "force": 1.3
     }
   },
   "bumper": {

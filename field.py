@@ -42,8 +42,8 @@ class Field:
         self.space.step(0.1)
 
         # Create the balls.
-        self.balls = [game_objects.Ball(self.config.objects_settings["ball"]["ball_standard"], self.config.ball_start,
-                            self.textures.get(self.config.objects_settings["ball"]["ball_standard"]["texture"])
+        self.balls = [game_objects.Ball(self.config.objects_settings["ball"]["standard"], self.config.ball_start,
+                                        self.textures.get(self.config.objects_settings["ball"]["standard"]["texture"])
                                         ) for i in range(self.config.balls)]
 
         self.hovered_item = None

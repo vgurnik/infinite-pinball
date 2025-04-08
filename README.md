@@ -25,7 +25,7 @@ pyinstaller main.spec
 - [x] Add active effects visualization
 #### 3
 - [ ] Add saves
-- [ ] Add more balls
+- [x] Add more balls
   - [x] Add multiball possibility
   - [x] Add multiball ability
 - [ ] Add more card-object-effect options
@@ -50,3 +50,5 @@ pyinstaller main.spec
 - [x] Pack the app conveniently
 - [ ] Add localization
 - [ ] Add SCALED resolution maybe, works strangely
+#### Known bugs
+- Shop sometimes rerolls item on purchase

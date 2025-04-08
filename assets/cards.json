@@ -126,6 +126,48 @@
         }
       ],
       "description": "Split the currently launched\nball into 2 balls"
+    },
+    {
+      "name": "Agile",
+      "price": 200,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "convert_ball",
+          "params": ["agile"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Convert your current ball\ninto Agile ball\nAgile ball is smaller and faster"
+    },
+    {
+      "name": "Bumperball",
+      "price": 200,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "convert_ball",
+          "params": ["bumper"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Convert your current ball\ninto Bumper ball\nBumper ball is a bumper by itself!"
+    },
+    {
+      "name": "Sell ball",
+      "price": 50,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "sell_ball",
+          "params": [250],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Sell your current ball\nfor $250. Be careful, do not\nsell your last ball!"
     }
   ],
   "immediate": [

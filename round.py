@@ -229,9 +229,8 @@ class PinballRound:
             # Ramp gate control.
             all_launched = True
             for ball in self.active_balls:
-                if ball.body.velocity.length > self.config.max_ball_velocity:
-                    ball.body.velocity = ball.body.velocity * (self.config.max_ball_velocity /
-                                                               ball.body.velocity.length)
+                if ball.body.velocity.length > ball.max_speed:
+                    ball.body.velocity = ball.body.velocity * (ball.max_speed / ball.body.velocity.length)
                 if ball.body.position.x > self.config.right_wall_x:
                     xb = ball.body.position.x
                     x0 = self.config.right_wall_x

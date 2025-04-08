@@ -36,19 +36,29 @@ class Ball(GameObject):
     def __init__(self, config, pos, texture=None):
         super().__init__(config, pos, texture, space=None)
         self.mass = config["mass"]
-        inertia = pymunk.moment_for_circle(self.mass, 0, self.radius)
-        self.body = pymunk.Body(self.mass, inertia)
+        self.max_speed = config.get("max_speed", 1500)
+        self.body = pymunk.Body(self.mass, pymunk.moment_for_circle(self.mass, 0, self.radius))
         self.body.position = pos
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.parent = self
         self.shape.type = 'ball'
-        self.shape.elasticity = 0.95
+        self.shape.elasticity = config.get("force", 0.95)
         self.shape.friction = 0.9
         self.shape.collision_type = 1  # for collisions
 
     def activate(self, space, position=None):
+        old_pos = self.body.position
+        self.body = pymunk.Body(self.mass, pymunk.moment_for_circle(self.mass, 0, self.radius))
         if position is not None:
             self.body.position = position
+        else:
+            self.body.position = old_pos
+        self.shape = pymunk.Circle(self.body, self.radius)
+        self.shape.parent = self
+        self.shape.type = 'ball'
+        self.shape.elasticity = self.config.get("force", 0.95)
+        self.shape.friction = 0.9
+        self.shape.collision_type = 1  # for collisions
         space.add(self.body, self.shape)
 
     def remove(self, space):

@@ -2,14 +2,15 @@ import math
 import pygame
 import pymunk
 import effects
-import misc
 
 
 class GameObject:
-    def __init__(self, config, pos, texture=None, space=None):
+    def __init__(self, config, pos, sprite=None, space=None):
         self.space = space
         self.config = config
-        self.texture = texture
+        self.sprite = sprite
+        if hasattr(self.sprite, "copy"):
+            self.sprite = sprite.copy()
         self.effects = [{
             "effect_name": effect.get("effect", None),
             "effect": effects.get_object_function(effect.get("effect", None)),
@@ -33,8 +34,8 @@ class GameObject:
 
 
 class Ball(GameObject):
-    def __init__(self, config, pos, texture=None):
-        super().__init__(config, pos, texture, space=None)
+    def __init__(self, config, pos, sprite=None):
+        super().__init__(config, pos, sprite, space=None)
         self.mass = config["mass"]
         self.max_speed = config.get("max_speed", 1500)
         self.body = pymunk.Body(self.mass, pymunk.moment_for_circle(self.mass, 0, self.radius))
@@ -65,18 +66,17 @@ class Ball(GameObject):
         space.remove(self.body, self.shape)
 
     def draw(self, screen):
-        if self.texture:
-            rotated = misc.scale(self.texture, (self.radius * 2, self.radius * 2))
-            rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
-            screen.blit(rotated, rect)
+        if self.sprite:
+            self.sprite.draw(screen, (self.body.position.x - self.radius, self.body.position.y - self.radius),
+                             (self.radius * 2, self.radius * 2))
         else:
             pygame.draw.circle(screen, (200, 50, 50),
                                (int(self.body.position.x), int(self.body.position.y)), self.radius)
 
 
 class Bumper(GameObject):
-    def __init__(self, space, config, texture=None):
-        super().__init__(config, (0, 0), texture, space)
+    def __init__(self, space, config, sprite=None):
+        super().__init__(config, (0, 0), sprite, space)
         self.config = config
         self.space = space
         self.pos = config["pos"]
@@ -98,17 +98,16 @@ class Bumper(GameObject):
             self.bumped = max(0, self.bumped - dt)
 
     def draw(self, screen, allowed=True):
-        if self.texture:
+        if self.sprite:
             if self.bumped:
-                rotated = misc.scale(self.texture["bumped"], (self.radius * 2, self.radius * 2))
+                self.sprite.set_frame(1)
             else:
-                rotated = misc.scale(self.texture["idle"], (self.radius * 2, self.radius * 2))
-            rect = rotated.get_rect(center=(self.body.position.x, self.body.position.y))
+                self.sprite.set_frame(0)
             if not allowed:
-                rotated.set_alpha(100)
                 pygame.draw.circle(screen, (255, 0, 0, 100),
                                    (int(self.body.position.x), int(self.body.position.y)), self.radius)
-            screen.blit(rotated, rect)
+            self.sprite.draw(screen, (self.body.position.x - self.radius, self.body.position.y - self.radius),
+                             (self.radius * 2, self.radius * 2))
         else:
             pygame.draw.circle(screen, (50, 200, 50, 255),
                                (int(self.body.position.x), int(self.body.position.y)), self.radius)
@@ -119,8 +118,8 @@ class Bumper(GameObject):
 
 class Flipper(GameObject):
 
-    def __init__(self, space, flipper_def, is_left, config, texture=None, additional=False):
-        super().__init__(flipper_def, (0, 0), texture, space)
+    def __init__(self, space, flipper_def, is_left, config, sprite=None, additional=False):
+        super().__init__(flipper_def, (0, 0), sprite, space)
         self.space = space
         self.config = config
         self.is_left = is_left
@@ -172,10 +171,10 @@ class Flipper(GameObject):
             )
             space.add(self.spring)
             self.snap()
-
-        self.texture = texture
-        if not self.is_left:
-            self.texture = pygame.transform.flip(self.texture, flip_x=True, flip_y=False)
+        if self.is_left:
+            self.sprite.set_frame(0)
+        else:
+            self.sprite.set_frame(1)
 
     def update(self, dt):
         super().update(dt)
@@ -198,12 +197,11 @@ class Flipper(GameObject):
         return self.spring.rest_angle == self.active_angle
 
     def draw(self, screen, allowed=True):
-        if self.texture:
-            rotated = misc.rotoscale(self.texture, -math.degrees(self.body.angle), (self.length, self.width))
-            rect = rotated.get_rect(center=(round(self.body.position.x*2)/2, round(self.body.position.y*2)/2))
-            if not allowed:
-                rotated.set_alpha(100)
-            screen.blit(rotated, rect)
+        if self.sprite:
+            # if not allowed:
+            #     rotated.set_alpha(100)
+            self.sprite.draw(screen, (round(self.body.position.x*2)/2, round(self.body.position.y*2)/2),
+                             (self.length, self.width), -math.degrees(self.body.angle))
         else:
             points = [(p.x, p.y) for p in self.shape.get_vertices()]
             pygame.draw.polygon(screen, (200, 200, 50), points)

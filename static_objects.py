@@ -56,11 +56,12 @@ class StaticObjects:
         space.add(*static_lines)
 
     @staticmethod
-    def create_ramp_gates(space, config):
+    def create_ramp_gates(space, config, sprite=None):
         gate_shape = pymunk.Segment(space.static_body, config.ramp_gate_start, config.ramp_recline_start, 5)
         gate_shape.elasticity = 0.5
         gate_shape.friction = 0
         gate_shape.sensor = True
+        gate_shape.sprite = sprite
         space.add(gate_shape)
         recline_shape = pymunk.Segment(space.static_body, config.ramp_recline_start, config.ramp_recline_end, 5)
         recline_shape.elasticity = 0.5
@@ -70,11 +71,12 @@ class StaticObjects:
         return gate_shape, recline_shape
 
     @staticmethod
-    def create_shield(space, config):
+    def create_shield(space, config, sprite=None):
         shield = pymunk.Segment(space.static_body, (config.left_flipper_pos[0], config.left_flipper_pos[1] + 70),
                                 (config.right_flipper_pos[0], config.right_flipper_pos[1] + 70), 5)
         shield.elasticity = 1.5
         shield.friction = 0
         shield.sensor = True
+        shield.sprite = sprite
         space.add(shield)
         return shield

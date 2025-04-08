@@ -46,7 +46,7 @@
   },
   "flipper": {
     "flipper_standard": {
-      "texture": "flipper_left",
+      "texture": "flipper",
       "force": 0.6,
       "size": [80, 20]
     },

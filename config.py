@@ -15,6 +15,7 @@ class Config:
         self.screen_width = 1280
         self.screen_height = 720
         self.fps = 180
+        self.max_dt = 1 / self.fps
         self.gravity = (0, 900)
 
         # UI panel settings.

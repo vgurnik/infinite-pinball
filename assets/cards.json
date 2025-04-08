@@ -268,7 +268,7 @@
     },
     {
       "name": "Big Card Pack",
-      "price": 400,
+      "price": 300,
       "item_type": "card",
       "type": "pack",
       "kind": "oneof",
@@ -304,7 +304,7 @@
     },
     {
       "name": "Mega Object Pack",
-      "price": 100,
+      "price": 300,
       "item_type": "buildable",
       "type": "pack",
       "kind": "oneof",

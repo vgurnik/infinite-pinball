@@ -3,7 +3,6 @@ import pymunk
 import pymunk.pygame_util
 import game_objects
 from static_objects import StaticObjects
-import misc
 
 
 class Field:
@@ -15,8 +14,9 @@ class Field:
         self.position = self.config.field_pos
 
         StaticObjects.create_boundaries(self.space, self.config)
-        self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config)
-        self.shield = StaticObjects.create_shield(self.space, self.config)
+        self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config,
+                                                                            self.game_instance.textures.get("ramps"))
+        self.shield = StaticObjects.create_shield(self.space, self.config, self.game_instance.textures.get("shield"))
 
         self.objects = []
         self.textures = game_instance.textures
@@ -24,15 +24,13 @@ class Field:
             if obj["type"] == "bumper":
                 bumper_def = self.config.objects_settings["bumper"][obj["class"]]
                 bumper_def["pos"] = obj["pos"]
-                bumper = game_objects.Bumper(self.space, bumper_def,
-                                             texture={"idle": self.textures.get(bumper_def["texture"]),
-                                                      "bumped": self.textures.get(bumper_def["texture"]+"_bumped")})
+                bumper = game_objects.Bumper(self.space, bumper_def, sprite=self.textures.get(bumper_def["texture"]))
                 self.objects.append(bumper)
             elif obj["type"] == "flipper":
                 flipper_def = self.config.objects_settings["flipper"][obj["class"]]
                 flipper_def["pos"] = obj["pos"]
                 flipper = game_objects.Flipper(self.space, flipper_def, obj["is_left"], self.config,
-                                               texture=self.textures.get(flipper_def["texture"]))
+                                               sprite=self.textures.get(flipper_def["texture"]))
                 if obj["is_left"]:
                     self.left_flipper = flipper
                 else:
@@ -61,6 +59,7 @@ class Field:
             self.space.remove(old_object.body, old_object.shape)
 
     def update(self, dt):
+        self.shield.sprite.update(dt)
         self.space.step(dt)
 
     def draw(self, surface, balls=None):
@@ -69,7 +68,7 @@ class Field:
         if self.game_instance.debug_mode:
             self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
         if self.textures.get("field"):
-            field_surface.blit(misc.scale(self.textures.get("field"), self.config.field_size), (0, 0))
+            self.textures.get("field").draw(field_surface, (0, 0), self.config.field_size)
         draw_lf = True
         draw_rf = True
 
@@ -97,14 +96,14 @@ class Field:
                 else:
                     allowed = False
                 self.hovered_object = game_objects.Flipper(self.space, config, is_left, self.config,
-                                                           texture=self.textures.get(config.get("texture")),
+                                                           sprite=self.textures.get(config.get("texture")),
                                                            additional=True)
                 self.hovered_object.draw(field_surface, allowed)
             elif props["object_type"] == "bumper":
                 config = self.config.objects_settings["bumper"][props["class"]]
                 config["pos"] = list(pos)
                 self.hovered_object = game_objects.Bumper(self.space, config,
-                                                          texture={"idle": self.textures.get(config.get("texture"))})
+                                                          sprite=self.textures.get(config.get("texture")))
                 if not self._try_placing(self.hovered_item):
                     allowed = False
                 self.hovered_object.draw(field_surface, allowed)
@@ -113,8 +112,11 @@ class Field:
             self.left_flipper.draw(field_surface)
         if draw_rf:
             self.right_flipper.draw(field_surface)
-        if not self.ramp_gate.sensor and self.textures.get("ramps"):
-            field_surface.blit(misc.scale(self.textures.get("ramps"), self.config.field_size), (0, 0))
+        if not self.ramp_gate.sensor and self.ramp_gate.sprite is not None:
+            self.ramp_gate.sprite.draw(field_surface, (0, 0), self.config.field_size)
+        if not self.shield.sensor and self.shield.sprite is not None:
+            self.shield.sprite.draw(field_surface, (self.shield.a[0], self.shield.a[1] - 10),
+                                    (self.shield.b[0]-self.shield.a[0], 50))
         if balls:
             for ball in balls:
                 ball.draw(field_surface)
@@ -157,7 +159,7 @@ class Field:
             elif pos.distance_to(self.config.left_flipper_pos) < 80:
                 config["pos"] = self.config.left_flipper_pos
             obj = game_objects.Flipper(self.space, config, is_left, self.config,
-                                       texture=self.textures.get(config.get("texture")))
+                                       sprite=self.textures.get(config.get("texture")))
             if is_left:
                 self.objects.remove(self.left_flipper)
                 self.left_flipper.destroy()
@@ -169,8 +171,7 @@ class Field:
         elif props["object_type"] == "bumper":
             config = self.config.objects_settings["bumper"][props["class"]]
             config["pos"] = list(pos)
-            obj = game_objects.Bumper(self.space, config, texture={"idle": self.textures.get(config["texture"]),
-                                                  "bumped": self.textures.get(config["texture"]+"_bumped")})
+            obj = game_objects.Bumper(self.space, config, sprite=self.textures.get(config["texture"]))
         else:
             return False
         self.objects.append(obj)

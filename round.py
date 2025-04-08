@@ -40,6 +40,8 @@ class PinballRound:
         # Collision handler for objects.
         self.field.space.add_collision_handler(1, 2).begin = self.collision
 
+        self.time_accumulator = 0
+
     def collision(self, arbiter, _space, _data):
         self.immediate['score'] = 0
         self.immediate['money'] = 0
@@ -163,7 +165,8 @@ class PinballRound:
         self.recharge()
 
         while running:
-            dt = 1.0 / (self.real_fps if self.real_fps > 50 else self.config.fps)
+            dt = 1.0 / (self.real_fps if self.real_fps > 5 else self.config.fps)
+            self.time_accumulator += dt
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return == "round_over":
@@ -213,10 +216,6 @@ class PinballRound:
                             self.inventory.remove_item(item)
                             self.hit_effects.append(DisappearingItem(item, 0.5))
 
-            if not self.ball_launched and self.launch_key_down:
-                self.launch_charge += dt * self.config.launch_charge_rate
-                self.launch_charge = min(self.launch_charge, self.config.launch_max_impulse)
-
             for ball in self.active_balls[:]:
                 if ball.body.position.y > self.config.screen_height + 50:
                     ball.remove(self.field.space)
@@ -257,17 +256,25 @@ class PinballRound:
                 self.field.right_flipper.active_angle if keys[pygame.K_RIGHT]
                 else self.field.right_flipper.default_angle)
 
-            self.field.update(dt)
-
             if self.score >= self.game_instance.score_needed:
                 self.ui.change_mode("round_finishable")
 
-            self.inventory.update(dt)
-            self.applied_cards.update(dt)
+            while self.time_accumulator >= self.config.max_dt:
+                if not self.ball_launched and self.launch_key_down:
+                    self.launch_charge += self.config.max_dt * self.config.launch_charge_rate
+                    self.launch_charge = min(self.launch_charge, self.config.launch_max_impulse)
 
+                self.field.update(self.config.max_dt)
+                self.inventory.update(self.config.max_dt)
+                self.applied_cards.update(self.config.max_dt)
+
+                self.time_accumulator -= self.config.max_dt
+
+            clock.tick(self.real_fps if self.real_fps > 5 else self.config.fps)
             self.draw(dt)
-            clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
             self.real_fps = clock.get_fps()
+            if self.game_instance.debug_mode:
+                print(self.real_fps)
 
         for applied_effect in self.applied_cards.items:
             applied_effect.end_use(self.game_instance)

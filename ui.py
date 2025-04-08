@@ -141,7 +141,7 @@ class Ui:
 
             self.game_instance.screen.fill((20, 20, 70))
 
-            header = big_font.render("In-Game Shop", True, (255, 255, 255))
+            header = big_font.render("Game Shop", True, (255, 255, 255))
             self.game_instance.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
             self.game_instance.ui.draw(self.game_instance.screen)
             self.game_instance.ui.update(dt)

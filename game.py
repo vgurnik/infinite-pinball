@@ -11,6 +11,7 @@ from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
 import effects
 from misc import scale, mouse_scale
+import sprites
 
 
 class PinballGame:
@@ -39,19 +40,16 @@ class PinballGame:
 
     @staticmethod
     def load_textures():
-        asset_folder = Path(__file__).resolve().with_name("assets")
         # Load textures
-        textures = {"field": pygame.image.load(asset_folder.joinpath("field.bmp")).convert_alpha(),
-                    "ramps": pygame.image.load(asset_folder.joinpath("ramps.bmp")).convert_alpha(),
-                    "ball": pygame.image.load(asset_folder.joinpath("ball.bmp")).convert_alpha(),
-                    "flipper_left": pygame.image.load(asset_folder.joinpath("flipper_left.bmp")).convert_alpha(),
-                    "longboi": pygame.image.load(asset_folder.joinpath("longboi.bmp")).convert_alpha(),
-                    "pro_flipper": pygame.image.load(asset_folder.joinpath("pro_flipper.bmp")).convert_alpha(),
-                    "bumper": pygame.image.load(asset_folder.joinpath("bumper_big.bmp")).convert_alpha(),
-                    "bumper_bumped": pygame.image.load(asset_folder.joinpath("bumper_big_bumped.bmp")).convert_alpha(),
-                    "bumper_small": pygame.image.load(asset_folder.joinpath("bumper_small.bmp")).convert_alpha(),
-                    "bumper_small_bumped": pygame.image.load(asset_folder.joinpath("bumper_small_bumped.bmp")
-                                                             ).convert_alpha()}
+        simple_sprites = ["field", "ramps", "shield", "ball"]
+        textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in simple_sprites}
+        # Load animated textures
+        textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))
+        textures["bumper_small"] = sprites.AnimatedSprite("bumper_small.bmp", uvs=[(0, 0), (16, 0)], wh=(16, 16))
+        textures["flipper"] = sprites.AnimatedSprite("flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(40, 10))
+        textures["longboi"] = sprites.AnimatedSprite("longboi.bmp", uvs=[(0, 0), (0, 10)], wh=(45, 10))
+        textures["pro_flipper"] = sprites.AnimatedSprite("pro_flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(30, 10))
+        textures["shield"] = sprites.AnimatedSprite("shield.bmp", uvs=[(0, 0), (0, 30), (0, 60)], wh=(200, 30), ft=0.1)
         return textures
 
     def callback(self, event, arbiter=None):
@@ -66,11 +64,9 @@ class PinballGame:
 
     def main_menu(self):
         if self.debug_mode:
-            choice = self.ui.overlay_menu(self.screen, "Main Menu",
-                                      ["Start Game", "Preferences", "Exit", "Debug_Shop"])
+            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Preferences", "Exit", "Debug_Shop"])
         else:
-            choice = self.ui.overlay_menu(self.screen, "Main Menu",
-                                      ["Start Game", "Preferences", "Exit"])
+            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Preferences", "Exit"])
         return choice
 
     def preferences_menu(self):
@@ -286,7 +282,7 @@ class PinballGame:
             self.screen.fill((20, 20, 70))
 
             big_font = pygame.font.Font(self.config.fontfile, 36)
-            header = big_font.render("In-Game Shop", True, (255, 255, 255))
+            header = big_font.render("Game Shop", True, (255, 255, 255))
             self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
             shop.update(dt)
             shop.draw(self.screen)
@@ -392,7 +388,7 @@ class PinballGame:
                 f"Score: {int(score) if score == int(score) else score}",
                 f"Required Minimum Score: {min_score}",
                 f"Total Money: {self.money}",
-                "Press ENTER to return to main menu"
+                "Press ENTER or click to return to main menu"
             ]
             for i, line in enumerate(texts):
                 txt = font.render(line, True, (255, 100, 100))
@@ -406,7 +402,7 @@ class PinballGame:
                 f"Required Minimum Score: {min_score}",
                 f"Award: {self.config.base_award}",
                 f"Total Money: {self.money}",
-                "Press ENTER to continue..."
+                "Press ENTER or click to continue..."
             ]
             if order_reward > 0:
                 texts.insert(4, f"Award for extra score: {order_reward}")

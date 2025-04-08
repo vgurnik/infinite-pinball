@@ -371,10 +371,10 @@ class PinballGame:
 
     def round_results_overlay(self, score, min_score):
         extra_orders = int(math.log2(score / min_score)) if score >= min_score else 0
-        award = self.config.base_award + extra_orders * self.config.extra_award_per_order \
-                                       + self.round_instance.balls_left * self.config.extra_award_per_ball
+        order_reward = extra_orders * self.config.extra_award_per_order
+        ball_reward = len(self.round_instance.ball_queue) * self.config.extra_award_per_ball
         if score >= min_score:
-            self.money += award
+            self.money += self.config.base_award + order_reward + ball_reward
 
         self.ui.change_mode('results')
         self.ui.draw(self.screen)
@@ -408,10 +408,10 @@ class PinballGame:
                 f"Total Money: {self.money}",
                 "Press ENTER to continue..."
             ]
-            if extra_orders * self.config.extra_award_per_order > 0:
-                texts.insert(4, f"Award for extra score: {extra_orders * self.config.extra_award_per_order}")
-            if self.round_instance.balls_left > 0:
-                texts.insert(4, f"Award for balls left: {self.round_instance.balls_left * self.config.extra_award_per_ball}")
+            if order_reward > 0:
+                texts.insert(4, f"Award for extra score: {order_reward}")
+            if ball_reward > 0:
+                texts.insert(4, f"Award for balls left: {ball_reward}")
             for i, line in enumerate(texts):
                 if i == 0:
                     txt = font.render(line, True, (0, 255, 0))

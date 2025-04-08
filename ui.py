@@ -203,9 +203,6 @@ class Ui:
             min_score_text = font.render(f"Required score: {self.game_instance.score_needed}", True, (255, 255, 255))
             score_text = font.render(f"Score: {int(score) if score == int(score) else score}",
                                      True, (255, 255, 255))
-            balls_text = font.render(f"Balls Left: {self.game_instance.round_instance.balls_left}",
-                                     True, (255, 255, 255))
-            ui_surface.blit(balls_text, self.config.ui_balls_pos)
             ui_surface.blit(score_text, self.config.ui_score_pos)
             ui_surface.blit(min_score_text, self.config.ui_min_score_pos)
 

@@ -6,7 +6,7 @@ import misc
 
 
 class GameObject:
-    def __init__(self, space, config, pos, texture=None):
+    def __init__(self, config, pos, texture=None, space=None):
         self.space = space
         self.config = config
         self.texture = texture
@@ -33,8 +33,8 @@ class GameObject:
 
 
 class Ball(GameObject):
-    def __init__(self, space, config, pos, texture=None):
-        super().__init__(space, config, pos, texture)
+    def __init__(self, config, pos, texture=None):
+        super().__init__(config, pos, texture, space=None)
         self.mass = config["mass"]
         inertia = pymunk.moment_for_circle(self.mass, 0, self.radius)
         self.body = pymunk.Body(self.mass, inertia)
@@ -44,8 +44,15 @@ class Ball(GameObject):
         self.shape.type = 'ball'
         self.shape.elasticity = 0.95
         self.shape.friction = 0.9
-        self.shape.collision_type = 1  # for collisions with bumpers
+        self.shape.collision_type = 1  # for collisions
+
+    def activate(self, space, position=None):
+        if position is not None:
+            self.body.position = position
         space.add(self.body, self.shape)
+
+    def remove(self, space):
+        space.remove(self.body, self.shape)
 
     def draw(self, screen):
         if self.texture:
@@ -59,7 +66,7 @@ class Ball(GameObject):
 
 class Bumper(GameObject):
     def __init__(self, space, config, texture=None):
-        super().__init__(space, config, (0, 0), texture)
+        super().__init__(config, (0, 0), texture, space)
         self.config = config
         self.space = space
         self.pos = config["pos"]
@@ -103,7 +110,7 @@ class Bumper(GameObject):
 class Flipper(GameObject):
 
     def __init__(self, space, flipper_def, is_left, config, texture=None, additional=False):
-        super().__init__(space, flipper_def, (0, 0), texture)
+        super().__init__(flipper_def, (0, 0), texture, space)
         self.space = space
         self.config = config
         self.is_left = is_left

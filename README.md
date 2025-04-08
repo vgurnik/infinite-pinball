@@ -26,7 +26,8 @@ pyinstaller main.spec
 #### 3
 - [ ] Add saves
 - [ ] Add more balls
-  - [ ] Add multiball possibility and ability
+  - [x] Add multiball possibility
+  - [x] Add multiball ability
 - [ ] Add more card-object-effect options
   - [ ] Implement rarity
   - [x] Implement multiple effects per card

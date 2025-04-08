@@ -1,0 +1,10 @@
+from game_objects import Ball
+
+
+def effect(game):
+    if game.round_instance is not None and game.round_instance.ball_launched:
+        for ball in game.round_instance.active_balls:
+            game.round_instance.active_balls.append(Ball(ball.config, ball.body.position, ball.texture))
+            game.round_instance.active_balls[-1].activate(game.field.space)
+            return True
+    return False

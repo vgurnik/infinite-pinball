@@ -41,6 +41,11 @@ class Field:
 
         self.space.step(0.1)
 
+        # Create the balls.
+        self.balls = [game_objects.Ball(self.config.objects_settings["ball"]["ball_standard"], self.config.ball_start,
+                            self.textures.get(self.config.objects_settings["ball"]["ball_standard"]["texture"])
+                                        ) for i in range(self.config.balls)]
+
         self.hovered_item = None
         self._hovered_object = None
 
@@ -55,7 +60,10 @@ class Field:
         if old_object:
             self.space.remove(old_object.body, old_object.shape)
 
-    def draw(self, surface, ball=None):
+    def update(self, dt):
+        self.space.step(dt)
+
+    def draw(self, surface, balls=None):
         field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
         if self.game_instance.debug_mode:
@@ -78,7 +86,7 @@ class Field:
                 config = self.config.objects_settings["flipper"][props["class"]]
                 config["pos"] = list(pos)
                 is_left = True
-                if self.try_placing(self.hovered_item):
+                if self._try_placing(self.hovered_item):
                     if pos.distance_to(self.config.right_flipper_pos) < 80:
                         draw_rf = False
                         config["pos"] = self.config.right_flipper_pos
@@ -97,7 +105,7 @@ class Field:
                 config["pos"] = list(pos)
                 self.hovered_object = game_objects.Bumper(self.space, config,
                                                           texture={"idle": self.textures.get(config.get("texture"))})
-                if not self.try_placing(self.hovered_item):
+                if not self._try_placing(self.hovered_item):
                     allowed = False
                 self.hovered_object.draw(field_surface, allowed)
 
@@ -107,11 +115,12 @@ class Field:
             self.right_flipper.draw(field_surface)
         if not self.ramp_gate.sensor and self.textures.get("ramps"):
             field_surface.blit(misc.scale(self.textures.get("ramps"), self.config.field_size), (0, 0))
-        if ball:
-            ball.draw(field_surface)
+        if balls:
+            for ball in balls:
+                ball.draw(field_surface)
         surface.blit(field_surface, self.position)
 
-    def try_placing(self, item):
+    def _try_placing(self, item):
         pos = item.pos - item.offset - self.position
         if item.properties["object_type"] == "flipper":
             if pos.distance_to(self.config.left_flipper_pos) < 80:
@@ -133,7 +142,7 @@ class Field:
     def place(self, item):
         self.hovered_item = None
         self.hovered_object = None
-        if not self.try_placing(item):
+        if not self._try_placing(item):
             return False
 
         props = item.properties

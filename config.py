@@ -24,7 +24,6 @@ class Config:
         self.ui_min_score_pos = (10, 10)
         self.ui_score_pos = (10, 40)
         self.ui_money_pos = (10, 70)
-        self.ui_balls_pos = (10, 100)
         self.ui_butt_width_1 = 200
         self.ui_butt_width_2 = 80
         self.ui_continue_pos = (20, 150)
@@ -138,6 +137,8 @@ class Config:
                                      self.field_size[1] - self.launch_indicator_size[1] - 20)
         self.ball_start = ((self.right_wall_x + self.launch_ramp_wall_x) / 2,
                            self.bottom_wall_y - 30)
+        self.ball_queue_x = self.field_size[0] + 20
+        self.ball_queue_lower_y = self.bottom_wall_y + 20
 
         self.applied_effects_settings = {
             "pos": (self.field_pos[0] + self.field_size[0] + 50, 50),

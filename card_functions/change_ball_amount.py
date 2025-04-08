@@ -1,14 +1,23 @@
-def effect(game_instance, difference):
-    game_instance.config.balls += difference
-    if game_instance.round_instance is not None:
-        game_instance.round_instance.balls_left += difference
+from game_objects import Ball
+
+
+def effect(game, difference):
+    game.config.balls += difference
+    for _ in range(difference):
+        game.field.balls.append(Ball(game.config.objects_settings["ball"]["ball_standard"],
+                                     game.config.ball_start, game.textures.get(
+                game.config.objects_settings["ball"]["ball_standard"]["texture"])))
+        if game.round_instance is not None:
+            game.round_instance.ball_queue.append(game.field.balls[-1])
     return True
 
 
-def negative_effect(game_instance, difference):
-    if game_instance.config.balls - difference < 0 or game_instance.round_instance.balls_left - difference < 0:
+def negative_effect(game, difference):
+    if len(game.field.balls) < difference or (game.round_instance is not None
+                                              and len(game.round_instance.ball_queue) < difference):
         return False
-    game_instance.config.balls -= difference
-    if game_instance.round_instance is not None:
-        game_instance.round_instance.balls_left -= difference
+    for _ in range(difference):
+        game.field.balls.pop()
+        if game.round_instance is not None:
+            game.round_instance.ball_queue.pop()
     return True

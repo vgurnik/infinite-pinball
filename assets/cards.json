@@ -113,6 +113,19 @@
         }
       ],
       "description": "Destroy an object\nin field modification mode"
+    },
+    {
+      "name": "Multiball",
+      "price": 150,
+      "type": "card",
+      "effects": [
+        {
+          "effect": "split_ball",
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Split the currently launched\nball into 2 balls"
     }
   ],
   "immediate": [

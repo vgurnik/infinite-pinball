@@ -30,7 +30,7 @@ def call(effect, game, arbiter=None):
         if arbiter is not None:
             return effect["effect"](game, *effect["params"], arbiter=arbiter)
         return effect["effect"](game, *effect["params"])
-    return True
+    return False
 
 
 def recall(effect, game, arbiter=None):

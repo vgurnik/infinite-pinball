@@ -18,6 +18,14 @@
       "mass": 1,
       "max_speed": 1200,
       "force": 1.3
+    },
+    "slimeball": {
+      "texture": "slimeball",
+      "size": 15,
+      "mass": 0.1,
+      "max_speed": 1000,
+      "force": 0.1,
+      "friction": 3
     }
   },
   "bumper": {

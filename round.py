@@ -39,6 +39,7 @@ class PinballRound:
 
         # Collision handler for objects.
         self.field.space.add_collision_handler(1, 2).begin = self.collision
+        self.field.space.add_collision_handler(2, 3).begin = lambda arbiter, space, data: False
 
         self.time_accumulator = 0
 
@@ -116,6 +117,9 @@ class PinballRound:
         for card in self.applied_cards.items[:]:
             any_active = False
             for effect in card.effects:
+                if effect["duration"] < 0:
+                    any_active = True
+                    continue
                 effect["duration"] = max(0, effect["duration"] - dt)
                 if effect["duration"] > 0:
                     any_active = True
@@ -206,7 +210,7 @@ class PinballRound:
                     if "try_selling" in ret:
                         item = ret["try_selling"]
                         if item.sell(self.game_instance):
-                            self.game_instance.money += item.properties["price"] // 2
+                            self.game_instance.money += item.properties["price"]
                             self.inventory.remove_item(item)
                     elif "try_using" in ret:
                         item = ret["try_using"]

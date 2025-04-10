@@ -72,8 +72,9 @@ class StaticObjects:
 
     @staticmethod
     def create_shield(space, config, sprite=None):
-        shield = pymunk.Segment(space.static_body, (config.left_flipper_pos[0], config.left_flipper_pos[1] + 70),
-                                (config.right_flipper_pos[0], config.right_flipper_pos[1] + 70), 5)
+        shield = pymunk.Segment(space.static_body, (config.left_flipper_pos[0], config.left_flipper_pos[1] + 40),
+                                (config.right_flipper_pos[0], config.right_flipper_pos[1] + 40), 5)
+        shield.collision_type = 3
         shield.elasticity = 1.5
         shield.friction = 0
         shield.sensor = True

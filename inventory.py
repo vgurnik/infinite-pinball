@@ -12,8 +12,9 @@ class InventoryItem:
         if properties is None:
             properties = {}
         self.name = name
-        self.image = image  # Optional pygame.Surface for custom artwork.
+        self.image = image
         self.properties = properties
+        self.properties["buy_price"] = properties.get("price", 0)
         # If no initial position is provided, start at the target position.
         self.pos = pygame.math.Vector2(init_pos if init_pos is not None else target_position)
         self.target_position = pygame.math.Vector2(target_position)
@@ -25,6 +26,7 @@ class InventoryItem:
             "negative_effect": effects.get_card_function(effect.get("effect", None), negative=True),
             "trigger": effect.get("trigger", "use"),
             "usage": effect.get("usage", "passive"),
+            "is_negative": effect.get("negative", False),
             "duration": effect.get("duration", 0),
             "params": effect.get("params", [])
         } for effect in properties.get("effects", [])]
@@ -64,11 +66,14 @@ class InventoryItem:
                     raise RuntimeError("Failed to recall lasting effect (?) probably a design error")
         return True
 
-    def add(self, game):
+    def add(self, game, negative=None):
         """activate all usage:passive trigger:use"""
+        if negative is None:
+            return self.sell(game, negative=True) and self.sell(game, negative=False)
         called = []
         for effect in self.effects:
-            if effect["usage"] == "passive" and effect["trigger"] == "use":
+            if negative and effect["is_negative"] or (not negative and
+                                                      effect["usage"] == "passive" and effect["trigger"] == "use"):
                 if effects.call(effect, game):
                     called.append(effect)
                 else:
@@ -80,11 +85,14 @@ class InventoryItem:
                 raise RuntimeError("Failed to recall just called effect (?) probably a design error")
         return False
 
-    def sell(self, game):
+    def sell(self, game, negative=None):
         """recall all usage:passive trigger:use"""
+        if negative is None:
+            return self.sell(game, negative=True) and self.sell(game, negative=False)
         recalled = []
         for effect in self.effects:
-            if effect["usage"] == "passive" and effect["trigger"] == "use":
+            if negative and effect["is_negative"] or (not negative and
+                                                      effect["usage"] == "passive" and effect["trigger"] == "use"):
                 if effects.recall(effect, game):
                     recalled.append(effect)
                 else:
@@ -141,7 +149,7 @@ class InventoryItem:
             max_left = 0
             for effect in self.effects:
                 max_left = max(max_left, effect["duration"])
-            angle = int(360 * (1 - max_left / self.duration))
+            angle = int(360 * (1 - max_left / self.duration)) if self.duration > 0 else 0
             if angle > 0:
                 overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
                 center = (rect.width // 2, rect.height // 2)
@@ -162,10 +170,10 @@ class Inventory:
     Base Inventory class for an arbitrary shaped table.
     In this version, items are considered immutable – they follow a fixed layout.
     """
-    def __init__(self):
+    def __init__(self, config):
         self.items = []
         self.dragging_item = None
-        self.context = ContextWindow()
+        self.context = ContextWindow(config)
 
     def clear(self):
         self.items = []
@@ -195,6 +203,7 @@ class Inventory:
                 mouse_pos = mouse_scale(pygame.mouse.get_pos())
                 for item in reversed(self.items):
                     if item.rect.collidepoint(mouse_pos):
+                        self.context.set_visibility(False)
                         return item
         elif event.type == pygame.MOUSEMOTION:
             mouse_pos = mouse_scale(pygame.mouse.get_pos())
@@ -203,8 +212,7 @@ class Inventory:
             for item in reversed(self.items):
                 if item.rect.collidepoint(mouse_pos):
                     item.highlighted = True
-                    self.context.update(mouse_pos,
-                                        item.properties["description"]+'\n'+'Price: $'+str(item.properties["price"]))
+                    self.context.update(mouse_pos, 'description', item)
                     self.context.set_visibility(True)
                     break
             else:
@@ -214,7 +222,7 @@ class Inventory:
 
 class PackInventory(Inventory):
     def __init__(self, game_instance, width=400, slot_margin=10):
-        super().__init__()
+        super().__init__(game_instance.config)
         self.game_instance = game_instance
         self.config = game_instance.config
         self.position = pygame.math.Vector2(self.config.pack_opening_pos)
@@ -238,7 +246,7 @@ class PlayerInventory(Inventory):
     Items are arranged strictly vertically and can be dragged to re-order.
     """
     def __init__(self, game_instance, slot_height=170, slot_margin=10, overrides=None):
-        super().__init__()
+        super().__init__(game_instance.config)
         self.game_instance = game_instance
         self.config = game_instance.config
         self.position = pygame.math.Vector2(self.config.ui_inventory_pos)
@@ -267,10 +275,17 @@ class PlayerInventory(Inventory):
             item.target_position = pygame.math.Vector2(target_x, target_y)
 
     def add_item(self, item: InventoryItem):
+        if not item.add(self.game_instance, negative=False):
+            return False
         if len(self.items) < self.max_size:
+            if not item.add(self.game_instance, negative=True):
+                return False
             super().add_item(item)
             self.recalculate_targets()
+            if item.properties["rarity"] != "negative" and item.properties["price"] > 1:
+                item.properties["price"] = max(item.properties["price"] // 2, 1)
             return True
+        item.sell(self.game_instance, negative=False)
         return False
 
     def remove_item(self, item: InventoryItem):
@@ -316,14 +331,13 @@ class PlayerInventory(Inventory):
             for item in reversed(self.items):
                 if item.rect.collidepoint(mouse_pos):
                     item.highlighted = True
-                    self.context.update(mouse_pos,
-                                        item.properties["description"]+'\n'+'Price: $'+str(item.properties["price"]))
+                    self.context.update(mouse_pos, 'description', item)
                     self.context.set_visibility(True)
                     break
             else:
                 self.context.set_visibility(False)
             if self.deletion_zone.collidepoint(mouse_pos) and self.dragging_item:
-                self.context.update(mouse_pos, f"Drop here to sell\nfor ${self.dragging_item.properties['price']//2}")
+                self.context.update(mouse_pos, 'sell', self.dragging_item.properties['price'])
                 self.context.set_visibility(True)
 
     def draw(self, surface):

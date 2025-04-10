@@ -23,8 +23,8 @@ pyinstaller main.spec
   - [x] Separate buttons finally
 - [ ] Texturize cards
 - [x] Add active effects visualization
-- [ ] Add negative+rare packs
-  - [ ] Add negative effects
+- [x] Add negative+rare packs
+  - [x] Add negative effects
 #### 3
 - [ ] Add saves
 - [x] Add more balls
@@ -52,5 +52,5 @@ pyinstaller main.spec
 - [x] Pack the app conveniently
 - [ ] Add localization
 - [ ] Add SCALED resolution maybe, works strangely
-#### Known bugs + TODOs
-- Shop sometimes rerolls item on purchase (does it?)
+#### Known bugs
+- Shop sometimes rerolls item on purchase

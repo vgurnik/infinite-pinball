@@ -1,6 +1,8 @@
-def effect(game_instance, difference, mode, arbiter=None):
+def effect(game, difference, mode, arbiter=None):
+    if game.round_instance is None:
+        return False
     if mode == 's':
-        game_instance.round_instance.immediate["multi"] += difference
+        game.round_instance.immediate["multi"] += difference
     elif mode == 'm':
-        game_instance.round_instance.immediate["multi"] *= difference
+        game.round_instance.immediate["multi"] *= difference
     return True

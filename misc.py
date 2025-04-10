@@ -42,3 +42,7 @@ def mouse_scale(mouse_pos):
     x = mouse_pos[0] * 1280. / screen_size[0]
     y = mouse_pos[1] * 720. / screen_size[1]
     return x, y
+
+
+def color(hex_color):
+    return [int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:], 16)]

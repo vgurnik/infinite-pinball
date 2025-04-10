@@ -106,7 +106,7 @@
           "params": [2]
         }
       ],
-      "description": "Get 2 extra inventory slots\nwhile this card is in your inventory"
+      "description": "Get extra inventory slot\nwhile this card is in your inventory\nThis card does not take space"
     },
     {
       "name": "Destroyer",
@@ -167,6 +167,21 @@
       "description": "Convert your current ball\ninto Bumper ball\nBumper ball is a bumper by itself!"
     },
     {
+      "name": "Slimeball",
+      "price": 100,
+      "type": "card",
+      "rarity": "rare",
+      "effects": [
+        {
+          "effect": "convert_ball",
+          "params": ["slimeball"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Convert your current ball\ninto Slimeball\nSlimeball is very sticky!"
+    },
+    {
       "name": "Sell ball",
       "price": 50,
       "type": "card",
@@ -180,6 +195,111 @@
         }
       ],
       "description": "Sell your current ball\nfor $250. Be careful, do not\nsell your last ball!"
+    },
+    {
+      "name": "Quintupler",
+      "price": 400,
+      "type": "card",
+      "rarity": "epic",
+      "effects": [
+        {
+          "effect": "multiply_score",
+          "params": [5, "m"],
+          "usage": "active",
+          "trigger": "collision",
+          "duration": -1
+        }
+      ],
+      "description": "Earn 5x score until\nthe end of a round"
+    },
+    {
+      "name": "Double money",
+      "price": 50,
+      "type": "card",
+      "rarity": "epic",
+      "effects": [
+        {
+          "effect": "double_money",
+          "params": [2, 1000],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Double your money\n(max $1000)"
+    },
+    {
+      "name": "Bank deposit",
+      "price": 300,
+      "type": "card",
+      "rarity": "epic",
+      "effects": [
+        {
+          "effect": "change_interest_cap",
+          "params": [1000, "s"],
+          "usage": "passive",
+          "trigger": "use"
+        }
+      ],
+      "description": "Increase maximum interest on\nyour money by additional $1000\nwhile this card is in your inventory"
+    },
+    {
+      "name": "Bank VIP client",
+      "price": 500,
+      "type": "card",
+      "rarity": "epic",
+      "effects": [
+        {
+          "effect": "change_interest",
+          "params": [0.05, "s"],
+          "usage": "passive",
+          "trigger": "use"
+        }
+      ],
+      "description": "Earn additional 5%\ninterest on your money\nwhile this card is in your inventory"
+    },
+    {
+      "name": "No score",
+      "price": -500,
+      "type": "card",
+      "rarity": "negative",
+      "effects": [
+        {
+          "effect": "multiply_score",
+          "params": [0, "m"],
+          "usage": "passive",
+          "negative": true,
+          "trigger": "collision"
+        },
+        {
+          "effect": "inventory_size",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [1]
+        }
+      ],
+      "description": "You earn no score while\nthis card is in your inventory\n\nDoes not take space\nin your inventory"
+    },
+    {
+      "name": "Debt",
+      "price": 0,
+      "type": "card",
+      "rarity": "negative",
+      "effects": [
+        {
+          "effect": "multiply_prices",
+          "params": [0, true],
+          "usage": "passive",
+          "negative": true,
+          "trigger": "use"
+        },
+        {
+          "effect": "inventory_size",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [1]
+        }
+      ],
+      "description": "All your items\nbecome worthless\n\nDoes not take space\nin your inventory"
     }
   ],
   "immediate": [
@@ -336,10 +456,25 @@
       "kind": "oneof",
       "amount": [2, 4],
       "description": "Choose 2 of 4 objects"
+    },
+    {
+      "name": "Epic Pack",
+      "price": 200,
+      "rarity": "common",
+      "item_type": "card",
+      "type": "pack",
+      "kind": "all",
+      "amount": [1, 1, 1],
+      "description": "Get a guaranteed epic card\nbut together with a negative card"
     }
   ],
   "rarities": {
     "card": {
+      "negative": {
+        "name": "Negative",
+        "color": "#000000",
+        "value": 0
+      },
       "common": {
         "name": "Common",
         "color": "#eeeeee",
@@ -348,12 +483,17 @@
       "uncommon": {
         "name": "Uncommon",
         "color": "#00ff00",
-        "value": 35
+        "value": 30
       },
       "rare": {
         "name": "Rare",
         "color": "#0000ff",
-        "value": 15
+        "value": 18
+      },
+      "epic": {
+        "name": "Epic",
+        "color": "#ff00ff",
+        "value": 2
       }
     },
     "immediate": {

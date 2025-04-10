@@ -99,14 +99,13 @@ class Ui:
                 rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
                 screen.blit(text, rect)
                 option_rects.append(rect)
-            self.game_instance.display.blit(scale(screen, self.game_instance.screen_size), (0, 0))
+            self.game.display.blit(scale(screen, self.game.screen_size), (0, 0))
             pygame.display.flip()
 
     def open_pack(self, items, start, kind, amount):
-        clock = pygame.time.Clock()
         big_font = pygame.font.Font(self.config.fontfile, 36)
         dt = 1.0 / self.config.fps
-        opening_inventory = PackInventory(self.game_instance, len(items) * 150)
+        opening_inventory = PackInventory(self.game, len(items) * 150)
         for item in items:
             opening_inventory.add_item(InventoryItem(item["name"], properties=item, target_position=start))
         taken = 0
@@ -124,53 +123,162 @@ class Ui:
                 item = opening_inventory.handle_event(event)
                 if item is not None:
                     if kind == 'oneof':
-                        if self.game_instance.inventory.add_item(item):
+                        if self.game.inventory.add_item(item):
                             opening_inventory.remove_item(item)
                             taken += 1
                     elif kind == 'all':
                         to_remove = []
                         for item in opening_inventory.items:
-                            if self.game_instance.inventory.add_item(item):
+                            if self.game.inventory.add_item(item):
                                 to_remove.append(item)
                             else:
                                 for i in to_remove:
-                                    self.game_instance.inventory.remove_item(i)
+                                    self.game.inventory.remove_item(i)
                                 break
                         else:
                             taken = amount
 
-            self.game_instance.screen.fill((20, 20, 70))
+            self.game.screen.fill((20, 20, 70))
 
             header = big_font.render("Game Shop", True, (255, 255, 255))
-            self.game_instance.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
-            self.game_instance.ui.draw(self.game_instance.screen)
-            self.game_instance.ui.update(dt)
-            self.game_instance.inventory.update(dt)
-            self.game_instance.inventory.draw(self.game_instance.screen)
+            self.game.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
+            self.game.ui.draw(self.game.screen)
+            self.game.ui.update(dt)
+            self.game.inventory.update(dt)
+            self.game.inventory.draw(self.game.screen)
 
             opening_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
             opening_surface.fill((20, 20, 20, 150))
-            opening_inventory.update(dt)
-            opening_inventory.draw(opening_surface)
-
-            pack_header = big_font.render(f"Take {taken}/{amount}", True, (255, 255, 255))
-            opening_surface.blit(pack_header, (opening_inventory.position[0] + (opening_inventory.width -
-                                                                                pack_header.get_width()) / 2,
-                                               opening_inventory.position[1] - 50))
-
             skip_button.draw(opening_surface)
             if skip_button.is_pressed():
                 return "skip"
 
-            self.game_instance.screen.blit(opening_surface, (0, 0))
-            self.game_instance.display.blit(scale(self.game_instance.screen, self.game_instance.screen_size), (0, 0))
+            opening_inventory.update(dt)
+            opening_inventory.draw(opening_surface)
+            if kind == 'oneof':
+                pack_header = big_font.render(f"Take {taken}/{amount}", True, (255, 255, 255))
+            else:
+                pack_header = big_font.render("Take all or skip", True, (255, 255, 255))
+            opening_surface.blit(pack_header, (opening_inventory.position[0] + (opening_inventory.width -
+                                                                                pack_header.get_width()) / 2,
+                                               opening_inventory.position[1] - 50))
+
+
+            self.game.screen.blit(opening_surface, (0, 0))
+            self.game.display.blit(scale(self.game.screen, self.game.screen_size), (0, 0))
             pygame.display.flip()
-            clock.tick(self.config.fps)
         return "continue"
 
-    def __init__(self, game_instance):
-        self.game_instance = game_instance
-        self.config = game_instance.config
+    def preferences_menu(self):
+        font = pygame.font.Font(self.config.fontfile, 28)
+        bigger_font = pygame.font.Font(self.config.fontfile, 30)
+        pref_running = True
+        resolution_index = self.config.resolutions.index(self.game.screen_size)
+        options = ["resolution", "fullscreen", "debug_mode", "back"]
+        selected_option = 0
+
+        while pref_running:
+            reload = False
+            self.game.screen.fill((20, 20, 70))
+            pref_text = font.render("Preferences", True, (255, 255, 255))
+            resolution_text = font.render(f"Resolution: {self.config.resolutions[resolution_index]}", True,
+                                          (255, 255, 255))
+            fullscreen_text = font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
+                                          (255, 255, 255))
+            debug_text = font.render(f"Debug Mode: {'On' if self.game.debug_mode else 'Off'}", True, (255, 255, 255))
+            back_text = font.render("Go back", True, (255, 255, 255))
+            match selected_option:
+                case 0:
+                    resolution_text = bigger_font.render(f"Resolution: {self.config.resolutions[resolution_index]}",
+                                                         True, (255, 255, 0))
+                case 1:
+                    fullscreen_text = bigger_font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}",
+                                                         True, (255, 255, 0))
+                case 2:
+                    debug_text = bigger_font.render(f"Debug Mode: {'On' if self.game.debug_mode else 'Off'}", True,
+                                                    (255, 255, 0))
+                case 3:
+                    back_text = bigger_font.render("Go back", True, (255, 255, 0))
+
+            self.game.screen.blit(pref_text, (self.config.screen_width // 2 - pref_text.get_width() // 2, 100))
+            self.game.screen.blit(resolution_text, (self.config.screen_width // 2 -
+                                                    resolution_text.get_width() // 2, 200))
+            self.game.screen.blit(fullscreen_text, (self.config.screen_width // 2 -
+                                                    fullscreen_text.get_width() // 2, 250))
+            self.game.screen.blit(debug_text, (self.config.screen_width // 2 - debug_text.get_width() // 2, 300))
+            self.game.screen.blit(back_text, (self.config.screen_width // 2 - back_text.get_width() // 2, 350))
+
+            for event in pygame.event.get():
+                match event.type:
+                    case pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    case pygame.KEYDOWN:
+                        match event.KEY:
+                            case pygame.K_UP:
+                                selected_option = (selected_option - 1) % len(options)
+                            case pygame.K_DOWN:
+                                selected_option = (selected_option + 1) % len(options)
+                            case pygame.K_DOWN:
+                                selected_option = (selected_option + 1) % len(options)
+                            case pygame.K_LEFT, pygame.K_RIGHT:
+                                match options[selected_option]:
+                                    case "resolution":
+                                        resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1))\
+                                                           % len(self.config.resolutions)
+                                        self.game.screen_size = self.config.resolutions[resolution_index]
+                                        reload = True
+                                    case "fullscreen":
+                                        self.config.fullscreen = not self.config.fullscreen
+                                        reload = True
+                                    case "debug_mode":
+                                        self.game.debug_mode = not self.game.debug_mode
+                                    case "back":
+                                        pref_running = False
+                        if event.key == pygame.K_ESCAPE or (event.key == pygame.K_RETURN and
+                                                            options[selected_option] == "back"):
+                            pref_running = False
+                    case pygame.MOUSEBUTTONDOWN:
+                        _, mouse_y = mouse_scale(event.pos)
+                        if 200 <= mouse_y <= 230:
+                            selected_option = 0
+                        elif 250 <= mouse_y <= 280:
+                            selected_option = 1
+                        elif 300 <= mouse_y <= 330:
+                            selected_option = 2
+                        elif 350 <= mouse_y <= 380:
+                            selected_option = 3
+                        match options[selected_option]:
+                            case "resolution":
+                                resolution_index = (resolution_index + 1) % len(self.config.resolutions)
+                                self.game.screen_size = self.config.resolutions[resolution_index]
+                                reload = True
+                            case "fullscreen":
+                                self.config.fullscreen = not self.config.fullscreen
+                                reload = True
+                            case "debug_mode":
+                                self.game.debug_mode = not self.game.debug_mode
+                            case "back":
+                                pref_running = False
+                    case pygame.MOUSEMOTION:
+                        _, mouse_y = mouse_scale(event.pos)
+                        if 200 <= mouse_y <= 230:
+                            selected_option = 0
+                        elif 250 <= mouse_y <= 280:
+                            selected_option = 1
+                        elif 300 <= mouse_y <= 330:
+                            selected_option = 2
+                        elif 350 <= mouse_y <= 380:
+                            selected_option = 3
+            if reload:
+                self.game.display = pygame.display.set_mode(self.game.screen_size, (
+                    pygame.FULLSCREEN if self.config.fullscreen else 0))
+            self.game.display.blit(scale(self.game.screen, self.game.screen_size), (0, 0))
+            pygame.display.flip()
+
+    def __init__(self, game):
+        self.game = game
+        self.config = game.config
         self.mode = 'round'
         self.position = self.config.ui_pos
         self.play_button = Button("Play", self.config.ui_continue_pos, (self.config.ui_butt_width_1, 40),
@@ -179,7 +287,7 @@ class Ui:
                                    (255, 0, 100), 36, offset=self.position)
         self.reroll_button = Button("Reroll", self.config.ui_reroll_pos, (self.config.ui_butt_width_2, 40),
                                     (0, 255, 100), 36, offset=self.position)
-        self.context = ContextWindow()
+        self.context = ContextWindow(self.config)
 
     def change_mode(self, mode):
         assert mode in ['shop', 'round', 'round_finishable', 'field_modification', 'results']
@@ -204,8 +312,8 @@ class Ui:
         if self.mode in ['round', 'round_finishable', 'results']:
             if self.mode == 'round_finishable':
                 self.play_button.draw(ui_surface)
-            score = self.game_instance.round_instance.score
-            min_score_text = font.render(f"Required score: {self.game_instance.score_needed}", True, (255, 255, 255))
+            score = self.game.round_instance.score
+            min_score_text = font.render(f"Required score: {self.game.score_needed}", True, (255, 255, 255))
             score_text = font.render(f"Score: {int(score) if score == int(score) else score}",
                                      True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_score_pos)
@@ -215,11 +323,11 @@ class Ui:
             self.play_button.draw(ui_surface)
             self.field_button.draw(ui_surface)
             if self.mode == 'shop':
-                self.reroll_button.draw(ui_surface, self.game_instance.money < self.game_instance.reroll_cost)
-            score_text = font.render(f"Next score: {self.game_instance.score_needed}", True, (255, 255, 255))
+                self.reroll_button.draw(ui_surface, self.game.money < self.game.reroll_cost)
+            score_text = font.render(f"Next score: {self.game.score_needed}", True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_min_score_pos)
 
-        money_text = font.render(f"$ {self.game_instance.money}", True, (255, 255, 255))
+        money_text = font.render(f"$ {self.game.money}", True, (255, 255, 255))
         ui_surface.blit(money_text, self.config.ui_money_pos)
         surface.blit(ui_surface, self.position)
         self.context.draw(surface)
@@ -227,19 +335,19 @@ class Ui:
     def update(self, _dt):
         mpos = mouse_scale(pygame.mouse.get_pos())
         if self.mode in ['shop', 'field_modification'] and self.play_button.is_hovered():
-            self.context.update(mpos, self.config.play_description)
+            self.context.update(mpos, 'text', self.config.play_description)
             self.context.set_visibility(True)
         elif self.mode == 'shop' and self.field_button.is_hovered():
-            self.context.update(mpos, self.config.field_description)
+            self.context.update(mpos, 'text', self.config.field_description)
             self.context.set_visibility(True)
         elif self.mode == 'field_modification' and self.field_button.is_hovered():
-            self.context.update(mpos, self.config.back_description)
+            self.context.update(mpos, 'text', self.config.back_description)
             self.context.set_visibility(True)
         elif self.mode == 'shop' and self.reroll_button.is_hovered():
-            self.context.update(mpos, self.config.reroll_description.format(self.game_instance.reroll_cost))
+            self.context.update(mpos, 'text', self.config.reroll_description.format(self.game.reroll_cost))
             self.context.set_visibility(True)
         elif self.mode == 'round_finishable' and self.play_button.is_hovered():
-            self.context.update(mpos, self.config.finish_description)
+            self.context.update(mpos, 'text', self.config.finish_description)
             self.context.set_visibility(True)
         else:
             self.context.set_visibility(False)
@@ -255,14 +363,14 @@ class Ui:
             if self.mode == 'round_finishable' and self.play_button.is_pressed():
                 return "round_over"
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r and self.game_instance.debug_mode:
-                self.game_instance.textures = self.game_instance.load_textures()
-                self.game_instance.field.textures = self.game_instance.textures
+            if event.key == pygame.K_r and self.game.debug_mode:
+                self.game.textures = self.game.load_textures()
+                self.game.field.textures = self.game.textures
                 print('textures reloaded')
-            if event.key == pygame.K_EQUALS and self.game_instance.debug_mode:
-                self.game_instance.money += 1000
+            if event.key == pygame.K_EQUALS and self.game.debug_mode:
+                self.game.money += 1000
                 print('+$1000')
-            if event.key == pygame.K_MINUS and self.game_instance.debug_mode:
-                self.game_instance.round_instance.score += 1000
+            if event.key == pygame.K_MINUS and self.game.debug_mode:
+                self.game.round_instance.score += 1000
                 print('+1000 score')
         return None

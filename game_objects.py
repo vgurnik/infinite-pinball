@@ -44,7 +44,7 @@ class Ball(GameObject):
         self.shape.parent = self
         self.shape.type = 'ball'
         self.shape.elasticity = config.get("force", 0.95)
-        self.shape.friction = 0.9
+        self.shape.friction = config.get("friction", 0.9)
         self.shape.collision_type = 1  # for collisions
 
     def activate(self, space, position=None):

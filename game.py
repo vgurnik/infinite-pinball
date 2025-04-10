@@ -3,6 +3,8 @@ import math
 import random
 from pathlib import Path
 import pygame
+
+import misc
 from config import Config
 from field import Field
 from ui import Ui
@@ -179,24 +181,20 @@ class PinballGame:
         self.ui.change_mode("shop")
         if _shop is None:
             shop = Inventory()
-            for i in range(3):
-                item = random.randint(0, len(self.config.shop_items["card"]) - 1)
-                item = self.config.shop_items["card"][item]
+            items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
+            for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
-            for i in range(2):
-                item = random.randint(0, len(self.config.shop_items["buildable"]) - 1)
-                item = self.config.shop_items["buildable"][item]
+            items = misc.choose_items(2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
+            for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
-            for i in range(1):
-                item = random.randint(0, len(self.config.shop_items["immediate"]) - 1)
-                item = self.config.shop_items["immediate"][item]
+            items = misc.choose_items(1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
+            for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_effects[0] + i * 130, self.config.shop_pos_effects[1])))
-            for i in range(2):
-                item = random.randint(0, len(self.config.shop_items["pack"]) - 1)
-                item = self.config.shop_items["pack"][item]
+            items = misc.choose_items(2, self.config.shop_items["pack"], self.config.rarities["pack"])
+            for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                     self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
         else:
@@ -215,14 +213,13 @@ class PinballGame:
                             for item in shop.items:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                            for i in range(3):
-                                item = random.randint(0, len(self.config.shop_items["card"]) - 1)
-                                item = self.config.shop_items["card"][item]
+                            items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
+                            for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                                     self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
-                            for i in range(2):
-                                item = random.randint(0, len(self.config.shop_items["buildable"]) - 1)
-                                item = self.config.shop_items["buildable"][item]
+                            items = misc.choose_items(2, self.config.shop_items["buildable"],
+                                                      self.config.rarities["buildable"])
+                            for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
                                     self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
                     else:
@@ -262,11 +259,9 @@ class PinballGame:
                             self.money -= item.properties["price"]
                             shop.remove_item(item)
                             if item.properties["kind"] == "oneof":
-                                items = []
-                                collection = self.config.shop_items[item.properties["item_type"]]
-                                for i in range(item.properties["amount"][1]):
-                                    pack_item = collection[random.randint(0, len(collection) - 1)]
-                                    items.append(pack_item)
+                                pool = self.config.shop_items[item.properties["item_type"]]
+                                items = misc.choose_items(item.properties["amount"][1], pool, self.config.rarities[
+                                    item.properties["item_type"]])
                             else:
                                 items = []      # TODO: other kinds of pack
                             self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0])
@@ -368,9 +363,13 @@ class PinballGame:
     def round_results_overlay(self, score, min_score):
         extra_orders = int(math.log2(score / min_score)) if score >= min_score else 0
         order_reward = extra_orders * self.config.extra_award_per_order
-        ball_reward = len(self.round_instance.ball_queue) * self.config.extra_award_per_ball
+        charged_ball = 0
+        if len(self.round_instance.active_balls) > 0 and not self.round_instance.ball_launched:
+            charged_ball += 1
+        ball_reward = (len(self.round_instance.ball_queue) + charged_ball) * self.config.extra_award_per_ball
+        interest_reward = min(int(self.config.interest_rate * self.money), self.config.interest_cap)
         if score >= min_score:
-            self.money += self.config.base_award + order_reward + ball_reward
+            self.money += self.config.base_award + order_reward + ball_reward + interest_reward
 
         self.ui.change_mode('results')
         self.ui.draw(self.screen)
@@ -404,6 +403,8 @@ class PinballGame:
                 f"Total Money: {self.money}",
                 "Press ENTER or click to continue..."
             ]
+            if interest_reward > 0:
+                texts.insert(4, f"{round(self.config.interest_rate * 100)}% interest: {interest_reward} (max {self.config.interest_cap})")
             if order_reward > 0:
                 texts.insert(4, f"Award for extra score: {order_reward}")
             if ball_reward > 0:

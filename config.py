@@ -82,14 +82,16 @@ class Config:
         self.base_award = 50
         self.extra_award_per_order = 50
         self.extra_award_per_ball = 100
+        self.interest_rate = 0.1
+        self.interest_cap = 50
         self.score_multiplier = 1
         self.reroll_cost = 10
 
         with open(Path(__file__).resolve().with_name("assets").joinpath('cards.json')) as file:
             self.shop_items = load(file)
-
         with open(Path(__file__).resolve().with_name("assets").joinpath('objects.json')) as file:
             self.objects_settings = load(file)
+        self.rarities = self.shop_items.pop("rarities")
 
         self.left_flipper_pos = (190, 630)
         self.right_flipper_pos = (410, 630)

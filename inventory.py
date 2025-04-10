@@ -130,12 +130,12 @@ class InventoryItem:
                     color = (200, 200, 200)
             pygame.draw.rect(surface, color, rect, border_radius=5)
             pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
-        # Draw the item name centered at the top of the card.
-        font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
-        text_surface = font.render(self.name, True, (0, 0, 0))
-        x = rect.x + (rect.width - text_surface.get_width()) / 2
-        y = rect.y + 5
-        surface.blit(text_surface, (x, y))
+            # Draw the item name centered at the top of the card.
+            font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
+            text_surface = font.render(self.name, True, (0, 0, 0))
+            x = rect.x + (rect.width - text_surface.get_width()) / 2
+            y = rect.y + 5
+            surface.blit(text_surface, (x, y))
 
         if self.active:
             max_left = 0

@@ -1,4 +1,31 @@
 import pygame
+import random
+
+
+def choose_items(count, pool, rarity_scoring, unique=True):
+    rarity_pools = {rarity: [] for rarity in rarity_scoring}
+    for item in pool:
+        if item["rarity"] in rarity_scoring:
+            rarity_pools[item["rarity"]].append(item)
+    weights = [rarity_scoring[rarity]["value"] for rarity in rarity_pools.keys()]
+    weights = [sum(weights[:i])/sum(weights) for i in range(1, len(weights)+1)]
+    items = []
+    for _ in range(count):
+        rnd = random.random()
+        for i, w in enumerate(weights):
+            if rnd <= w:
+                rarity = list(rarity_pools.keys())[i]
+                break
+        items.append(random.choice(rarity_pools[rarity]))
+        if unique:
+            rarity_pools[rarity].remove(items[-1])
+            if len(rarity_pools[rarity]) == 0:
+                del rarity_pools[rarity]
+                weights = [rarity_scoring[rarity]["value"] for rarity in rarity_pools.keys()]
+                if len(weights) == 0:
+                    return items
+                weights = [sum(weights[:i])/sum(weights) for i in range(1, len(weights)+1)]
+    return items
 
 
 def rotoscale(texture, angle, new_size):

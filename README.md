@@ -23,13 +23,15 @@ pyinstaller main.spec
   - [x] Separate buttons finally
 - [ ] Texturize cards
 - [x] Add active effects visualization
+- [ ] Add negative+rare packs
+  - [ ] Add negative effects
 #### 3
 - [ ] Add saves
 - [x] Add more balls
   - [x] Add multiball possibility
   - [x] Add multiball ability
 - [ ] Add more card-object-effect options
-  - [ ] Implement rarity
+  - [x] Implement rarity
   - [x] Implement multiple effects per card
   - [x] Rewrite effects as callbacks
   - [ ] Implement card id to allow to affect effects
@@ -50,5 +52,7 @@ pyinstaller main.spec
 - [x] Pack the app conveniently
 - [ ] Add localization
 - [ ] Add SCALED resolution maybe, works strangely
-#### Known bugs
-- Shop sometimes rerolls item on purchase
+#### Known bugs + TODOs
+- Shop sometimes rerolls item on purchase (does it?)
+- Used cards appear in strange places
+- Pack opening should display amount (chosen / to choose)

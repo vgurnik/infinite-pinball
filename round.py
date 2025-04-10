@@ -73,9 +73,11 @@ class PinballRound:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
                 else self.immediate['score']
-            m_v = int(self.config.score_multiplier) if self.immediate['multi'] * self.config.score_multiplier == int(
-                self.immediate['multi'] * self.config.score_multiplier) else (self.immediate['multi'] *
-                                                                              self.config.score_multiplier)
+            if self.immediate['multi'] * self.config.score_multiplier == int(
+                    self.immediate['multi'] * self.config.score_multiplier):
+                m_v = int(self.immediate['multi'] * self.config.score_multiplier)
+            else:
+                m_v = self.immediate['multi'] * self.config.score_multiplier
             if m_v != 1:
                 s_str = f"{'+' if add >= 0 else ''}{s_v} X {m_v}"
             else:
@@ -209,12 +211,16 @@ class PinballRound:
                     elif "try_using" in ret:
                         item = ret["try_using"]
                         allow = False
+                        lasting = False
                         for effect in item.effects:
                             if effect["usage"] == "active":
                                 allow = True
+                            if effect["duration"] != 0:
+                                lasting = True
                         if allow and item.use(self.game_instance):
-                            self.applied_cards.add_item(item)
-                            self.applied_cards.recalculate_targets()
+                            if lasting:
+                                self.applied_cards.add_item(item)
+                                self.applied_cards.recalculate_targets()
                             self.inventory.remove_item(item)
                             self.hit_effects.append(DisappearingItem(item, 0.5))
 
@@ -272,7 +278,7 @@ class PinballRound:
 
                 self.time_accumulator -= self.config.max_dt
 
-            clock.tick(self.real_fps if self.real_fps > 5 else self.config.fps)
+            clock.tick(self.config.fps)
             self.draw(dt)
             self.real_fps = clock.get_fps()
             if self.game_instance.debug_mode:

@@ -301,7 +301,7 @@ class PinballGame:
 
             self.display.blit(scale(self.screen, self.screen_size), (0, 0))
             pygame.display.flip()
-            clock.tick(self.real_fps if self.real_fps > 50 else self.config.fps)
+            clock.tick(self.config.fps)
             self.real_fps = clock.get_fps()
 
     def field_modification_screen(self):

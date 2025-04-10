@@ -26,10 +26,8 @@ class Sprite:
         """
         if isinstance(texture_file, str):
             asset_folder = Path(__file__).resolve().with_name("assets")
-            if uv is None:
-                self.texture = pygame.image.load(asset_folder.joinpath(texture_file)).convert_alpha()
-            else:
-                self.texture = pygame.image.load(asset_folder.joinpath(texture_file)).convert_alpha()
+            self.texture = pygame.image.load(asset_folder.joinpath(texture_file)).convert_alpha()
+            if uv is not None:
                 self.texture = self.texture.subsurface(uv[0], uv[1], wh[0], wh[1])
         else:
             if uv is None:
@@ -37,7 +35,7 @@ class Sprite:
             else:
                 self.texture = texture_file.subsurface(uv[0], uv[1], wh[0], wh[1])
 
-    def draw(self, surface, position, size=None, angle=0):
+    def draw(self, surface, position, size=None, angle=0, alpha=255):
         """
         Draws the sprite on a given surface.
 
@@ -46,7 +44,10 @@ class Sprite:
             position (tuple): The (x, y) position to draw the sprite.
             size (tuple, optional): The size to scale the sprite to. Defaults to the original size.
             angle (float, optional): The angle to rotate the sprite. Defaults to 0.
+            alpha (int, optional): The alpha value for transparency. Defaults to 255 (opaque).
         """
+        if alpha != 255:
+            self.texture.set_alpha(alpha)
         if size is None:
             size = self.texture.get_size()
         if angle != 0:
@@ -133,7 +134,7 @@ class AnimatedSprite:
         """
         self.current_frame = (self.current_frame + 1) % len(self.sprites)
 
-    def draw(self, surface, position, size=None, angle=0):
+    def draw(self, surface, position, size=None, angle=0, alpha=255):
         """
         Draws the current frame of the animated sprite on a given surface.
 
@@ -142,5 +143,6 @@ class AnimatedSprite:
             position (tuple): The (x, y) position to draw the sprite.
             size (tuple, optional): The size to scale the sprite to. Defaults to the original size.
             angle (float, optional): The angle to rotate the sprite. Defaults to 0.
+            alpha (int, optional): The alpha value for transparency. Defaults to 255 (opaque).
         """
-        self.sprites[self.current_frame].draw(surface, position, size, angle)
+        self.sprites[self.current_frame].draw(surface, position, size, angle, alpha)

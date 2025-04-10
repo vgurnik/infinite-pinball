@@ -54,5 +54,3 @@ pyinstaller main.spec
 - [ ] Add SCALED resolution maybe, works strangely
 #### Known bugs + TODOs
 - Shop sometimes rerolls item on purchase (does it?)
-- Used cards appear in strange places
-- Pack opening should display amount (chosen / to choose)

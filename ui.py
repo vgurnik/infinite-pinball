@@ -153,6 +153,11 @@ class Ui:
             opening_inventory.update(dt)
             opening_inventory.draw(opening_surface)
 
+            pack_header = big_font.render(f"Take {taken}/{amount}", True, (255, 255, 255))
+            opening_surface.blit(pack_header, (opening_inventory.position[0] + (opening_inventory.width -
+                                                                                pack_header.get_width()) / 2,
+                                               opening_inventory.position[1] - 50))
+
             skip_button.draw(opening_surface)
             if skip_button.is_pressed():
                 return "skip"

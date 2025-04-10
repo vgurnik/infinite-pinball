@@ -88,13 +88,15 @@ class Field:
                 if self._try_placing(self.hovered_item):
                     if pos.distance_to(self.config.right_flipper_pos) < 80:
                         draw_rf = False
-                        config["pos"] = self.config.right_flipper_pos
+                        config["pos"] = list(self.config.right_flipper_pos)
                         is_left = False
                     elif pos.distance_to(self.config.left_flipper_pos) < 80:
                         draw_lf = False
-                        config["pos"] = self.config.left_flipper_pos
+                        config["pos"] = list(self.config.left_flipper_pos)
                 else:
                     allowed = False
+                config["pos"][0] -= config["size"][0] / 2
+                config["pos"][1] -= config["size"][1] / 2
                 self.hovered_object = game_objects.Flipper(self.space, config, is_left, self.config,
                                                            sprite=self.textures.get(config.get("texture")),
                                                            additional=True)

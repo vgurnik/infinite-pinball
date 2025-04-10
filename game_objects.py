@@ -107,7 +107,7 @@ class Bumper(GameObject):
                 pygame.draw.circle(screen, (255, 0, 0, 100),
                                    (int(self.body.position.x), int(self.body.position.y)), self.radius)
             self.sprite.draw(screen, (self.body.position.x - self.radius, self.body.position.y - self.radius),
-                             (self.radius * 2, self.radius * 2))
+                             (self.radius * 2, self.radius * 2), alpha=100 + allowed*155)
         else:
             pygame.draw.circle(screen, (50, 200, 50, 255),
                                (int(self.body.position.x), int(self.body.position.y)), self.radius)
@@ -197,13 +197,14 @@ class Flipper(GameObject):
         return self.spring.rest_angle == self.active_angle
 
     def draw(self, screen, allowed=True):
+        points = [(self.body.position.x + self.length / 2 + p.x,
+                   self.body.position.y + self.width / 2 + p.y) for p in self.shape.get_vertices()]
         if self.sprite:
-            # if not allowed:
-            #     rotated.set_alpha(100)
+            if not allowed:
+                pygame.draw.polygon(screen, (255, 0, 0, 100), points)
             self.sprite.draw(screen, (round(self.body.position.x*2)/2, round(self.body.position.y*2)/2),
-                             (self.length, self.width), -math.degrees(self.body.angle))
+                             (self.length, self.width), -math.degrees(self.body.angle), alpha=100 + allowed*155)
         else:
-            points = [(p.x, p.y) for p in self.shape.get_vertices()]
             pygame.draw.polygon(screen, (200, 200, 50), points)
             if not allowed:
                 pygame.draw.polygon(screen, (255, 0, 0, 100), points)

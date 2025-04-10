@@ -190,7 +190,7 @@ class Inventory:
         self.context.draw(surface)
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:  # left click
                 mouse_pos = mouse_scale(pygame.mouse.get_pos())
                 for item in reversed(self.items):

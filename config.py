@@ -21,9 +21,10 @@ class Config:
         # UI panel settings.
         self.ui_pos = (50, 0)
         self.ui_width = 250
-        self.ui_min_score_pos = (10, 10)
-        self.ui_score_pos = (10, 40)
-        self.ui_money_pos = (10, 70)
+        self.ui_round_pos = (10, 10)
+        self.ui_min_score_pos = (10, 40)
+        self.ui_score_pos = (10, 70)
+        self.ui_money_pos = (10, 100)
         self.ui_butt_width_1 = 200
         self.ui_butt_width_2 = 80
         self.ui_continue_pos = (20, 150)
@@ -86,6 +87,7 @@ class Config:
         self.interest_cap = 50
         self.score_multiplier = 1
         self.reroll_cost = 10
+        self.inventory_size = 5
 
         with open(Path(__file__).resolve().with_name("assets").joinpath('cards.json')) as file:
             self.shop_items = load(file)

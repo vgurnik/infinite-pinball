@@ -66,9 +66,9 @@ class PinballGame:
 
     def main_menu(self):
         if self.debug_mode:
-            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Preferences", "Exit", "Debug_Shop"])
+            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Settings", "Exit", "Debug_Shop"])
         else:
-            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Preferences", "Exit"])
+            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Settings", "Exit"])
         return choice
 
     def shop_screen(self, _shop=None):
@@ -95,7 +95,8 @@ class PinballGame:
                     self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
         else:
             shop = _shop
-
+        for i in shop.items:
+            print(i.name)
         message = ""
         visual_effects = []
         while True:
@@ -279,9 +280,11 @@ class PinballGame:
         if score >= min_score:
             self.money += self.config.base_award + order_reward + ball_reward + interest_reward
 
+        self.screen.fill((20, 20, 70))
         self.ui.change_mode('results')
         self.ui.draw(self.screen)
         self.ui.update(0)
+        self.field.draw(self.screen)
 
         font = pygame.font.Font(self.config.fontfile, 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
@@ -345,8 +348,8 @@ class PinballGame:
             choice = self.main_menu()
             if choice == "Exit":
                 break
-            if choice == "Preferences":
-                self.ui.preferences_menu()
+            if choice == "Settings":
+                self.ui.settings_menu()
                 continue
             if choice == "Debug_Shop":
                 self.reroll_cost = self.config.reroll_cost
@@ -361,7 +364,7 @@ class PinballGame:
                 continue
             if choice == "Start Game":
                 self.config = Config()
-                self.inventory.clear()
+                self.inventory = PlayerInventory(self)
                 self.field = Field(self)
                 self.money = 0
                 self.round = 0

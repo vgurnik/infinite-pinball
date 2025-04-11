@@ -46,8 +46,7 @@ class Sprite:
             angle (float, optional): The angle to rotate the sprite. Defaults to 0.
             alpha (int, optional): The alpha value for transparency. Defaults to 255 (opaque).
         """
-        if alpha != 255:
-            self.texture.set_alpha(alpha)
+        self.texture.set_alpha(alpha)
         if size is None:
             size = self.texture.get_size()
         if angle != 0:

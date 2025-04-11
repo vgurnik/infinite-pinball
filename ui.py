@@ -163,13 +163,12 @@ class Ui:
                                                                                 pack_header.get_width()) / 2,
                                                opening_inventory.position[1] - 50))
 
-
             self.game.screen.blit(opening_surface, (0, 0))
             self.game.display.blit(scale(self.game.screen, self.game.screen_size), (0, 0))
             pygame.display.flip()
         return "continue"
 
-    def preferences_menu(self):
+    def settings_menu(self):
         font = pygame.font.Font(self.config.fontfile, 28)
         bigger_font = pygame.font.Font(self.config.fontfile, 30)
         pref_running = True
@@ -180,7 +179,7 @@ class Ui:
         while pref_running:
             reload = False
             self.game.screen.fill((20, 20, 70))
-            pref_text = font.render("Preferences", True, (255, 255, 255))
+            pref_text = font.render("Settings", True, (255, 255, 255))
             resolution_text = font.render(f"Resolution: {self.config.resolutions[resolution_index]}", True,
                                           (255, 255, 255))
             fullscreen_text = font.render(f"Fullscreen: {'On' if self.config.fullscreen else 'Off'}", True,
@@ -292,6 +291,7 @@ class Ui:
     def change_mode(self, mode):
         assert mode in ['shop', 'round', 'round_finishable', 'field_modification', 'results']
         self.mode = mode
+        self.context.set_visibility(False)
         if self.mode == 'round_finishable':
             self.play_button = Button("Finish", self.config.ui_continue_pos, (self.config.ui_butt_width_1, 40),
                                       (255, 255, 0), offset=self.position)
@@ -327,7 +327,9 @@ class Ui:
             score_text = font.render(f"Next score: {self.game.score_needed}", True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_min_score_pos)
 
-        money_text = font.render(f"$ {self.game.money}", True, (255, 255, 255))
+        round_text = font.render(f"Round {self.game.round + 1}", True, (255, 100, 200))
+        ui_surface.blit(round_text, self.config.ui_round_pos)
+        money_text = font.render(f"$ {self.game.money}", True, (255, 255, 0))
         ui_surface.blit(money_text, self.config.ui_money_pos)
         surface.blit(ui_surface, self.position)
         self.context.draw(surface)

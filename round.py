@@ -27,6 +27,7 @@ class PinballRound:
         self.ball_queue_coords = [self.config.ball_queue_lower_y - (len(self.ball_queue) - i) * spacing
                                   for i in range(len(self.ball_queue))]
         random.shuffle(self.ball_queue)
+        self.running = False
         self.active_balls = []
         self.ball_launched = False
         self.launch_charge = 0.0
@@ -162,17 +163,23 @@ class PinballRound:
             if effect.is_dead():
                 self.hit_effects.remove(effect)
 
+        if self.game_instance.debug_mode:
+            # Draw the FPS counter.
+            font = pygame.font.Font(self.config.fontfile, 24)
+            fps_text = font.render(f"FPS: {int(self.real_fps)}", True, (255, 255, 255))
+            self.screen.blit(fps_text, (self.game_instance.screen_size[0] - fps_text.get_width() - 10, 10))
+
         self.game_instance.display.blit(scale(self.screen, self.game_instance.screen_size), (0, 0))
         pygame.display.flip()
 
     def run(self):
         clock = pygame.time.Clock()
-        running = True
+        self.running = True
         exit_option = "exit"
         self.ui.change_mode("round")
         self.recharge()
 
-        while running:
+        while self.running:
             dt = 1.0 / (self.real_fps if self.real_fps > 5 else self.config.fps)
             self.time_accumulator += dt
             for event in pygame.event.get():
@@ -181,7 +188,7 @@ class PinballRound:
                     for ball in self.active_balls:
                         ball.remove(self.field.space)
                     exit_option = ui_return
-                    running = False
+                    self.running = False
                     break
                 match event.type:
                     case pygame.QUIT:
@@ -189,11 +196,14 @@ class PinballRound:
                         sys.exit()
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                            choice = self.ui.overlay_menu(self.screen, "Paused", [
+                                "Resume", "Settings", "Exit to Main Menu"])
                             if choice == "Exit to Main Menu":
                                 exit_option = "menu"
-                                running = False
+                                self.running = False
                                 break
+                            if choice == "Settings":
+                                self.game_instance.ui.settings_menu(self.screen)
                         elif event.key == pygame.K_SPACE and not self.ball_launched:
                             self.launch_key_down = True
                     case pygame.KEYUP:
@@ -235,7 +245,7 @@ class PinballRound:
 
             if len(self.active_balls) == 0 and not self.recharge():
                 exit_option = "round_over"
-                break
+                self.running = False
 
             # Ramp gate control.
             all_launched = True
@@ -268,7 +278,7 @@ class PinballRound:
                 self.field.right_flipper.active_angle if keys[pygame.K_RIGHT]
                 else self.field.right_flipper.default_angle)
 
-            if self.score >= self.game_instance.score_needed:
+            if self.score >= self.game_instance.score_needed and self.ui.mode != "round_finishable":
                 self.ui.change_mode("round_finishable")
 
             while self.time_accumulator >= self.config.max_dt:
@@ -285,9 +295,8 @@ class PinballRound:
             clock.tick(self.config.fps)
             self.draw(dt)
             self.real_fps = clock.get_fps()
-            if self.game_instance.debug_mode:
-                print(self.real_fps)
 
         for applied_effect in self.applied_cards.items:
             applied_effect.end_use(self.game_instance)
+
         return exit_option, self.score

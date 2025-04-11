@@ -2,7 +2,7 @@ from game_objects import Ball
 
 
 def effect(game, ball_name):
-    if game.round_instance is not None:
+    if game.round_instance is not None and game.round_instance.running:
         for ball in game.round_instance.active_balls[:]:
             new_ball = Ball(game.config.objects_settings["ball"][ball_name], game.config.ball_start,
                             game.textures.get(game.config.objects_settings["ball"][ball_name]["texture"]))

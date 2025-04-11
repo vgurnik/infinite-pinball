@@ -13,7 +13,7 @@ class InventoryItem:
             properties = {}
         self.name = name
         self.image = image
-        self.properties = properties
+        self.properties = properties.copy()
         self.properties["buy_price"] = properties.get("price", 0)
         # If no initial position is provided, start at the target position.
         self.pos = pygame.math.Vector2(init_pos if init_pos is not None else target_position)
@@ -72,12 +72,12 @@ class InventoryItem:
             return self.sell(game, negative=True) and self.sell(game, negative=False)
         called = []
         for effect in self.effects:
-            if negative and effect["is_negative"] or (not negative and
-                                                      effect["usage"] == "passive" and effect["trigger"] == "use"):
-                if effects.call(effect, game):
-                    called.append(effect)
-                else:
-                    break
+            if negative and effect["is_negative"] or not negative and not effect["is_negative"]:
+                if effect["usage"] == "passive" and effect["trigger"] == "use":
+                    if effects.call(effect, game):
+                        called.append(effect)
+                    else:
+                        break
         else:
             return True
         for effect in called:
@@ -173,10 +173,8 @@ class Inventory:
     def __init__(self, config):
         self.items = []
         self.dragging_item = None
+        self.clicked_item = None
         self.context = ContextWindow(config)
-
-    def clear(self):
-        self.items = []
 
     def add_item(self, item: InventoryItem):
         self.items.append(item)
@@ -198,12 +196,20 @@ class Inventory:
         self.context.draw(surface)
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # left click
                 mouse_pos = mouse_scale(pygame.mouse.get_pos())
                 for item in reversed(self.items):
                     if item.rect.collidepoint(mouse_pos):
+                        self.clicked_item = item
+                        return None
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:  # left click
+                mouse_pos = mouse_scale(pygame.mouse.get_pos())
+                for item in reversed(self.items):
+                    if item.rect.collidepoint(mouse_pos) and item == self.clicked_item:
                         self.context.set_visibility(False)
+                        self.clicked_item = None
                         return item
         elif event.type == pygame.MOUSEMOTION:
             mouse_pos = mouse_scale(pygame.mouse.get_pos())
@@ -252,7 +258,7 @@ class PlayerInventory(Inventory):
         self.position = pygame.math.Vector2(self.config.ui_inventory_pos)
         self.width = self.config.ui_width
         self.height = self.config.ui_inventory_height
-        self.max_size = 7
+        self.max_size = self.config.inventory_size
         self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100,
                                          self.width - (self.position.x - self.config.ui_pos[0]) * 2, 100)
         if overrides is not None:

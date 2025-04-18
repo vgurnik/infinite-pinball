@@ -8,12 +8,18 @@ from misc import mouse_scale
 
 
 class InventoryItem:
-    def __init__(self, name, image=None, properties=None, target_position=(0, 0), card_size=(120, 160), init_pos=None):
+    def __init__(self, name, sprite=None, properties=None, target_position=(0, 0), card_size=(120, 160),
+                 init_pos=None, for_buildable=None):
         if properties is None:
             properties = {}
         self.name = name
-        self.image = image
+        self.sprite = sprite
         self.properties = properties.copy()
+        if self.properties.get("type") == "buildable":
+            if hasattr(for_buildable, "copy"):
+                self.buildable_sprite = for_buildable.copy()
+            else:
+                self.buildable_sprite = for_buildable
         self.properties["buy_price"] = properties.get("price", 0)
         # If no initial position is provided, start at the target position.
         self.pos = pygame.math.Vector2(init_pos if init_pos is not None else target_position)
@@ -50,6 +56,9 @@ class InventoryItem:
             self.active = True
             self.duration = 0
             for effect in self.effects:
+                if effect["duration"] == -1:
+                    self.duration = -1
+                    break
                 self.duration = max(self.duration, effect["duration"])
             return True
         for effect in called:
@@ -119,10 +128,21 @@ class InventoryItem:
         else:
             rect = self.rect
         # If an image is provided, draw the scaled image.
-        if self.image:
-            img = pygame.transform.smoothscale(self.image, (self.card_size[0] - 10, self.card_size[1] - 40))
-            img_rect = img.get_rect(center=rect.center)
-            surface.blit(img, img_rect)
+        if self.sprite:
+            if self.properties.get("type") == "buildable":
+                center = self.rect.center
+                if hasattr(self.buildable_sprite, "texture"):
+                    texture_size = self.buildable_sprite.texture.get_size()
+                else:
+                    texture_size = self.buildable_sprite.sprites[0].texture.get_size()
+                # scale = self.card_size[0] * 0.5 / texture_size[0]         # if I want to normalize to card size
+                scale = 2                                                   # if I want to normalize to same size
+                texture_size = (int(texture_size[0] * scale), int(texture_size[1] * scale))
+                self.buildable_sprite.draw(surface, (center[0] - texture_size[0]//2,
+                                                     center[1] - texture_size[1]//2), texture_size)
+                self.sprite.draw(surface, rect.topleft, rect.size, alpha=100)
+            else:
+                self.sprite.draw(surface, rect.topleft, rect.size)
         else:
             # Draw a simple card background.
             match self.properties["type"]:
@@ -339,6 +359,16 @@ class PlayerInventory(Inventory):
                 # After dropping, re-sort the items based on their current y-positions.
                 self.items.sort(key=lambda x: x.pos.y)
                 self.recalculate_targets()
+            if event.button in [2, 3]:
+                for item in reversed(self.items):
+                    if item.rect.collidepoint(mouse_pos):
+                        if event.button == 2:
+                            self.context.set_visibility(False)
+                            return {"try_selling": item}
+                        if event.button == 3 and item.properties["type"] == "card":
+                            self.context.set_visibility(False)
+                            return {"try_using": item}
+                        break
         elif event.type == pygame.MOUSEMOTION:
             if self.dragging_item:
                 self.dragging_item.pos = pygame.math.Vector2(mouse_pos) + self.dragging_item.offset

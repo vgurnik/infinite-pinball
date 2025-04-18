@@ -223,21 +223,21 @@ class PinballRound:
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
-                        self.game.money += item.properties["price"]
+                        self.game.money += ret["try_selling"].properties["price"]
+                        self.hit_effects.append(DisappearingItem(ret["try_selling"], 0.5))
                     elif "try_using" in ret:
-                        item = ret["try_using"]
                         allow = False
                         lasting = False
-                        for effect in item.effects:
+                        for effect in ret["try_using"].effects:
                             if effect["usage"] == "active":
                                 allow = True
                             if effect["duration"] != 0:
                                 lasting = True
-                        if allow and item.use(self.game) and self.inventory.remove_item(item):
+                        if allow and ret["try_using"].use(self.game) and self.inventory.remove_item(ret["try_using"]):
                             if lasting:
-                                self.applied_cards.add_item(item)
+                                self.applied_cards.add_item(ret["try_using"])
                                 self.applied_cards.recalculate_targets()
-                            self.hit_effects.append(DisappearingItem(item, 0.5))
+                            self.hit_effects.append(DisappearingItem(ret["try_using"], 0.5))
 
             for ball in self.active_balls[:]:
                 if ball.body.position.y > self.config.screen_height + 50:

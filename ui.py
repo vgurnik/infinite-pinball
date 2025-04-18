@@ -107,7 +107,14 @@ class Ui:
         big_font = pygame.font.Font(self.config.fontfile, 36)
         opening_inventory = PackInventory(self.game, len(items) * 150)
         for item in items:
-            opening_inventory.add_item(InventoryItem(item["name"], properties=item, target_position=start))
+            if item["type"] == "buildable":
+                obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
+                opening_inventory.add_item(InventoryItem(item["name"], sprite=self.game.textures.get("buildable_pack"),
+                                                         properties=item, target_position=start, for_buildable=
+                                                         self.game.textures.get(obj_def["texture"])))
+            else:
+                opening_inventory.add_item(InventoryItem(item["name"], sprite=self.game.textures.get(
+                    item.get("texture")), properties=item, target_position=start))
         taken = 0
         skip_button = Button("Skip", (opening_inventory.position[0] + opening_inventory.width / 2,
                                       opening_inventory.position[1] + 200), "auto", (0, 255, 100))

@@ -135,10 +135,8 @@ class DisappearingItem(BaseEffect):
         new_surface = pygame.Surface(self.item.card_size)
         new_surface.set_alpha(alpha)
         rect = pygame.Rect(0, 0, self.item.rect.width, self.item.rect.height)
-        if self.item.image:
-            img = pygame.transform.smoothscale(self.image, (self.item.card_size[0] - 10, self.item.card_size[1] - 40))
-            img_rect = img.get_rect(center=rect.center)
-            surface.blit(img, img_rect)
+        if self.item.sprite:
+            self.item.sprite.draw(new_surface, rect.topleft, rect.size)
         else:
             # Draw a simple card background.
             match self.item.properties["type"]:

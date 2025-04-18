@@ -37,7 +37,7 @@ class Ball(GameObject):
     def __init__(self, config, pos, sprite=None):
         super().__init__(config, pos, sprite, space=None)
         self.mass = config["mass"]
-        self.max_speed = config.get("max_speed", 1500)
+        self.max_speed = config.get("max_speed", 1000)
         self.body = pymunk.Body(self.mass, pymunk.moment_for_circle(self.mass, 0, self.radius))
         self.body.position = pos
         self.shape = pymunk.Circle(self.body, self.radius)

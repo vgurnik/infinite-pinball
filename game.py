@@ -37,12 +37,13 @@ class PinballGame:
         self.score_needed = self.config.min_score[self.round]
         self.inventory = PlayerInventory(self)
         self.round_instance = None
+        self.immediate = {}
         self.real_fps = 0
 
     @staticmethod
     def load_textures():
         # Load textures
-        simple_sprites = ["field", "ramps", "shield", "ball", "slimeball"]
+        simple_sprites = ["field", "ramps", "shield", "ball", "slimeball", "slowmo", "buildable_pack"]
         textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in simple_sprites}
         # Load animated textures
         textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))
@@ -59,12 +60,18 @@ class PinballGame:
     def callback(self, event, arbiter=None):
         for card in self.inventory.items:
             for effect in card.effects:
-                if effect["trigger"] == event:
-                    effects.call(effect, self, arbiter)
+                if effect["trigger"] == event and effect["usage"] == "passive":
+                    if arbiter is not None:
+                        effects.call(effect, self, arbiter)
+                    else:
+                        effects.call(effect, self)
         for card in self.round_instance.applied_cards.items[:]:
             for effect in card.effects:
-                if effect["trigger"] == event and effect["duration"] > 0:
-                    effects.call(effect, self, arbiter)
+                if effect["trigger"] == event and effect["usage"] == "active" and effect["duration"] != 0:
+                    if arbiter is not None:
+                        effects.call(effect, self, arbiter)
+                    else:
+                        effects.call(effect, self)
 
     def main_menu(self):
         if self.debug_mode:
@@ -81,20 +88,26 @@ class PinballGame:
             shop = Inventory(self.config)
             items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                    self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
+                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
+                                            target_position=(self.config.shop_pos_cards[0] + i * 130,
+                                                             self.config.shop_pos_cards[1])))
             items = misc.choose_items(2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                    self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
+                obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
+                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get("buildable_pack"), properties=item,
+                                            target_position=(self.config.shop_pos_objects[0] + i * 130,
+                                                             self.config.shop_pos_objects[1]),
+                              for_buildable=self.textures.get(obj_def["texture"])))
             items = misc.choose_items(1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                    self.config.shop_pos_effects[0] + i * 130, self.config.shop_pos_effects[1])))
+                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
+                                            target_position=(self.config.shop_pos_effects[0] + i * 130,
+                                                             self.config.shop_pos_effects[1])))
             items = misc.choose_items(2, self.config.shop_items["pack"], self.config.rarities["pack"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                    self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
+                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
+                                            target_position=(self.config.shop_pos_packs[0] + i * 130,
+                                                             self.config.shop_pos_packs[1])))
         else:
             shop = _shop
         message = ""
@@ -112,13 +125,17 @@ class PinballGame:
                                     shop.remove_item(item)
                             items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
                             for i, item in enumerate(items):
-                                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                                    self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
+                                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")),
+                                                            properties=item, target_position=(
+                                        self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
                             items = misc.choose_items(2, self.config.shop_items["buildable"],
                                                       self.config.rarities["buildable"])
                             for i, item in enumerate(items):
-                                shop.add_item(InventoryItem(item["name"], properties=item, target_position=(
-                                    self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1])))
+                                obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
+                                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get("buildable_pack"),
+                                                            properties=item, target_position=(
+                                        self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1]),
+                                                            for_buildable=self.textures.get(obj_def["texture"])))
                     else:
                         return ui_return, shop
                 if event.type == pygame.QUIT:
@@ -176,6 +193,7 @@ class PinballGame:
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
+                        visual_effects.append(DisappearingItem(ret["try_selling"], 0.1))
                         self.money += ret["try_selling"].properties["price"]
                         message = f"Sold {ret['try_selling'].name} for {ret['try_selling'].properties['price']}!"
                     elif "try_using" in ret:
@@ -281,13 +299,20 @@ class PinballGame:
         return 'back'
 
     def round_results_overlay(self, score, min_score):
+        self.immediate['interest'] = 0
+        self.immediate['interest_cap'] = 0
+        self.immediate['$per_order'] = 0
+        self.immediate['$per_ball'] = 0
+        self.callback("round_win")
         extra_orders = int(math.log2(score / min_score)) if score >= min_score else 0
-        order_reward = extra_orders * self.config.extra_award_per_order
+        order_reward = extra_orders * (self.config.extra_award_per_order + self.immediate['$per_order'])
         charged_ball = 0
         if len(self.round_instance.active_balls) > 0 and not self.round_instance.ball_launched:
             charged_ball += 1
-        ball_reward = (len(self.round_instance.ball_queue) + charged_ball) * self.config.extra_award_per_ball
-        interest_reward = min(int(self.config.interest_rate * self.money), self.config.interest_cap)
+        ball_reward = (len(self.round_instance.ball_queue) + charged_ball) * (
+                self.config.extra_award_per_ball + self.immediate['$per_ball'])
+        interest_reward = min(int((self.config.interest_rate + self.immediate['interest']) * self.money), (
+                self.config.interest_cap + self.immediate['interest_cap']))
         if score >= min_score:
             self.money += self.config.base_award + order_reward + ball_reward + interest_reward
 

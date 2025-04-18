@@ -22,6 +22,7 @@ pyinstaller main.spec
 - [ ] Texturize GUI
   - [x] Separate buttons finally
 - [ ] Texturize cards
+  - [x] Card texturing backend
 - [x] Add active effects visualization
 - [x] Add negative+rare packs
   - [x] Add negative effects

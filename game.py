@@ -1,6 +1,5 @@
 import sys
 import math
-import random
 from pathlib import Path
 import pygame
 
@@ -12,7 +11,7 @@ from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
 import effects
-from misc import scale, mouse_scale
+from misc import mouse_scale, display_screen
 import sprites
 
 
@@ -48,10 +47,13 @@ class PinballGame:
         # Load animated textures
         textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))
         textures["bumper_small"] = sprites.AnimatedSprite("bumper_small.bmp", uvs=[(0, 0), (16, 0)], wh=(16, 16))
+        textures["bumper_money"] = sprites.AnimatedSprite("bumper_money.bmp", uvs=[(0, 0), (16, 0)], wh=(16, 16))
         textures["flipper"] = sprites.AnimatedSprite("flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(40, 10))
         textures["longboi"] = sprites.AnimatedSprite("longboi.bmp", uvs=[(0, 0), (0, 10)], wh=(45, 10))
         textures["pro_flipper"] = sprites.AnimatedSprite("pro_flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(30, 10))
         textures["shield"] = sprites.AnimatedSprite("shield.bmp", uvs=[(0, 0), (0, 30), (0, 60)], wh=(200, 30), ft=0.1)
+        textures["spring"] = sprites.AnimatedSprite("spring.bmp", uvs=[(0, 0), (40, 0), (80, 0), (120, 0),
+                                                                       (160, 0), (200, 0), (240, 0)], wh=(40, 60))
         return textures
 
     def callback(self, event, arbiter=None):
@@ -73,7 +75,7 @@ class PinballGame:
 
     def shop_screen(self, _shop=None):
         clock = pygame.time.Clock()
-        dt = 1.0 / (self.real_fps if self.real_fps > 50 else self.config.fps)
+        dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
         self.ui.change_mode("shop")
         if _shop is None:
             shop = Inventory(self.config)
@@ -95,8 +97,6 @@ class PinballGame:
                     self.config.shop_pos_packs[0] + i * 130, self.config.shop_pos_packs[1])))
         else:
             shop = _shop
-        for i in shop.items:
-            print(i.name)
         message = ""
         visual_effects = []
         while True:
@@ -107,7 +107,7 @@ class PinballGame:
                         if self.money >= self.reroll_cost:
                             self.money -= self.reroll_cost
                             self.reroll_cost *= 2
-                            for item in shop.items:
+                            for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
                             items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
@@ -125,7 +125,15 @@ class PinballGame:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_ESCAPE:
+                        choice = self.ui.overlay_menu(self.screen, "Paused", [
+                            "Resume", "Settings", "Exit to Main Menu"])
+                        if choice == "Exit to Main Menu":
+                            return 'menu', shop
+                        if choice == "Settings":
+                            self.ui.settings_menu()
+                        _ = clock.tick(self.config.fps)
+                    elif event.key == pygame.K_RETURN:
                         return "continue", shop
                 item = shop.handle_event(event)
                 if item is not None:
@@ -162,13 +170,13 @@ class PinballGame:
                             else:
                                 items = []
                             self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0])
+                            _ = clock.tick(self.config.fps)
                     else:
                         message = f"Not enough money for {item.name}."
                 ret = self.inventory.handle_event(event)
                 if ret:
-                    if "try_selling" in ret and ret["try_selling"].sell(self):
+                    if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         self.money += ret["try_selling"].properties["price"]
-                        self.inventory.remove_item(ret["try_selling"])
                         message = f"Sold {ret['try_selling'].name} for {ret['try_selling'].properties['price']}!"
                     elif "try_using" in ret:
                         item = ret["try_using"]
@@ -208,15 +216,15 @@ class PinballGame:
                 if effect.is_dead():
                     visual_effects.remove(effect)
 
-            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
+            display_screen(self.display, self.screen, self.screen_size)
             pygame.display.flip()
-            clock.tick(self.config.fps)
+            dt = clock.tick(self.config.fps) / 1000
             self.real_fps = clock.get_fps()
 
     def field_modification_screen(self):
         clock = pygame.time.Clock()
-        dt = 1.0 / self.config.fps
         self.ui.change_mode("field_modification")
+        dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
 
         waiting = True
         while waiting:
@@ -230,25 +238,28 @@ class PinballGame:
                         sys.exit()
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            choice = self.ui.overlay_menu(self.screen, "Paused", ["Resume", "Exit to Main Menu"])
+                            choice = self.ui.overlay_menu(self.screen, "Paused", [
+                                "Resume", "Settings", "Exit to Main Menu"])
                             if choice == "Exit to Main Menu":
                                 return 'menu'
+                            if choice == "Settings":
+                                self.ui.settings_menu()
+                            _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_RETURN:
                             waiting = False
                 ret = self.inventory.handle_event(event)
                 if ret:
-                    if "try_selling" in ret and ret["try_selling"].sell(self):
+                    if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         self.money += ret["try_selling"].properties["price"] // 2
-                        self.inventory.remove_item(ret["try_selling"])
                     elif "try_using" in ret:
                         item = ret["try_using"]
                         if item.properties["type"] == "buildable" and self.field.place(item):
-                            self.inventory.remove_item(item)
+                            self.inventory.remove_item(item)    # TODO: if placing is not allowed, remove object
                         elif item.properties["type"] == "card":
                             for effect in item.effects:
                                 if effect["effect_name"] == "delete_object" and\
                                         self.field.delete(mouse_scale(pygame.mouse.get_pos())):
-                                    item.use(self)      # TODO: if usage is not allowed, place object back
+                                    item.use(self)              # TODO: if usage is not allowed, place object back
                                     self.inventory.remove_item(item)
                                     break
                     if "hovering" in ret:
@@ -264,9 +275,9 @@ class PinballGame:
             self.field.draw(self.screen)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
-            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
-            pygame.display.flip()
-            clock.tick(self.config.fps)
+            display_screen(self.display, self.screen, self.screen_size)
+            dt = clock.tick(self.config.fps) / 1000
+            self.real_fps = clock.get_fps()
         return 'back'
 
     def round_results_overlay(self, score, min_score):
@@ -339,8 +350,7 @@ class PinballGame:
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_RETURN:
                             waiting = False
-            self.display.blit(scale(self.screen, self.screen_size), (0, 0))
-            pygame.display.flip()
+            display_screen(self.display, self.screen, self.screen_size)
         return result
 
     def run(self):
@@ -352,7 +362,7 @@ class PinballGame:
                 self.ui.settings_menu()
                 continue
             if choice == "Debug_Shop":
-                self.reroll_cost = self.config.reroll_cost
+                self.reroll_cost = 0
                 self.money = 10000
                 self.field = Field(self)
                 result = 'win'
@@ -378,10 +388,10 @@ class PinballGame:
                     if result == 'lose':
                         break
                     self.round += 1
-                    if self.round < 10:
+                    if self.round < len(self.config.min_score):
                         self.score_needed = self.config.min_score[self.round]
                     else:
-                        self.score_needed = 10 ** (self.round - 2)
+                        self.score_needed = 10 ** (self.round - 4)
                     shop = None
                     self.reroll_cost = self.config.reroll_cost
                     while result in ['win', 'back']:

@@ -31,7 +31,8 @@ class Config:
         self.ui_field_config_pos = (20, 220)
         self.ui_reroll_pos = (140, 220)
         self.ui_inventory_pos = (60, 300)
-        self.ui_inventory_height = 200
+        self.ui_inventory_height = 300
+        self.ui_deletion_size = (200, 150)
 
         self.play_description = "Continue to the\nnext round"
         self.reroll_description = "Reroll buildables and cards\nfor ${}"
@@ -56,9 +57,9 @@ class Config:
         self.divider_y2 = 300
 
         # Launch parameters.
-        self.launch_charge_rate = 2000
-        self.launch_max_impulse = 5000
-        self.launch_indicator_size = (20, 40)
+        self.launch_charge_rate = 3000
+        self.launch_max_impulse = 4000
+        self.launch_indicator_size = (40, 60)
 
         # Flipper parameters.
         self.flipper_stiffness = 90000000
@@ -72,6 +73,8 @@ class Config:
         self.balls = 3
         self.min_score = [1000,
                           2000,
+                          3000,
+                          4000,
                           5000,
                           10000,
                           30000,
@@ -137,8 +140,8 @@ class Config:
         self.ramp_recline_start = (self.right_wall_x, self.bottom_opening_bottom)
         self.ramp_recline_end = (self.launch_ramp_wall_x, self.bottom_opening_bottom - 30)
         self.field_size = (self.launch_ramp_wall_x + 15, self.bottom_wall_y + 110)
-        self.launch_indicator_pos = (self.field_size[0] - self.launch_indicator_size[0] - 20,
-                                     self.field_size[1] - self.launch_indicator_size[1] - 20)
+        self.launch_indicator_pos = (self.field_pos[0] + self.right_wall_x + 7,
+                                     self.field_pos[1] + self.bottom_wall_y - 5)
         self.ball_start = (self.right_wall_x + self.launch_ramp_width / 2,
                            self.bottom_wall_y - 30)
         self.ball_queue_x = self.field_size[0] + 20
@@ -150,3 +153,5 @@ class Config:
             "height": 600,
             "max_size": 1e10
         }
+        self.ui_deletion_pos = (self.field_pos[0] + self.field_size[0] + 20,
+                                self.screen_height - self.ui_deletion_size[1] - 10)

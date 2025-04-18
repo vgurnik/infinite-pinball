@@ -36,7 +36,7 @@
       "effects": [
         {
           "effect": "bump",
-          "params": [100, 10]
+          "params": [100, 0]
         }
       ]
     },
@@ -48,6 +48,17 @@
         {
           "effect": "bump",
           "params": [50, 0]
+        }
+      ]
+    },
+    "bouncy_coin": {
+      "texture": "bumper_money",
+      "size": 15,
+      "force": 1.1,
+      "effects": [
+        {
+          "effect": "bump",
+          "params": [0, 10]
         }
       ]
     }

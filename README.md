@@ -53,5 +53,4 @@ pyinstaller main.spec
 - [ ] Add localization
 - [ ] Add SCALED resolution maybe, works strangely
 #### Known bugs and TODOs
-- Shop sometimes rerolls item on purchase
 - Should probably be able to sell/use cards while opening packs

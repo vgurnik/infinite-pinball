@@ -6,20 +6,20 @@ from static_objects import StaticObjects
 
 
 class Field:
-    def __init__(self, game_instance):
-        self.config = game_instance.config
-        self.game_instance = game_instance
+    def __init__(self, game):
+        self.config = game.config
+        self.game = game
         self.space = pymunk.Space()
         self.space.gravity = self.config.gravity
         self.position = self.config.field_pos
 
         StaticObjects.create_boundaries(self.space, self.config)
         self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config,
-                                                                            self.game_instance.textures.get("ramps"))
-        self.shield = StaticObjects.create_shield(self.space, self.config, self.game_instance.textures.get("shield"))
+                                                                            self.game.textures.get("ramps"))
+        self.shield = StaticObjects.create_shield(self.space, self.config, self.game.textures.get("shield"))
 
         self.objects = []
-        self.textures = game_instance.textures
+        self.textures = game.textures
         for obj in self.config.board_objects:
             if obj["type"] == "bumper":
                 bumper_def = self.config.objects_settings["bumper"][obj["class"]]
@@ -65,7 +65,7 @@ class Field:
     def draw(self, surface, balls=None):
         field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
-        if self.game_instance.debug_mode:
+        if self.game.debug_mode:
             self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
         if self.textures.get("field"):
             self.textures.get("field").draw(field_surface, (0, 0), self.config.field_size)

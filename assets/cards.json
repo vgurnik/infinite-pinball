@@ -331,7 +331,7 @@
           "trigger": "use"
         }
       ],
-      "description": "Additional ball"
+      "description": "Gives additional\nstandard ball"
     },
     {
       "name": "Multiplier",
@@ -367,6 +367,15 @@
       "object_type": "bumper",
       "class": "bumper_small",
       "description": "Additional small bumper"
+    },
+    {
+      "name": "Bouncy Coin",
+      "price": 200,
+      "rarity": "rare",
+      "type": "buildable",
+      "object_type": "bumper",
+      "class": "bouncy_coin",
+      "description": "Bumper that gives $10\nfor each hit"
     },
     {
       "name": "Flipper",
@@ -460,7 +469,7 @@
     {
       "name": "Epic Pack",
       "price": 200,
-      "rarity": "common",
+      "rarity": "uncommon",
       "item_type": "card",
       "type": "pack",
       "kind": "all",

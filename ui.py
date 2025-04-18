@@ -3,7 +3,7 @@ from pathlib import Path
 import pygame
 from game_effects import ContextWindow
 from inventory import InventoryItem, PackInventory
-from misc import scale, mouse_scale
+from misc import mouse_scale, display_screen
 
 
 class Button:
@@ -99,12 +99,12 @@ class Ui:
                 rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
                 screen.blit(text, rect)
                 option_rects.append(rect)
-            self.game.display.blit(scale(screen, self.game.screen_size), (0, 0))
-            pygame.display.flip()
+            display_screen(self.game.display, screen, self.game.screen_size)
 
     def open_pack(self, items, start, kind, amount):
+        clock = pygame.time.Clock()
+        dt = 1.0 / (self.game.real_fps if self.game.real_fps > 1 else self.config.fps)
         big_font = pygame.font.Font(self.config.fontfile, 36)
-        dt = 1.0 / self.config.fps
         opening_inventory = PackInventory(self.game, len(items) * 150)
         for item in items:
             opening_inventory.add_item(InventoryItem(item["name"], properties=item, target_position=start))
@@ -164,8 +164,9 @@ class Ui:
                                                opening_inventory.position[1] - 50))
 
             self.game.screen.blit(opening_surface, (0, 0))
-            self.game.display.blit(scale(self.game.screen, self.game.screen_size), (0, 0))
-            pygame.display.flip()
+            display_screen(self.game.display, self.game.screen, self.game.screen_size)
+            dt = clock.tick(self.config.fps) / 1000
+            self.game.real_fps = clock.get_fps()
         return "continue"
 
     def settings_menu(self):
@@ -213,18 +214,15 @@ class Ui:
                         pygame.quit()
                         sys.exit()
                     case pygame.KEYDOWN:
-                        match event.KEY:
+                        match event.key:
                             case pygame.K_UP:
                                 selected_option = (selected_option - 1) % len(options)
                             case pygame.K_DOWN:
                                 selected_option = (selected_option + 1) % len(options)
-                            case pygame.K_DOWN:
-                                selected_option = (selected_option + 1) % len(options)
-                            case pygame.K_LEFT, pygame.K_RIGHT:
+                            case pygame.K_RETURN:
                                 match options[selected_option]:
                                     case "resolution":
-                                        resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1))\
-                                                           % len(self.config.resolutions)
+                                        resolution_index = (resolution_index + 1) % len(self.config.resolutions)
                                         self.game.screen_size = self.config.resolutions[resolution_index]
                                         reload = True
                                     case "fullscreen":
@@ -234,9 +232,22 @@ class Ui:
                                         self.game.debug_mode = not self.game.debug_mode
                                     case "back":
                                         pref_running = False
-                        if event.key == pygame.K_ESCAPE or (event.key == pygame.K_RETURN and
-                                                            options[selected_option] == "back"):
-                            pref_running = False
+                            case pygame.K_ESCAPE:
+                                pref_running = False
+                        if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                            match options[selected_option]:
+                                case "resolution":
+                                    resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1))\
+                                                       % len(self.config.resolutions)
+                                    self.game.screen_size = self.config.resolutions[resolution_index]
+                                    reload = True
+                                case "fullscreen":
+                                    self.config.fullscreen = not self.config.fullscreen
+                                    reload = True
+                                case "debug_mode":
+                                    self.game.debug_mode = not self.game.debug_mode
+                                case "back":
+                                    pref_running = False
                     case pygame.MOUSEBUTTONDOWN:
                         _, mouse_y = mouse_scale(event.pos)
                         if 200 <= mouse_y <= 230:
@@ -272,8 +283,7 @@ class Ui:
             if reload:
                 self.game.display = pygame.display.set_mode(self.game.screen_size, (
                     pygame.FULLSCREEN if self.config.fullscreen else 0))
-            self.game.display.blit(scale(self.game.screen, self.game.screen_size), (0, 0))
-            pygame.display.flip()
+            display_screen(self.game.display, self.game.screen, self.game.screen_size)
 
     def __init__(self, game):
         self.game = game

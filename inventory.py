@@ -38,7 +38,7 @@ class InventoryItem:
 
     def use(self, game):
         """activate all usage:active trigger:use\n
-        recall all usage:passive trigger:use (=self.sell)"""
+        recall all usage:passive trigger:use (=self.sell) is assumed to be called too"""
         called = []
         for effect in self.effects:
             if effect["usage"] == "active" and effect["trigger"] == "use":
@@ -47,12 +47,11 @@ class InventoryItem:
                 else:
                     break
         else:
-            if self.sell(game):
-                self.active = True
-                self.duration = 0
-                for effect in self.effects:
-                    self.duration = max(self.duration, effect["duration"])
-                return True
+            self.active = True
+            self.duration = 0
+            for effect in self.effects:
+                self.duration = max(self.duration, effect["duration"])
+            return True
         for effect in called:
             if not effects.recall(effect, game):
                 raise RuntimeError("Failed to recall just called effect (?) probably a design error")
@@ -107,9 +106,8 @@ class InventoryItem:
     def update(self, dt):
         if not self.dragging:
             # Smoothly move toward the target position.
-            self.pos += (self.target_position - self.pos) * 50 * dt
-            mouse_pos = mouse_scale(pygame.mouse.get_pos())
-            if not self.rect.collidepoint(mouse_pos):
+            self.pos += (self.target_position - self.pos) * min(10 * dt, 1)
+            if not self.rect.collidepoint(mouse_scale(pygame.mouse.get_pos())):
                 self.highlighted = False
         self.rect.topleft = (int(self.pos.x), int(self.pos.y))
 
@@ -259,13 +257,14 @@ class PlayerInventory(Inventory):
         self.width = self.config.ui_width
         self.height = self.config.ui_inventory_height
         self.max_size = self.config.inventory_size
-        self.deletion_zone = pygame.Rect(self.position.x, self.position.y + self.height + 100,
-                                         self.width - (self.position.x - self.config.ui_pos[0]) * 2, 100)
+        self.deletion_zone = pygame.Rect(self.config.ui_deletion_pos, self.config.ui_deletion_size)
+        self.explicit = False
         if overrides is not None:
             self.position = pygame.math.Vector2(overrides.get("pos", self.position))
             self.width = overrides.get("width", self.width)
             self.height = overrides.get("height", self.height)
             self.max_size = overrides.get("max_size", self.max_size)
+            self.explicit = True
             self.deletion_zone = None
         self.slot_height = slot_height
         self.slot_margin = slot_margin
@@ -281,6 +280,10 @@ class PlayerInventory(Inventory):
             item.target_position = pygame.math.Vector2(target_x, target_y)
 
     def add_item(self, item: InventoryItem):
+        if self.explicit:
+            super().add_item(item)
+            self.recalculate_targets()
+            return True
         if not item.add(self.game_instance, negative=False):
             return False
         if len(self.items) < self.max_size:
@@ -295,8 +298,20 @@ class PlayerInventory(Inventory):
         return False
 
     def remove_item(self, item: InventoryItem):
-        super().remove_item(item)
-        self.recalculate_targets()
+        if self.explicit:
+            super().remove_item(item)
+            self.recalculate_targets()
+            return True
+        if not item.sell(self.game_instance, negative=False):
+            return False
+        if len(self.items) <= self.max_size:
+            if not item.sell(self.game_instance, negative=True):
+                return False
+            super().remove_item(item)
+            self.recalculate_targets()
+            return True
+        item.add(self.game_instance, negative=False)
+        return False
 
     def handle_event(self, event):
         mouse_pos = mouse_scale(pygame.mouse.get_pos())
@@ -335,13 +350,18 @@ class PlayerInventory(Inventory):
             for item in self.items:
                 item.highlighted = False
             for item in reversed(self.items):
-                if item.rect.collidepoint(mouse_pos):
+                if item.rect.collidepoint(mouse_pos) and item != self.dragging_item:
                     item.highlighted = True
                     self.context.update(mouse_pos, 'description', item)
                     self.context.set_visibility(True)
                     break
             else:
-                self.context.set_visibility(False)
+                if self.dragging_item is not None and self.dragging_item.rect.collidepoint(mouse_pos):
+                    self.dragging_item.highlighted = True
+                    self.context.update(mouse_pos, 'description', self.dragging_item)
+                    self.context.set_visibility(True)
+                else:
+                    self.context.set_visibility(False)
             if self.deletion_zone.collidepoint(mouse_pos) and self.dragging_item:
                 self.context.update(mouse_pos, 'sell', self.dragging_item.properties['price'])
                 self.context.set_visibility(True)

@@ -26,6 +26,18 @@
       "max_speed": 1000,
       "force": 0.1,
       "friction": 3
+    },
+    "golden_ball": {
+      "texture": "goldball",
+      "size": 15,
+      "mass": 1.5,
+      "max_speed": 1200,
+      "effects": [
+        {
+          "effect": "earn",
+          "params": [5]
+        }
+      ]
     }
   },
   "bumper": {

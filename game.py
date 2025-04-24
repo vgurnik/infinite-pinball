@@ -43,7 +43,7 @@ class PinballGame:
     @staticmethod
     def load_textures():
         # Load textures
-        simple_sprites = ["field", "ramps", "shield", "ball", "slimeball", "slowmo", "buildable_pack"]
+        simple_sprites = ["field", "ramps", "ball", "goldball", "slimeball"]
         textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in simple_sprites}
         # Load animated textures
         textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))
@@ -55,6 +55,30 @@ class PinballGame:
         textures["shield"] = sprites.AnimatedSprite("shield.bmp", uvs=[(0, 0), (0, 30), (0, 60)], wh=(200, 30), ft=0.1)
         textures["spring"] = sprites.AnimatedSprite("spring.bmp", uvs=[(0, 0), (40, 0), (80, 0), (120, 0),
                                                                        (160, 0), (200, 0), (240, 0)], wh=(40, 60))
+        cards_spritesheet = sprites.Sprite("cards.bmp")
+        textures["buildable_pack"] = sprites.Sprite(cards_spritesheet, (0, 0), (60, 80))
+        textures["slowmo"] = sprites.Sprite(cards_spritesheet, (60, 0), (60, 80))
+        textures["doublescore"] = sprites.Sprite(cards_spritesheet, (120, 0), (60, 80))
+        textures["quintupler"] = sprites.Sprite(cards_spritesheet, (180, 0), (60, 80))
+        textures["overload"] = sprites.Sprite(cards_spritesheet, (240, 0), (60, 80))
+        textures["ticket"] = sprites.Sprite(cards_spritesheet, (300, 0), (60, 80))
+        textures["wrench"] = sprites.Sprite(cards_spritesheet, (360, 0), (60, 80))
+        textures["cardholder"] = sprites.Sprite(cards_spritesheet, (420, 0), (60, 80))
+        textures["shield_card"] = sprites.Sprite(cards_spritesheet, (480, 0), (60, 80))
+
+        textures["+ball"] = sprites.Sprite(cards_spritesheet, (0, 80), (60, 80))
+        textures["backpack"] = sprites.Sprite(cards_spritesheet, (60, 80), (60, 80))
+
+        textures["slimeball_card"] = sprites.Sprite(cards_spritesheet, (120, 80), (60, 80))
+        textures["agile_card"] = sprites.Sprite(cards_spritesheet, (180, 80), (60, 80))
+        textures["bumperball_card"] = sprites.Sprite(cards_spritesheet, (240, 80), (60, 80))
+        textures["goldball_card"] = sprites.Sprite(cards_spritesheet, (300, 80), (60, 80))
+        textures["sellball"] = sprites.Sprite(cards_spritesheet, (360, 80), (60, 80))
+        textures["multiball"] = sprites.Sprite(cards_spritesheet, (420, 80), (60, 80))
+        textures["bonus_ball"] = sprites.Sprite(cards_spritesheet, (480, 80), (60, 80))
+
+        textures["5xscore"] = sprites.Sprite(cards_spritesheet, (120, 160), (60, 80))
+        textures["platinum"] = sprites.Sprite(cards_spritesheet, (180, 160), (60, 80))
         return textures
 
     def callback(self, event, arbiter=None):
@@ -164,7 +188,7 @@ class PinballGame:
                                 message = "Not enough inventory space!"
                         elif item.properties["type"] == "immediate":
                             if item.use(self):
-                                visual_effects.append(DisappearingItem(item, 0.1))
+                                visual_effects.append(DisappearingItem(item, 0.3))
                                 shop.remove_item(item)
                                 self.money -= item.properties["buy_price"]
                                 message = f"Purchased {item.name} for {item.properties['price']}!"

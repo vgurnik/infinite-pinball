@@ -30,7 +30,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='nubbysbalatreglin',
+    name='infinite-pinball',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

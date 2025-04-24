@@ -132,7 +132,7 @@ class DisappearingItem(BaseEffect):
 
     def draw(self, surface):
         alpha = max(0, int(255 * (1 - self.age / self.lifetime)))
-        new_surface = pygame.Surface(self.item.card_size)
+        new_surface = pygame.Surface(self.item.card_size, pygame.SRCALPHA)
         new_surface.set_alpha(alpha)
         rect = pygame.Rect(0, 0, self.item.rect.width, self.item.rect.height)
         if self.item.sprite:
@@ -150,8 +150,8 @@ class DisappearingItem(BaseEffect):
                     color = (200, 200, 200)
             pygame.draw.rect(new_surface, color, rect, border_radius=5)
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
-        # Draw the item name centered at the top of the card.
-        font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
-        text_surface = font.render(self.item.name, True, (0, 0, 0))
-        new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
+            # Draw the item name centered at the top of the card.
+            font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
+            text_surface = font.render(self.item.name, True, (0, 0, 0))
+            new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)

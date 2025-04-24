@@ -21,7 +21,7 @@ pyinstaller main.spec
   - [x] Resolution rescale
 - [ ] Texturize GUI
   - [x] Separate buttons finally
-- [ ] Texturize cards
+- [x] Texturize cards
   - [x] Card texturing backend
 - [x] Add active effects visualization
 - [x] Add negative+rare packs

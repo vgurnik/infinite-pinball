@@ -20,7 +20,7 @@ class Sprite:
         Initializes a Sprite object.
 
         Args:
-            texture_file (str or pygame.Surface): The file path to the texture or a preloaded surface.
+            texture_file (str | pygame.Surface | Sprite): The file path to the texture or a preloaded surface.
             uv (tuple, optional): The top-left corner of the subsurface (x, y). Defaults to None.
             wh (tuple, optional): The width and height of the subsurface. Defaults to None.
         """
@@ -29,11 +29,16 @@ class Sprite:
             self.texture = pygame.image.load(asset_folder.joinpath(texture_file)).convert_alpha()
             if uv is not None:
                 self.texture = self.texture.subsurface(uv[0], uv[1], wh[0], wh[1])
-        else:
+        elif isinstance(texture_file, pygame.Surface):
             if uv is None:
                 self.texture = texture_file
             else:
                 self.texture = texture_file.subsurface(uv[0], uv[1], wh[0], wh[1])
+        elif isinstance(texture_file, Sprite):
+            if uv is None:
+                self.texture = texture_file.texture
+            else:
+                self.texture = texture_file.texture.subsurface(uv[0], uv[1], wh[0], wh[1])
 
     def draw(self, surface, position, size=None, angle=0, alpha=255):
         """

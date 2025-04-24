@@ -114,7 +114,7 @@ class Ui:
                                                          self.game.textures.get(obj_def["texture"])))
             else:
                 opening_inventory.add_item(InventoryItem(item["name"], sprite=self.game.textures.get(
-                    item.get("texture")), properties=item, target_position=start))
+                    item.get("sprite")), properties=item, target_position=start))
         taken = 0
         skip_button = Button("Skip", (opening_inventory.position[0] + opening_inventory.width / 2,
                                       opening_inventory.position[1] + 200), "auto", (0, 255, 100))

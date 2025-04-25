@@ -58,6 +58,8 @@ class PinballRound:
                     for effect in shape.parent.effects:
                         if effect["trigger"] == "collision":
                             effects.call(effect, self.game, arbiter=shape.parent)
+                    if shape.parent.cooldown > 0:
+                        shape.parent.cooldown_timer = shape.parent.cooldown
                 case 2:
                     if getattr(shape.parent, "bumped", None) is not None:
                         setattr(shape.parent, "bumped", 0.1)
@@ -65,9 +67,9 @@ class PinballRound:
                     arbiter_object = shape.parent
                     x = pos.x + 20
                     y = pos.y
-                    if shape.parent.cooldown > 0:
-                        shape.parent.cooldown_timer = shape.parent.cooldown
         self.game.callback("collision", arbiter_object, arbiter_cooldown=arbiter_object.cooldown)
+        if arbiter_object.cooldown > 0:
+            arbiter_object.cooldown_timer = arbiter_object.cooldown
         if self.immediate['score']:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
@@ -295,10 +297,10 @@ class PinballRound:
 
             keys = pygame.key.get_pressed()
             self.field.left_flipper.spring.rest_angle = (
-                self.field.left_flipper.active_angle if keys[pygame.K_LEFT]
+                self.field.left_flipper.active_angle if keys[pygame.K_LEFT] or keys[pygame.K_a] or keys[pygame.K_s]
                 else self.field.left_flipper.default_angle)
             self.field.right_flipper.spring.rest_angle = (
-                self.field.right_flipper.active_angle if keys[pygame.K_RIGHT]
+                self.field.right_flipper.active_angle if keys[pygame.K_RIGHT] or keys[pygame.K_d] or keys[pygame.K_s]
                 else self.field.right_flipper.default_angle)
 
             if self.score >= self.game.score_needed and self.ui.mode != "round_finishable":

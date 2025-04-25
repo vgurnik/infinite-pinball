@@ -72,6 +72,7 @@ class PinballGame:
 
         textures["+ball"] = sprites.Sprite(cards_spritesheet, (0, 80), (60, 80))
         textures["backpack"] = sprites.Sprite(cards_spritesheet, (60, 80), (60, 80))
+        textures["launcher"] = sprites.Sprite(cards_spritesheet, (60, 160), (60, 80))
 
         textures["slimeball_card"] = sprites.Sprite(cards_spritesheet, (120, 80), (60, 80))
         textures["agile_card"] = sprites.Sprite(cards_spritesheet, (180, 80), (60, 80))
@@ -456,7 +457,8 @@ class PinballGame:
                     if self.round < len(self.config.min_score):
                         self.score_needed = self.config.min_score[self.round]
                     else:
-                        self.score_needed = 10 ** (self.round - 4)
+                        self.score_needed = self.config.min_score[-1] * 10 ** (self.round -
+                                                                               len(self.config.min_score) + 1)
                     shop = None
                     self.reroll_cost = self.config.reroll_cost
                     while result in ['win', 'back']:

@@ -71,7 +71,8 @@ class Config:
 
         # Game play.
         self.balls = 3
-        self.min_score = [1000,
+        self.min_score = [500,
+                          1000,
                           2000,
                           3000,
                           4000,

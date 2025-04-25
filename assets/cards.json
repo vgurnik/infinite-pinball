@@ -420,6 +420,7 @@
       "price": 200,
       "type": "immediate",
       "rarity": "uncommon",
+      "sprite": "launcher",
       "effects": [
         {
           "effect": "enable_flag",

@@ -62,7 +62,7 @@ class Field:
         self.shield.sprite.update(dt)
         self.space.step(dt)
 
-    def draw(self, surface, balls=None):
+    def draw(self):
         field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
         if self.game.debug_mode:
@@ -119,10 +119,7 @@ class Field:
         if not self.shield.sensor and self.shield.sprite is not None:
             self.shield.sprite.draw(field_surface, (self.shield.a[0], self.shield.a[1] - 10),
                                     (self.shield.b[0]-self.shield.a[0], 50))
-        if balls:
-            for ball in balls:
-                ball.draw(field_surface)
-        surface.blit(field_surface, self.position)
+        return field_surface
 
     def _try_placing(self, item):
         pos = item.pos - item.offset - self.position

@@ -210,6 +210,22 @@
       "description": "Convert your current ball\ninto Golden ball\nGolden ball earns $5 for each hit!"
     },
     {
+      "name": "Lucky Ball",
+      "price": 500,
+      "type": "card",
+      "rarity": "rare",
+      "sprite": "luckyball_card",
+      "effects": [
+        {
+          "effect": "convert_ball",
+          "params": ["lucky_ball"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Convert your current ball\ninto Golden ball\nGolden ball earns $5 for each hit!"
+    },
+    {
       "name": "Sell ball",
       "price": 50,
       "type": "card",
@@ -398,6 +414,26 @@
         }
       ],
       "description": "Score 50% more points"
+    },
+    {
+      "name": "Launcher",
+      "price": 200,
+      "type": "immediate",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "enable_flag",
+          "params": ["charge_bonus"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "functional": [{
+        "name": "check_flag",
+        "params": ["charge_bonus", false]
+        }
+      ],
+      "description": "Upgrade your launch ramp\nwith a charge bonus\n\nCharge bonus will give you $2\nfor each indicator triggered but only\nif the ball launches through the lower exit"
     }
   ],
 

@@ -35,6 +35,7 @@ pyinstaller main.spec
   - [x] Implement rarity
   - [x] Implement multiple effects per card
   - [x] Rewrite effects as callbacks
+  - [x] Implement functionals to check if card is allowed to show up
   - [ ] Implement card id to allow to affect effects
 #### 4
 - [ ] Balance scoring

@@ -346,7 +346,9 @@ class Ui:
 
         round_text = font.render(f"Round {self.game.round + 1}", True, (255, 100, 200))
         ui_surface.blit(round_text, self.config.ui_round_pos)
-        money_text = font.render(f"$ {self.game.money}", True, (255, 255, 0))
+        money_text = font.render(
+            f"$ {round(self.game.money) if self.game.money == round(self.game.money) else self.game.money}",
+            True, (255, 255, 0))
         ui_surface.blit(money_text, self.config.ui_money_pos)
         surface.blit(ui_surface, self.position)
         self.context.draw(surface)

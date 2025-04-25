@@ -38,12 +38,13 @@ class PinballGame:
         self.inventory = PlayerInventory(self)
         self.round_instance = None
         self.immediate = {}
+        self.flags = {"charge_bonus": False}
         self.real_fps = 0
 
     @staticmethod
     def load_textures():
         # Load textures
-        simple_sprites = ["field", "ramps", "ball", "goldball", "slimeball"]
+        simple_sprites = ["field", "ramps"]
         textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in simple_sprites}
         # Load animated textures
         textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))
@@ -52,6 +53,9 @@ class PinballGame:
         textures["flipper"] = sprites.AnimatedSprite("flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(40, 10))
         textures["longboi"] = sprites.AnimatedSprite("longboi.bmp", uvs=[(0, 0), (0, 10)], wh=(45, 10))
         textures["pro_flipper"] = sprites.AnimatedSprite("pro_flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(30, 10))
+
+        textures["charge_indicator"] = sprites.AnimatedSprite("charge_indicator.bmp",
+                                                              uvs=[(0, 0), (0, 10)], wh=(30, 10))
         textures["shield"] = sprites.AnimatedSprite("shield.bmp", uvs=[(0, 0), (0, 30), (0, 60)], wh=(200, 30), ft=0.1)
         textures["spring"] = sprites.AnimatedSprite("spring.bmp", uvs=[(0, 0), (40, 0), (80, 0), (120, 0),
                                                                        (160, 0), (200, 0), (240, 0)], wh=(40, 60))
@@ -79,9 +83,16 @@ class PinballGame:
 
         textures["5xscore"] = sprites.Sprite(cards_spritesheet, (120, 160), (60, 80))
         textures["platinum"] = sprites.Sprite(cards_spritesheet, (180, 160), (60, 80))
+        textures["luckyball_card"] = sprites.Sprite(cards_spritesheet, (240, 160), (60, 80))
+
+        ball_spritesheet = sprites.Sprite("balls.bmp")
+        textures["ball"] = sprites.Sprite(ball_spritesheet, (0, 0), (16, 16))
+        textures["goldball"] = sprites.Sprite(ball_spritesheet, (16, 0), (16, 16))
+        textures["slimeball"] = sprites.Sprite(ball_spritesheet, (0, 16), (16, 16))
+        textures["luckyball"] = sprites.Sprite(ball_spritesheet, (16, 16), (16, 16))
         return textures
 
-    def callback(self, event, arbiter=None):
+    def callback(self, event, arbiter=None, arbiter_cooldown=0):
         for card in self.inventory.items:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "passive":
@@ -96,6 +107,10 @@ class PinballGame:
                         effects.call(effect, self, arbiter)
                     else:
                         effects.call(effect, self)
+        if arbiter is not None and arbiter_cooldown == 0:
+            for effect in arbiter.effects:
+                if effect["trigger"] == event:
+                    effects.call(effect, self, arbiter)
 
     def main_menu(self):
         if self.debug_mode:
@@ -110,24 +125,24 @@ class PinballGame:
         self.ui.change_mode("shop")
         if _shop is None:
             shop = Inventory(self.config)
-            items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
+            items = misc.choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_cards[0] + i * 130,
                                                              self.config.shop_pos_cards[1])))
-            items = misc.choose_items(2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
+            items = misc.choose_items(self, 2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
             for i, item in enumerate(items):
                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get("buildable_pack"), properties=item,
                                             target_position=(self.config.shop_pos_objects[0] + i * 130,
                                                              self.config.shop_pos_objects[1]),
                               for_buildable=self.textures.get(obj_def["texture"])))
-            items = misc.choose_items(1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
+            items = misc.choose_items(self, 1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_effects[0] + i * 130,
                                                              self.config.shop_pos_effects[1])))
-            items = misc.choose_items(2, self.config.shop_items["pack"], self.config.rarities["pack"])
+            items = misc.choose_items(self, 2, self.config.shop_items["pack"], self.config.rarities["pack"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
@@ -147,12 +162,12 @@ class PinballGame:
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                            items = misc.choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
+                            items = misc.choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
                             for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")),
                                                             properties=item, target_position=(
                                         self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
-                            items = misc.choose_items(2, self.config.shop_items["buildable"],
+                            items = misc.choose_items(self, 2, self.config.shop_items["buildable"],
                                                       self.config.rarities["buildable"])
                             for i, item in enumerate(items):
                                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
@@ -199,13 +214,13 @@ class PinballGame:
                             shop.remove_item(item)
                             if item.properties["kind"] == "oneof":
                                 pool = self.config.shop_items[item.properties["item_type"]]
-                                items = misc.choose_items(item.properties["amount"][1], pool, self.config.rarities[
-                                    item.properties["item_type"]])
+                                items = misc.choose_items(self, item.properties["amount"][1], pool,
+                                                          self.config.rarities[item.properties["item_type"]])
                             elif item.properties["kind"] == "all":
                                 pool = self.config.shop_items[item.properties["item_type"]]
-                                positive = misc.choose_items(item.properties["amount"][1], pool,
+                                positive = misc.choose_items(self, item.properties["amount"][1], pool,
                                                              {"epic": {"value": 1}})
-                                negative = misc.choose_items(item.properties["amount"][2], pool,
+                                negative = misc.choose_items(self, item.properties["amount"][2], pool,
                                                              {"negative": {"value": 1}})
                                 items = positive + negative
                             else:
@@ -314,7 +329,7 @@ class PinballGame:
             self.screen.fill((20, 20, 70))
             self.ui.draw(self.screen)
             self.ui.update(dt)
-            self.field.draw(self.screen)
+            self.screen.blit(self.field.draw(), self.field.position)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
             display_screen(self.display, self.screen, self.screen_size)
@@ -344,7 +359,7 @@ class PinballGame:
         self.ui.change_mode('results')
         self.ui.draw(self.screen)
         self.ui.update(0)
-        self.field.draw(self.screen)
+        self.screen.blit(self.field.draw(), self.field.position)
 
         font = pygame.font.Font(self.config.fontfile, 36)
         overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
@@ -425,6 +440,7 @@ class PinballGame:
                 self.config = Config()
                 self.inventory = PlayerInventory(self)
                 self.field = Field(self)
+                self.flags = {"charge_bonus": False}
                 self.money = 0
                 self.round = 0
                 self.score_needed = self.config.min_score[0]

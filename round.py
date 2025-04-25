@@ -31,6 +31,7 @@ class PinballRound:
         self.active_balls = []
         self.ball_launched = False
         self.launch_charge = 0.0
+        self.launch_indicators = 0
         self.launch_key_down = False
 
         self.score = 0
@@ -64,13 +65,9 @@ class PinballRound:
                     arbiter_object = shape.parent
                     x = pos.x + 20
                     y = pos.y
-                    if shape.parent.cooldown == 0:
-                        for effect in shape.parent.effects:
-                            if effect["trigger"] == "collision":
-                                effects.call(effect, self.game, arbiter=arbiter_object)
                     if shape.parent.cooldown > 0:
                         shape.parent.cooldown_timer = shape.parent.cooldown
-        self.game.callback("collision", arbiter_object)
+        self.game.callback("collision", arbiter_object, arbiter_cooldown=arbiter_object.cooldown)
         if self.immediate['score']:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
@@ -103,17 +100,30 @@ class PinballRound:
         self.active_balls[-1].activate(self.field.space, self.config.ball_start)
         self.ball_launched = False
         self.launch_charge = 0
+        self.launch_indicators = 0
         self.launch_key_down = False
         return True
 
     def draw(self, dt):
         # Clear screen.
         self.screen.fill((20, 20, 70))
-        self.field.draw(self.screen, self.active_balls)
+        field_surface = self.field.draw()
 
         # Update board objects
         for obj in self.field.objects:
             obj.update(dt)
+
+        if self.game.flags.get("charge_bonus", False):
+            for i in range(10):
+                if self.launch_indicators > i:
+                    self.textures["charge_indicator"].set_frame(1)
+                else:
+                    self.textures["charge_indicator"].set_frame(0)
+                self.textures["charge_indicator"].draw(field_surface, (self.config.right_wall_x + 12,
+                                                                       self.config.ramp_recline_end[1] - 40 - i * 25))
+
+        for ball in self.active_balls:
+            ball.draw(field_surface)
 
         for card in self.applied_cards.items[:]:
             any_active = False
@@ -132,34 +142,33 @@ class PinballRound:
         # Draw the launch indicator.
         if self.textures.get("spring") is not None:
             self.textures["spring"].set_frame(round(self.launch_charge / self.config.launch_max_impulse * 6))
-            self.textures["spring"].draw(self.screen, self.config.launch_indicator_pos,
+            self.textures["spring"].draw(field_surface, self.config.launch_indicator_pos,
                                          self.config.launch_indicator_size)
         else:
             if not self.ball_launched:
-                ind_x, ind_y = (self.config.launch_indicator_pos[0] + self.field.position[0],
-                                self.config.launch_indicator_pos[1] + self.field.position[1])
+                ind_x, ind_y = self.config.launch_indicator_pos
                 ind_w, ind_h = self.config.launch_indicator_size
                 pygame.draw.rect(self.screen, (255, 255, 255), (ind_x, ind_y, ind_w, ind_h), 2)
                 charge_ratio = self.launch_charge / self.config.launch_max_impulse
                 fill_height = ind_h * charge_ratio
                 pygame.draw.rect(self.screen, (0, 255, 0), (ind_x, ind_y + ind_h - fill_height, ind_w, fill_height))
 
-        self.ui.draw(self.screen)
-        self.ui.update(dt)
-        self.inventory.draw(self.screen)
-        self.applied_cards.draw(self.screen)
-
         if len(self.ball_queue) * 35 > 600:
             spacing = 600 / len(self.ball_queue)
         else:
             spacing = 35
-
         for i, ball in enumerate(self.ball_queue):
             true_y = self.config.ball_queue_lower_y - (len(self.ball_queue) - i) * spacing
             self.ball_queue_coords[i] += (true_y - self.ball_queue_coords[i]) * 30 * dt
-            ball.move((self.config.ball_queue_x + self.field.position[0],
-                       self.ball_queue_coords[i] + self.field.position[1]))
-            ball.draw(self.screen)
+            ball.move((self.config.ball_queue_x, self.ball_queue_coords[i]))
+            ball.draw(field_surface)
+
+        self.screen.blit(field_surface, self.field.position)
+
+        self.ui.draw(self.screen)
+        self.ui.update(dt)
+        self.inventory.draw(self.screen)
+        self.applied_cards.draw(self.screen)
 
         # Draw hit effects.
         for effect in self.hit_effects[:]:
@@ -243,6 +252,7 @@ class PinballRound:
                 if ball.body.position.y > self.config.screen_height + 50:
                     ball.remove(self.field.space)
                     self.active_balls.remove(ball)
+                    self.game.callback("ball_lost", ball)
 
             if len(self.active_balls) == 0 and not self.recharge():
                 exit_option = "round_over"
@@ -266,10 +276,22 @@ class PinballRound:
                         self.field.ramp_recline.sensor = True
                     self.field.ramp_gate.sensor = True
                     all_launched = False
+                    if self.game.flags.get("charge_bonus", False):
+                        self.launch_indicators = min(max((self.config.ramp_recline_end[1] - 40 - ball.body.position.y +
+                                                          ball.radius) // 25, self.launch_indicators), 10)
 
             if all_launched and not self.ball_launched:
                 self.field.ramp_gate.sensor = False
                 self.ball_launched = True
+                if self.game.flags.get("charge_bonus", False) and self.active_balls[0].body.position.y >\
+                        self.config.ramp_recline_end[1] - 50:
+                    bonus = self.launch_indicators * self.config.charge_bonus
+                    self.game.money += bonus
+                    bonus = str(int(bonus)) if bonus == int(bonus) else str(bonus)
+                    self.hit_effects.append(HitEffect((self.field.position[0] + self.config.right_wall_x + 12,
+                                                       self.field.position[1] + self.config.ramp_recline_end[1] - 40
+                                                       - self.launch_indicators * 25), '$'+bonus, (255, 255, 0)))
+                self.launch_indicators = 0
 
             keys = pygame.key.get_pressed()
             self.field.left_flipper.spring.rest_angle = (

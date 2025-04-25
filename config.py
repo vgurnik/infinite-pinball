@@ -86,6 +86,7 @@ class Config:
         self.base_award = 50
         self.extra_award_per_order = 50
         self.extra_award_per_ball = 100
+        self.charge_bonus = 2
         self.interest_rate = 0.1
         self.interest_cap = 50
         self.score_multiplier = 1
@@ -140,8 +141,7 @@ class Config:
         self.ramp_recline_start = (self.right_wall_x, self.bottom_opening_bottom)
         self.ramp_recline_end = (self.launch_ramp_wall_x, self.bottom_opening_bottom - 30)
         self.field_size = (self.launch_ramp_wall_x + 15, self.bottom_wall_y + 110)
-        self.launch_indicator_pos = (self.field_pos[0] + self.right_wall_x + 7,
-                                     self.field_pos[1] + self.bottom_wall_y - 5)
+        self.launch_indicator_pos = (self.right_wall_x + 7, self.bottom_wall_y - 5)
         self.ball_start = (self.right_wall_x + self.launch_ramp_width / 2,
                            self.bottom_wall_y - 30)
         self.ball_queue_x = self.field_size[0] + 20

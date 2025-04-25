@@ -4,9 +4,10 @@ sys.path.append(SPECPATH)
 
 from PyInstaller.utils.hooks import collect_submodules
 
-hiddenimports = ['object_functions', 'card_functions']
+hiddenimports = ['object_functions', 'card_functions', 'functionals']
 hiddenimports += collect_submodules('object_functions')
 hiddenimports += collect_submodules('card_functions')
+hiddenimports += collect_submodules('functionals')
 
 
 a = Analysis(

@@ -38,6 +38,19 @@
           "params": [5]
         }
       ]
+    },
+    "lucky_ball": {
+      "texture": "luckyball",
+      "size": 15,
+      "mass": 1.5,
+      "max_speed": 1200,
+      "effects": [
+        {
+          "effect": "return_chance",
+          "params": [0.3],
+          "trigger": "ball_lost"
+        }
+      ]
     }
   },
   "bumper": {
@@ -48,7 +61,7 @@
       "effects": [
         {
           "effect": "bump",
-          "params": [100, 0]
+          "params": [50, 0]
         }
       ]
     },
@@ -59,7 +72,7 @@
       "effects": [
         {
           "effect": "bump",
-          "params": [50, 0]
+          "params": [100, 0]
         }
       ]
     },

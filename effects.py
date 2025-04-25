@@ -25,6 +25,16 @@ def get_object_function(name):
     return obj_module.effect
 
 
+def get_functional(name):
+    if name is None:
+        return None
+    try:
+        func_module = import_module('functionals.'+name)
+    except ModuleNotFoundError:
+        return None
+    return func_module.evaluate
+
+
 def call(effect, game, arbiter=None):
     if effect["effect"] is not None:
         if arbiter is not None:

@@ -1,11 +1,26 @@
-import pygame
 import random
+import pygame
+from effects import get_functional
 
 
-def choose_items(count, pool, rarity_scoring, unique=True):
+def _is_allowed(card, game):
+    """check if the item is allowed to show up in the current game state"""
+    _allowed = [{
+        "eval": get_functional(functonal["name"]),
+        "params": functonal.get("params", [])
+    } for functonal in card.get("functional", [])]
+    if len(_allowed) == 0:
+        return True
+    for func in _allowed:
+        if not func["eval"](game, *func["params"]):
+            return False
+    return True
+
+
+def choose_items(game, count, pool, rarity_scoring, unique=True):
     rarity_pools = {rarity: [] for rarity in rarity_scoring}
     for item in pool:
-        if item["rarity"] in rarity_scoring:
+        if item["rarity"] in rarity_scoring and _is_allowed(item, game):
             rarity_pools[item["rarity"]].append(item)
     weights = [rarity_scoring[rarity]["value"] for rarity in rarity_pools.keys()]
     weights = [sum(weights[:i])/sum(weights) for i in range(1, len(weights)+1)]

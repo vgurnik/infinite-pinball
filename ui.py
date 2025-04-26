@@ -326,11 +326,13 @@ class Ui:
         font = pygame.font.Font(self.config.fontfile, 24)
         ui_surface = pygame.Surface((self.config.ui_width, self.config.screen_height))
         ui_surface.fill((20, 10, 60))
+        req = int(self.game.score_needed) if (self.game.score_needed == int(self.game.score_needed)
+                                              ) else self.game.score_needed
         if self.mode in ['round', 'round_finishable', 'results']:
             if self.mode == 'round_finishable':
                 self.play_button.draw(ui_surface)
             score = self.game.round_instance.score
-            min_score_text = font.render(f"Required score: {self.game.score_needed}", True, (255, 255, 255))
+            min_score_text = font.render(f"Required score: {req}", True, (255, 255, 255))
             score_text = font.render(f"Score: {int(score) if score == int(score) else score}",
                                      True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_score_pos)
@@ -341,7 +343,7 @@ class Ui:
             self.field_button.draw(ui_surface)
             if self.mode == 'shop':
                 self.reroll_button.draw(ui_surface, self.game.money < self.game.reroll_cost)
-            score_text = font.render(f"Next score: {self.game.score_needed}", True, (255, 255, 255))
+            score_text = font.render(f"Next score: {req}", True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_min_score_pos)
 
         round_text = font.render(f"Round {self.game.round + 1}", True, (255, 100, 200))

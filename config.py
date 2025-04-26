@@ -151,7 +151,7 @@ class Config:
         self.applied_effects_settings = {
             "pos": (self.field_pos[0] + self.field_size[0] + 50, 50),
             "width": 200,
-            "height": 600,
+            "height": 400,
             "max_size": 1e10
         }
         self.ui_deletion_pos = (self.field_pos[0] + self.field_size[0] + 20,

@@ -242,6 +242,21 @@
       "description": "Sell your current ball\nfor $250. Be careful, do not\nsell your last ball!"
     },
     {
+      "name": "Giveaway",
+      "price": 500,
+      "type": "card",
+      "rarity": "rare",
+      "effects": [
+        {
+          "effect": "giveaway",
+          "params": [1],
+          "usage": "passive",
+          "trigger": "shop_create"
+        }
+      ],
+      "description": "One card or buildable in the shop\nis free (before reroll)"
+    },
+    {
       "name": "Quintupler",
       "price": 400,
       "type": "card",
@@ -321,6 +336,35 @@
       "description": "Earn additional 10%\ninterest on your money"
     },
     {
+      "name": "Rewind",
+      "price": 300,
+      "type": "card",
+      "rarity": "epic",
+      "effects": [
+        {
+          "effect": "return_chance",
+          "params": [0.1],
+          "usage": "passive",
+          "trigger": "ball_lost"
+        }
+      ],
+      "description": "Chance 10% for each ball\nto return if it is lost"
+    },
+    {
+      "name": "Dupe exploit",
+      "price": 400,
+      "type": "card",
+      "rarity": "epic",
+      "effects": [
+        {
+          "effect": "dupe_activate",
+          "usage": "passive",
+          "trigger": "ball_lost"
+        }
+      ],
+      "description": "Activate your topmost usable\ncard when the ball is lost\n\nThe card is not used up!"
+    },
+    {
       "name": "No score",
       "price": -500,
       "type": "card",
@@ -363,6 +407,42 @@
         }
       ],
       "description": "All your current items\nbecome worthless\n\nDoes not take space\nin your inventory"
+    },
+    {
+      "name": "Pro mode",
+      "price": 0,
+      "type": "card",
+      "rarity": "negative",
+      "effects": [
+        {
+          "effect": "check_score",
+          "params": [2, "relative"],
+          "usage": "passive",
+          "negative": true,
+          "trigger": "use"
+        },
+        {
+          "effect": "score_requirement",
+          "params": [2, "m"],
+          "usage": "passive",
+          "negative": true,
+          "trigger": "shop_create"
+        },
+        {
+          "effect": "score_requirement",
+          "params": [2, "m"],
+          "usage": "passive",
+          "negative": true,
+          "trigger": "use"
+        },
+        {
+          "effect": "inventory_size",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [1]
+        }
+      ],
+      "description": "Score requirement is doubled for each round\nTo sell, you need to score 2x current score requirement\n\nDoes not take space\nin your inventory"
     }
   ],
 

@@ -12,6 +12,8 @@ def get_card_function(name, negative=False):
         if getattr(card_module, 'negative_effect', None) is None:
             return None
         return card_module.negative_effect
+    if getattr(card_module, 'effect', None) is None:
+        return None
     return card_module.effect
 
 
@@ -40,7 +42,7 @@ def call(effect, game, arbiter=None):
         if arbiter is not None:
             return effect["effect"](game, *effect["params"], arbiter=arbiter)
         return effect["effect"](game, *effect["params"])
-    return False
+    return True
 
 
 def recall(effect, game, arbiter=None):

@@ -99,12 +99,12 @@ class InventoryItem:
             return self.sell(game, negative=True) and self.sell(game, negative=False)
         recalled = []
         for effect in self.effects:
-            if negative and effect["is_negative"] or (not negative and
-                                                      effect["usage"] == "passive" and effect["trigger"] == "use"):
-                if effects.recall(effect, game):
-                    recalled.append(effect)
-                else:
-                    break
+            if negative and effect["is_negative"] or (not negative and not effect["is_negative"]):
+                if effect["usage"] == "passive" and effect["trigger"] == "use":
+                    if effects.recall(effect, game):
+                        recalled.append(effect)
+                    else:
+                        break
         else:
             return True
         for effect in recalled:

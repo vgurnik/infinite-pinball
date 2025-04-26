@@ -36,7 +36,7 @@ class PinballGame:
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
         self.inventory = PlayerInventory(self)
-        self.round_instance = None
+        self.round_instance = PinballRound(self)
         self.immediate = {}
         self.flags = {"charge_bonus": False}
         self.real_fps = 0
@@ -148,6 +148,7 @@ class PinballGame:
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
                                                              self.config.shop_pos_packs[1])))
+            self.callback("shop_create", arbiter=shop, arbiter_cooldown=-1)
         else:
             shop = _shop
         message = ""

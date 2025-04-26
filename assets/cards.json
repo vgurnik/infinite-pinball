@@ -223,7 +223,7 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto Golden ball\nGolden ball earns $5 for each hit!"
+      "description": "Convert your current ball\ninto Lucky ball\nLucky ball has a 30% chance\nto return if it is lost"
     },
     {
       "name": "Sell ball",

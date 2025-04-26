@@ -200,7 +200,7 @@ class PinballGame:
                             if self.inventory.add_item(item):
                                 self.money -= item.properties["buy_price"]
                                 shop.remove_item(item)
-                                message = f"Purchased {item.name} for {item.properties['price']}!"
+                                message = f"Purchased {item.name} for {item.properties['buy_price']}!"
                             else:
                                 message = "Not enough inventory space!"
                         elif item.properties["type"] == "immediate":
@@ -208,7 +208,7 @@ class PinballGame:
                                 visual_effects.append(DisappearingItem(item, 0.3))
                                 shop.remove_item(item)
                                 self.money -= item.properties["buy_price"]
-                                message = f"Purchased {item.name} for {item.properties['price']}!"
+                                message = f"Purchased {item.name} for {item.properties['buy_price']}!"
                             else:
                                 message = f"{item.name} cannot be applied!"
                         elif item.properties["type"] == "pack":

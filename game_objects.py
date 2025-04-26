@@ -22,15 +22,29 @@ class GameObject:
         self.body.position = pos
         self.cooldown = 0
         self.cooldown_timer = 0
+        self.activations = 0
+        self.activations_dt_accum = 0
 
     def move(self, pos):
         self.body.position = pos
 
     def update(self, dt):
+        self.activations_dt_accum += dt
+        self.activations = max(0, self.activations - int(self.activations_dt_accum // 0.5))
+        self.activations_dt_accum = self.activations_dt_accum % 0.5
         if self.cooldown_timer > 0:
             self.cooldown_timer = max(0, self.cooldown_timer - dt)
         if self.cooldown_timer == 0:
             self.cooldown = 0
+        if self.activations > 10:
+            self.activations = 10
+            self.cooldown = 5
+            self.cooldown_timer = 5
+        if hasattr(self, "shape") and self.shape.type != 'flipper':
+            if self.cooldown_timer > 0.3:
+                self.shape.sensor = True
+            else:
+                self.shape.sensor = False
 
 
 class Ball(GameObject):
@@ -114,6 +128,20 @@ class Bumper(GameObject):
             if not allowed:
                 pygame.draw.circle(screen, (255, 0, 0, 100),
                                    (int(self.body.position.x), int(self.body.position.y)), self.radius)
+        if self.cooldown > 0.5:
+            angle = int(360 * self.cooldown_timer / self.cooldown)
+            if angle > 0:
+                overlay = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
+                center = (self.radius, self.radius)
+                points = [center]
+                for a in range(-90, -90 + angle + 1, 1):
+                    rad = math.radians(a)
+                    x = center[0] + self.radius * math.cos(rad)
+                    y = center[1] + self.radius * math.sin(rad)
+                    points.append((x, y))
+
+                pygame.draw.polygon(overlay, (0, 0, 0, 100), points)
+                screen.blit(overlay, (self.body.position.x - self.radius, self.body.position.y - self.radius))
 
 
 class Flipper(GameObject):
@@ -208,3 +236,19 @@ class Flipper(GameObject):
             pygame.draw.polygon(screen, (200, 200, 50), points)
             if not allowed:
                 pygame.draw.polygon(screen, (255, 0, 0, 100), points)
+        # if self.cooldown > 0.5: # not really needed with current SOTG
+        #     angle = int(360 * self.cooldown_timer / self.cooldown)
+        #     if angle > 0:
+        #         overlay = pygame.Surface((self.length, self.width), pygame.SRCALPHA)
+        #         center = (self.length // 2, self.width // 2)
+        #         points = [center]
+        #         for a in range(-90, -90 + angle + 1, 1):
+        #             rad = math.radians(a)
+        #             x = center[0] + self.radius * math.cos(rad)
+        #             y = center[1] + self.radius * math.sin(rad)
+        #             points.append((x, y))
+        #
+        #         pygame.draw.polygon(overlay, (0, 0, 0, 60), points)
+        #         overlay = pygame.transform.rotate(overlay, -math.degrees(self.body.angle))
+        #         screen.blit(overlay, (self.body.position.x - self.length / 2,
+        #                               self.body.position.y - self.width))

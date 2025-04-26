@@ -65,6 +65,7 @@ class PinballRound:
                         setattr(shape.parent, "bumped", 0.1)
                     pos = shape.body.position
                     arbiter_object = shape.parent
+                    arbiter_object.activations += 1
                     x = pos.x + 20
                     y = pos.y
         self.game.callback("collision", arbiter_object, arbiter_cooldown=arbiter_object.cooldown)

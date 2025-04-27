@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 import pygame
-from game_effects import ContextWindow
+from game_effects import ContextWindow, AnimatedEffect
 from inventory import InventoryItem, PackInventory
 from misc import mouse_scale, display_screen
 
@@ -101,7 +101,7 @@ class Ui:
                 option_rects.append(rect)
             display_screen(self.game.display, screen, self.game.screen_size)
 
-    def open_pack(self, items, start, kind, amount):
+    def open_pack(self, items, start, kind, amount, opening_sprite):
         clock = pygame.time.Clock()
         dt = 1.0 / (self.game.real_fps if self.game.real_fps > 1 else self.config.fps)
         big_font = pygame.font.Font(self.config.fontfile, 36)
@@ -118,6 +118,20 @@ class Ui:
         taken = 0
         skip_button = Button("Skip", (opening_inventory.position[0] + opening_inventory.width / 2,
                                       opening_inventory.position[1] + 200), "auto", (0, 255, 100))
+        opening_effect = AnimatedEffect(self.game.display, self.game.screen_size)
+        self.game.screen.fill((20, 20, 70))
+
+        header = big_font.render("Game Shop", True, (255, 255, 255))
+        self.game.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
+        self.game.ui.draw(self.game.screen)
+        self.game.ui.update(dt)
+        self.game.inventory.update(dt)
+        self.game.inventory.draw(self.game.screen)
+        opening_inventory.draw(self.game.screen)
+        opening_effect.start(self.game.screen, opening_sprite, (start.x, start.y - 20),
+                             (120, 180))
+        clock.tick(self.config.fps)
+        dt = 0
         while taken < amount:
             opening_inventory.recalculate_targets()
             for event in pygame.event.get():

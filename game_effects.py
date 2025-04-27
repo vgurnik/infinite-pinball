@@ -82,7 +82,6 @@ class ContextWindow:
                     surface.blit(text_surface, (rect.x + 3, rect.y + 3))
 
 
-
 class BaseEffect:
     def __init__(self, pos, lifetime=1.0, image=None):
         self.x, self.y = pos
@@ -155,3 +154,22 @@ class DisappearingItem(BaseEffect):
             text_surface = font.render(self.item.name, True, (0, 0, 0))
             new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)
+
+
+class AnimatedEffect:
+
+    def __init__(self, display, screen_size):
+        self.display = display
+        self.screen_size = screen_size
+
+    def start(self, screen, sprite, pos, size):
+        clock = pygame.time.Clock()
+        sprite.set_frame(0)
+        while True:
+            dt = clock.tick() / 1000
+            new_screen = pygame.Surface(self.screen_size)
+            new_screen.blit(screen, (0, 0))
+            if sprite.update(dt, end_stop=True):
+                break
+            sprite.draw(new_screen, pos, size)
+            misc.display_screen(self.display, new_screen, self.screen_size)

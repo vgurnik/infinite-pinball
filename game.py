@@ -91,6 +91,22 @@ class PinballGame:
         textures["goldball"] = sprites.Sprite(ball_spritesheet, (16, 0), (16, 16))
         textures["slimeball"] = sprites.Sprite(ball_spritesheet, (0, 16), (16, 16))
         textures["luckyball"] = sprites.Sprite(ball_spritesheet, (16, 16), (16, 16))
+
+        pack_spritesheet = sprites.Sprite("packs.bmp")
+        textures["card_pack"] = sprites.Sprite(pack_spritesheet, (0, 10), (60, 80))
+        textures["card_pack_opening"] = sprites.AnimatedSprite(pack_spritesheet, uvs=[(60, 0), (120, 0), (180, 0),
+                                                                                      (240, 0), (300, 0), (360, 0),
+                                                                                      (420, 0)], wh=(60, 90), ft=0.07)
+        textures["object_pack"] = sprites.Sprite(pack_spritesheet, (0, 100), (60, 80))
+        textures["object_pack_opening"] = sprites.AnimatedSprite(pack_spritesheet,
+                                                                 uvs=[(60, 90), (120, 90), (180, 90),
+                                                                      (240, 90), (300, 90), (360, 90),
+                                                                      (420, 90)], wh=(60, 90), ft=0.07)
+        textures["epic_pack"] = sprites.Sprite(pack_spritesheet, (0, 190), (60, 80))
+        textures["epic_pack_opening"] = sprites.AnimatedSprite(pack_spritesheet,
+                                                               uvs=[(60, 180), (120, 180), (180, 180),
+                                                                    (240, 180), (300, 180), (360, 180),
+                                                                    (420, 180)], wh=(60, 90), ft=0.07)
         return textures
 
     def callback(self, event, arbiter=None, arbiter_cooldown=0):
@@ -227,7 +243,8 @@ class PinballGame:
                                 items = positive + negative
                             else:
                                 items = []
-                            self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0])
+                            self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0],
+                                              self.textures.get(item.properties["sprite"]+"_opening"))
                             _ = clock.tick(self.config.fps)
                     else:
                         message = f"Not enough money for {item.name}."
@@ -276,7 +293,6 @@ class PinballGame:
                     visual_effects.remove(effect)
 
             display_screen(self.display, self.screen, self.screen_size)
-            pygame.display.flip()
             dt = clock.tick(self.config.fps) / 1000
             self.real_fps = clock.get_fps()
 

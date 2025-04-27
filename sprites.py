@@ -106,19 +106,23 @@ class AnimatedSprite:
         """
         return AnimatedSprite(self)
 
-    def update(self, dt):
+    def update(self, dt, end_stop=False):
         """
         Updates the animation by advancing the frame based on elapsed time.
 
         Args:
             dt (float): The time elapsed since the last update, in seconds.
+            end_stop (bool): If True, stops the animation when it reaches the end and returns True.
         """
         if self.animation_time <= 0:
             return
         self.frame_time += dt
         while self.frame_time >= self.animation_time:
             self.frame_time -= self.animation_time
-            self.next_frame()
+            stop = self.next_frame(end_stop)
+            if stop and end_stop:
+                return True
+        return False
 
     def set_frame(self, frame):
         """
@@ -132,11 +136,16 @@ class AnimatedSprite:
         else:
             raise ValueError("Frame index out of range")
 
-    def next_frame(self):
+    def next_frame(self, end_stop=False):
         """
         Advances to the next frame in the animation.
+        Args:
+            end_stop (bool): If True, returns True if next frame is looped.
         """
         self.current_frame = (self.current_frame + 1) % len(self.sprites)
+        if end_stop and self.current_frame == 0:
+            return True
+        return False
 
     def draw(self, surface, position, size=None, angle=0, alpha=255):
         """

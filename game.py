@@ -44,7 +44,7 @@ class PinballGame:
     @staticmethod
     def load_textures():
         # Load textures
-        simple_sprites = ["field", "ramps"]
+        simple_sprites = ["field", "ramps", "pin"]
         textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in simple_sprites}
         # Load animated textures
         textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))

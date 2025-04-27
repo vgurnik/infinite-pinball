@@ -97,11 +97,11 @@ class Bumper(GameObject):
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
         self.shape = pymunk.Circle(self.body, self.radius)
-        self.shape.parent = self
         self.shape.elasticity = config["force"]
         self.shape.friction = 0.5
         self.shape.collision_type = 2
         # Attach custom properties.
+        self.shape.parent = self
         self.shape.type = 'bumper'
         space.add(self.body, self.shape)
         self.bumped = 0
@@ -142,6 +142,47 @@ class Bumper(GameObject):
 
                 pygame.draw.polygon(overlay, (0, 0, 0, 100), points)
                 screen.blit(overlay, (self.body.position.x - self.radius, self.body.position.y - self.radius))
+
+
+class Pin(GameObject):
+    def __init__(self, space, config, sprite=None):
+        super().__init__(config, (0, 0), sprite, space)
+        self.config = config
+        self.space = space
+        self.pos = config["pos"]
+        self.len = config["size"]
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.body.position = self.pos
+        self.shape = pymunk.Segment(self.body, (0, 0), (0, self.len), 5)
+        self.shape.elasticity = config.get("force", 0.95)
+        self.shape.friction = 0.5
+        self.shape.collision_type = 2
+        # Attach custom properties.
+        self.shape.parent = self
+        self.shape.type = 'pin'
+        space.add(self.body, self.shape)
+
+    def draw(self, screen, allowed=True):
+        if self.sprite:
+            if not allowed:
+                pygame.draw.rect(screen, (255, 0, 0, 10), (self.body.position.x - 5,
+                                                           self.body.position.y - self.len // 2, 10, self.len))
+            self.sprite.draw(screen, (self.body.position.x - 5, self.body.position.y - self.len // 2), (10, self.len),
+                             alpha=100 + allowed*155)
+        if self.cooldown > 0.5:
+            angle = int(360 * self.cooldown_timer / self.cooldown)
+            if angle > 0:
+                overlay = pygame.Surface((10, self.len), pygame.SRCALPHA)
+                center = (5, self.len // 2)
+                points = [center]
+                for a in range(-90, -90 + angle + 1, 1):
+                    rad = math.radians(a)
+                    x = center[0] + self.radius * math.cos(rad)
+                    y = center[1] + self.radius * math.sin(rad)
+                    points.append((x, y))
+
+                pygame.draw.polygon(overlay, (0, 0, 0, 100), points)
+                screen.blit(overlay, (self.body.position.x - 5, self.body.position.y - self.len // 2))
 
 
 class Flipper(GameObject):

@@ -107,7 +107,7 @@ class Config:
             {"pos": (200, 300), "type": "bumper", "class": "bumper_big"},
             {"pos": (400, 300), "type": "bumper", "class": "bumper_big"},
             {"pos": (300, 470), "type": "bumper", "class": "bumper_big"},
-            {"pos": (300, 100), "type": "bumper", "class": "bumper_small"},
+            {"pos": (300, 100), "type": "pin", "class": "pin"},
             {"pos": (100, 400), "type": "bumper", "class": "bumper_small"},
             {"pos": (500, 400), "type": "bumper", "class": "bumper_small"},
             {"pos": self.left_flipper_pos, "type": "flipper", "class": "flipper_standard", "is_left": True},

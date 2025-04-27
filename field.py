@@ -26,6 +26,11 @@ class Field:
                 bumper_def["pos"] = obj["pos"]
                 bumper = game_objects.Bumper(self.space, bumper_def, sprite=self.textures.get(bumper_def["texture"]))
                 self.objects.append(bumper)
+            elif obj["type"] == "pin":
+                bumper_def = self.config.objects_settings["pin"][obj["class"]]
+                bumper_def["pos"] = obj["pos"]
+                bumper = game_objects.Pin(self.space, bumper_def, sprite=self.textures.get(bumper_def["texture"]))
+                self.objects.append(bumper)
             elif obj["type"] == "flipper":
                 flipper_def = self.config.objects_settings["flipper"][obj["class"]]
                 flipper_def["pos"] = obj["pos"]
@@ -109,6 +114,14 @@ class Field:
                 if not self._try_placing(self.hovered_item):
                     allowed = False
                 self.hovered_object.draw(field_surface, allowed)
+            elif props["object_type"] == "pin":
+                config = self.config.objects_settings["pin"][props["class"]]
+                config["pos"] = list(pos)
+                self.hovered_object = game_objects.Pin(self.space, config,
+                                                       sprite=self.textures.get(config.get("texture")))
+                if not self._try_placing(self.hovered_item):
+                    allowed = False
+                self.hovered_object.draw(field_surface, allowed)
 
         if draw_lf:
             self.left_flipper.draw(field_surface)
@@ -133,10 +146,10 @@ class Field:
                 self.config.top_wall_y < pos[1] < self.config.field_height):
             return False
         size = self.config.objects_settings[item.properties["object_type"]][item.properties["class"]]["size"]
-        if len(self.space.point_query(tuple(pos), 30 + size, pymunk.ShapeFilter(1))) > 1:
+        if len(self.space.point_query(tuple(pos), 10 + size, pymunk.ShapeFilter(1))) > 1:
             return False
         for obj in self.objects:
-            if pos.distance_to(obj.body.position) < 30 + size + obj.radius:
+            if pos.distance_to(obj.body.position) < 10 + size + obj.radius:
                 return False
         return True
 
@@ -171,6 +184,10 @@ class Field:
             config = self.config.objects_settings["bumper"][props["class"]]
             config["pos"] = list(pos)
             obj = game_objects.Bumper(self.space, config, sprite=self.textures.get(config["texture"]))
+        elif props["object_type"] == "pin":
+            config = self.config.objects_settings["pin"][props["class"]]
+            config["pos"] = list(pos)
+            obj = game_objects.Pin(self.space, config, sprite=self.textures.get(config["texture"]))
         else:
             return False
         self.objects.append(obj)

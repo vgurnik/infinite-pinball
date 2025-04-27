@@ -573,6 +573,15 @@
       "object_type": "flipper",
       "class": "flipper_money",
       "description": "Flipper for professionals\nEarn $10 per hit"
+    },
+    {
+      "name": "Pin",
+      "price": 50,
+      "rarity": "common",
+      "type": "buildable",
+      "object_type": "pin",
+      "class": "pin",
+      "description": "The PIN in PINball"
     }
   ],
 

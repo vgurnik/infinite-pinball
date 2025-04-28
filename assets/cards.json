@@ -226,6 +226,22 @@
       "description": "Convert your current ball\ninto Lucky ball\nLucky ball has a 30% chance\nto return if it is lost"
     },
     {
+      "name": "1-UP",
+      "price": 400,
+      "type": "card",
+      "rarity": "epic",
+      "sprite": "1up_card",
+      "effects": [
+        {
+          "effect": "convert_ball",
+          "params": ["1up"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Convert your current ball\ninto 1-UP\n1-UP ball adds 1 to each bumper's\npoints on each hit"
+    },
+    {
       "name": "Sell ball",
       "price": 50,
       "type": "card",

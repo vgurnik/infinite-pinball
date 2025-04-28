@@ -51,26 +51,20 @@ class PinballRound:
         self.immediate['multi'] = 1
         x = 0
         y = 0
-        arbiter_object = None
+        arbiters = []
         for shape in arbiter.shapes:
             match shape.collision_type:
                 case 1:
-                    for effect in shape.parent.effects:
-                        if effect["trigger"] == "collision":
-                            effects.call(effect, self.game, arbiter=shape.parent)
-                    if shape.parent.cooldown > 0:
-                        shape.parent.cooldown_timer = shape.parent.cooldown
+                    arbiters.append(shape.parent)
                 case 2:
                     if getattr(shape.parent, "bumped", None) is not None:
                         setattr(shape.parent, "bumped", 0.1)
                     pos = shape.body.position
-                    arbiter_object = shape.parent
-                    arbiter_object.activations += 1
+                    arbiters.append(shape.parent)
+                    shape.parent.activations += 1
                     x = pos.x + 20
                     y = pos.y
-        self.game.callback("collision", arbiter_object, arbiter_cooldown=arbiter_object.cooldown)
-        if arbiter_object.cooldown > 0:
-            arbiter_object.cooldown_timer = arbiter_object.cooldown
+        self.game.callback("collision", arbiters=arbiters)
         if self.immediate['score']:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
@@ -255,7 +249,7 @@ class PinballRound:
                 if ball.body.position.y > self.config.screen_height + 50:
                     ball.remove(self.field.space)
                     self.active_balls.remove(ball)
-                    self.game.callback("ball_lost", ball)
+                    self.game.callback("ball_lost", arbiters=[ball])
 
             if len(self.active_balls) == 0 and not self.recharge():
                 exit_option = "round_over"
@@ -264,6 +258,7 @@ class PinballRound:
             # Ramp gate control.
             all_launched = True
             for ball in self.active_balls:
+                ball.update(dt)
                 if ball.body.velocity.length > ball.max_speed:
                     ball.body.velocity = ball.body.velocity * (ball.max_speed / ball.body.velocity.length)
                 if ball.body.position.x > self.config.right_wall_x:

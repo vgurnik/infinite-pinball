@@ -12,10 +12,11 @@ class GameObject:
         if hasattr(self.sprite, "copy"):
             self.sprite = sprite.copy()
         self.effects = [{
-            "effect_name": effect.get("effect", None),
+            "name": effect.get("effect", None),
             "effect": effects.get_object_function(effect.get("effect", None)),
             "trigger": effect.get("trigger", "collision"),
-            "params": effect.get("params", [])
+            "params": effect.get("params", []).copy(),
+            "cooldown": effect.get("cooldown", 0)
         } for effect in config.get("effects", [])]
         self.radius = config["size"] if isinstance(config["size"], int) else max(config["size"])
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
@@ -36,11 +37,11 @@ class GameObject:
             self.cooldown_timer = max(0, self.cooldown_timer - dt)
         if self.cooldown_timer == 0:
             self.cooldown = 0
-        if self.activations > 10:
-            self.activations = 10
+        if self.activations > 6:
+            self.activations = 6
             self.cooldown = 5
             self.cooldown_timer = 5
-        if hasattr(self, "shape") and self.shape.type != 'flipper':
+        if hasattr(self, "shape") and self.shape.type not in ['flipper', 'ball']:
             if self.cooldown_timer > 0.3:
                 self.shape.sensor = True
             else:

@@ -1,4 +1,4 @@
-def effect(game, difference, mode, arbiter=None):
+def effect(game, difference, mode, arbiters=None):
     if mode == 's':
         game.score_needed += difference
     elif mode == 'm':
@@ -6,7 +6,7 @@ def effect(game, difference, mode, arbiter=None):
     return True
 
 
-def negative_effect(game, difference, mode, arbiter=None):
+def negative_effect(game, difference, mode, arbiters=None):
     if mode == 's':
         game.score_needed -= difference
     elif mode == 'm':

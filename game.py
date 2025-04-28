@@ -10,6 +10,7 @@ from ui import Ui
 from round import PinballRound
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
+from game_objects import GameObject
 import effects
 from misc import mouse_scale, display_screen
 import sprites
@@ -85,12 +86,14 @@ class PinballGame:
         textures["5xscore"] = sprites.Sprite(cards_spritesheet, (120, 160), (60, 80))
         textures["platinum"] = sprites.Sprite(cards_spritesheet, (180, 160), (60, 80))
         textures["luckyball_card"] = sprites.Sprite(cards_spritesheet, (240, 160), (60, 80))
+        textures["1up_card"] = sprites.Sprite(cards_spritesheet, (300, 160), (60, 80))
 
         ball_spritesheet = sprites.Sprite("balls.bmp")
         textures["ball"] = sprites.Sprite(ball_spritesheet, (0, 0), (16, 16))
         textures["goldball"] = sprites.Sprite(ball_spritesheet, (16, 0), (16, 16))
         textures["slimeball"] = sprites.Sprite(ball_spritesheet, (0, 16), (16, 16))
         textures["luckyball"] = sprites.Sprite(ball_spritesheet, (16, 16), (16, 16))
+        textures["1up"] = sprites.Sprite(ball_spritesheet, (16, 32), (16, 16))
 
         pack_spritesheet = sprites.Sprite("packs.bmp")
         textures["card_pack"] = sprites.Sprite(pack_spritesheet, (0, 10), (60, 80))
@@ -109,25 +112,31 @@ class PinballGame:
                                                                     (420, 180)], wh=(60, 90), ft=0.07)
         return textures
 
-    def callback(self, event, arbiter=None, arbiter_cooldown=0):
+    def callback(self, event, arbiters=None):
         for card in self.inventory.items:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "passive":
-                    if arbiter is not None:
-                        effects.call(effect, self, arbiter)
+                    if arbiters is not None:
+                        effects.call(effect, self, arbiters)
                     else:
                         effects.call(effect, self)
         for card in self.round_instance.applied_cards.items[:]:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "active" and effect["duration"] != 0:
-                    if arbiter is not None:
-                        effects.call(effect, self, arbiter)
+                    if arbiters is not None:
+                        effects.call(effect, self, arbiters)
                     else:
                         effects.call(effect, self)
-        if arbiter is not None and arbiter_cooldown == 0:
-            for effect in arbiter.effects:
-                if effect["trigger"] == event:
-                    effects.call(effect, self, arbiter)
+        if arbiters is not None:
+            for arb in arbiters:
+                if issubclass(arb.__class__, GameObject):
+                    if arb.cooldown == 0:
+                        for effect in arb.effects:
+                            if effect["trigger"] == event:
+                                effects.call(effect, self, arbiters)
+                                arb.cooldown = max(arb.cooldown, effect["cooldown"])
+                    if arb.shape.type != 'ball' and arb.cooldown > 0:
+                        arb.cooldown_timer = arb.cooldown
 
     def main_menu(self):
         if self.debug_mode:
@@ -164,7 +173,7 @@ class PinballGame:
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
                                                              self.config.shop_pos_packs[1])))
-            self.callback("shop_create", arbiter=shop, arbiter_cooldown=-1)
+            self.callback("shop_create", arbiters=[shop])
         else:
             shop = _shop
         message = ""
@@ -180,7 +189,8 @@ class PinballGame:
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                            items = misc.choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
+                            items = misc.choose_items(self, 3, self.config.shop_items["card"],
+                                                      self.config.rarities["card"])
                             for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")),
                                                             properties=item, target_position=(
@@ -332,7 +342,7 @@ class PinballGame:
                             self.inventory.remove_item(item)    # TODO: if placing is not allowed, remove object
                         elif item.properties["type"] == "card":
                             for effect in item.effects:
-                                if effect["effect_name"] == "delete_object" and\
+                                if effect["name"] == "delete_object" and\
                                         self.field.delete(mouse_scale(pygame.mouse.get_pos())):
                                     item.use(self)              # TODO: if usage is not allowed, place object back
                                     self.inventory.remove_item(item)

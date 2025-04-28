@@ -1,8 +1,8 @@
 from random import randint
 
 
-def effect(game, amount, arbiter=None):
-    shop = arbiter
+def effect(game, amount, arbiters=None):
+    shop = arbiters[0]
     appropriate = []
     for item in shop.items:
         if item.properties["type"] in ["card", "buildable"] and item.properties["price"] > 0:

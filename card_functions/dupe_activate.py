@@ -2,7 +2,7 @@ from game_effects import DisappearingItem
 from inventory import InventoryItem
 
 
-def effect(game, arbiter=None):
+def effect(game, arbiters=None):
     for item in game.inventory.items:
         allow = False
         lasting = False

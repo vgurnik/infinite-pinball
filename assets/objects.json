@@ -35,20 +35,34 @@
       "effects": [
         {
           "effect": "earn",
-          "params": [5]
+          "params": [5],
+          "cooldown": 0.7
         }
       ]
     },
     "lucky_ball": {
       "texture": "luckyball",
       "size": 15,
-      "mass": 1.5,
-      "max_speed": 1200,
+      "mass": 1,
+      "max_speed": 1300,
       "effects": [
         {
           "effect": "return_chance",
           "params": [0.3],
           "trigger": "ball_lost"
+        }
+      ]
+    },
+    "1up": {
+      "texture": "1up",
+      "size": 15,
+      "mass": 1,
+      "max_speed": 1300,
+      "effects": [
+        {
+          "effect": "1up",
+          "params": [1, "s"],
+          "cooldown": 0.5
         }
       ]
     }
@@ -61,7 +75,8 @@
       "effects": [
         {
           "effect": "bump",
-          "params": [50, 0]
+          "params": [50, 0],
+          "cooldown": 0.3
         }
       ]
     },
@@ -72,7 +87,8 @@
       "effects": [
         {
           "effect": "bump",
-          "params": [100, 0]
+          "params": [100, 0],
+          "cooldown": 0.3
         }
       ]
     },
@@ -83,7 +99,8 @@
       "effects": [
         {
           "effect": "bump",
-          "params": [0, 10]
+          "params": [0, 10],
+          "cooldown": 0.3
         }
       ]
     }

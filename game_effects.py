@@ -1,7 +1,7 @@
 import pygame
 from pathlib import Path
-from multiline_text import multiline
-import misc
+from utils.multiline_text import multiline
+import utils.textures
 
 
 class ContextWindow:
@@ -22,7 +22,8 @@ class ContextWindow:
 
     def draw(self, surface):
         if self.visible:
-            font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
+            font = pygame.font.Font(Path(__file__).resolve().with_name(
+                "assets").joinpath('lang/terminal-grotesque.ttf'), 20)
             match self.mode:
                 case 'text':
                     text_surface = multiline(self.item, font, (0, 0, 0), (200, 200, 200))
@@ -45,7 +46,7 @@ class ContextWindow:
                     rarity = self.item.properties.get("rarity", None)
                     if rarity is not None:
                         rarity = self.rarities[self.item.properties["type"]][rarity]
-                        rarity = font.render(rarity["name"], 1, misc.color(rarity["color"]))
+                        rarity = font.render(rarity["name"], 1, utils.textures.color(rarity["color"]))
                         height += rarity.get_height() + 6
                     if self.x + width > surface.get_width():
                         self.x = surface.get_width() - width
@@ -108,7 +109,7 @@ class HitEffect(BaseEffect):
         self.text = text
         self.color = color
         self.font = pygame.font.Font(Path(__file__).resolve().with_name(
-            "assets").joinpath('terminal-grotesque.ttf'), 24)
+            "assets").joinpath('lang/terminal-grotesque.ttf'), 24)
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
@@ -150,7 +151,8 @@ class DisappearingItem(BaseEffect):
             pygame.draw.rect(new_surface, color, rect, border_radius=5)
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
-            font = pygame.font.Font(Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf'), 20)
+            font = pygame.font.Font(Path(__file__).resolve().with_name(
+                "assets").joinpath('lang/terminal-grotesque.ttf'), 20)
             text_surface = font.render(self.item.name, True, (0, 0, 0))
             new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)
@@ -172,4 +174,4 @@ class AnimatedEffect:
             if sprite.update(dt, end_stop=True):
                 break
             sprite.draw(new_screen, pos, size)
-            misc.display_screen(self.display, new_screen, self.screen_size)
+            utils.textures.display_screen(self.display, new_screen, self.screen_size)

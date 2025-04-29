@@ -109,6 +109,16 @@
     "pin": {
       "texture": "pin",
       "size": 20
+    },
+    "pin_points": {
+      "texture": "pin_points",
+      "size": 20,
+      "effects": [
+        {
+          "effect": "pin_points",
+          "cooldown": 0.2
+        }
+      ]
     }
   },
   "flipper": {

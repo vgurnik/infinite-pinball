@@ -1,6 +1,6 @@
 import random
-import pygame
 from effects import get_functional
+import sprites
 
 
 def _is_allowed(card, game):
@@ -43,33 +43,24 @@ def choose_items(game, count, pool, rarity_scoring, unique=True):
     return items
 
 
-def rotoscale(texture, angle, new_size):
-    return pygame.transform.rotate(pygame.transform.scale(texture, new_size), round(angle))
-
-
-def scale(texture, new_size):
-    return pygame.transform.scale(texture, new_size)
-
-
-def mouse_scale(mouse_pos):
-    """Scale mouse position from screen coordinates to game coordinates."""
-    screen_size = pygame.display.get_window_size()
-    x = mouse_pos[0] * 1280. / screen_size[0]
-    y = mouse_pos[1] * 720. / screen_size[1]
-    return x, y
-
-
-def color(hex_color):
-    return [int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:], 16)]
-
-
-def display_screen(display, screen, screen_size):
-    if screen_size[1] / screen_size[0] == 720 / 1280:
-        display.blit(scale(screen, screen_size), (0, 0))
-    elif screen_size[1] / screen_size[0] > 720 / 1280:
-        diff = round(screen_size[1] - screen_size[0] * 720 / 1280)
-        display.blit(scale(screen, (screen_size[0], screen_size[1] - diff)), (0, diff // 2))
-    else:
-        diff = round(screen_size[0] - screen_size[1] * 1280 / 720)
-        display.blit(scale(screen, (screen_size[0] - diff, screen_size[1])), (diff // 2, 0))
-    pygame.display.flip()
+def load_textures(sprite_config):
+    # Load textures
+    textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in sprite_config["simple"]}
+    # Load animated sprites
+    for sprite in sprite_config["animated"]:
+        file = sprite_config["animated"][sprite]["file"]
+        uvs = sprite_config["animated"][sprite]["uvs"]
+        wh = sprite_config["animated"][sprite]["wh"]
+        ft = sprite_config["animated"][sprite].get("ft", -1)
+        textures[sprite] = sprites.AnimatedSprite(file, uvs=uvs, wh=wh, ft=ft)
+    # Load sprite sheets
+    for sheet_name in sprite_config["spritesheets"]:
+        sheet = sprites.Sprite(sheet_name + ".bmp")
+        for sprite in sprite_config["sheet_static"].get(sheet_name, []):
+            textures[sprite] = sprites.Sprite(sheet, *sprite_config["sheet_static"][sheet_name][sprite])
+        for sprite in sprite_config["sheet_animated"].get(sheet_name, []):
+            uvs = sprite_config["sheet_animated"][sheet_name][sprite]["uvs"]
+            wh = sprite_config["sheet_animated"][sheet_name][sprite]["wh"]
+            ft = sprite_config["sheet_animated"][sheet_name][sprite].get("ft", -1)
+            textures[sprite] = sprites.AnimatedSprite(sheet, uvs=uvs, wh=wh, ft=ft)
+    return textures

@@ -3,12 +3,12 @@ from pathlib import Path
 import pygame
 from game_effects import ContextWindow, AnimatedEffect
 from inventory import InventoryItem, PackInventory
-from misc import mouse_scale, display_screen
+from utils.textures import mouse_scale, display_screen
 
 
 class Button:
     def __init__(self, text, pos, size, color, font_size=36, offset=(0, 0)):
-        font_file = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
+        font_file = Path(__file__).resolve().with_name("assets").joinpath('lang/terminal-grotesque.ttf')
         font = pygame.font.Font(font_file, font_size)
         self.color = color
         self.text = font.render(text, True, (0, 0, 0))
@@ -53,7 +53,6 @@ class Button:
 class Ui:
 
     def overlay_menu(self, screen, title, options):
-        fontfile = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
         selected = 0
         overlay = pygame.Surface((screen.get_width(), screen.get_height()))
         overlay.set_alpha(180)
@@ -83,17 +82,17 @@ class Ui:
                             selected = i
 
             screen.blit(overlay, (0, 0))
-            font = pygame.font.Font(fontfile, 36)
+            font = pygame.font.Font(self.config.fontfile, 36)
             title_text = font.render(title, True, (255, 255, 255))
             title_rect = title_text.get_rect(center=(screen.get_width() // 2, 150))
             screen.blit(title_text, title_rect)
             option_rects = []
             for idx, option in enumerate(options):
                 if idx == selected:
-                    opt_font = pygame.font.Font(fontfile, 42)
+                    opt_font = pygame.font.Font(self.config.fontfile, 42)
                     color = (255, 255, 0)
                 else:
-                    opt_font = pygame.font.Font(fontfile, 36)
+                    opt_font = pygame.font.Font(self.config.fontfile, 36)
                     color = (255, 255, 255)
                 text = opt_font.render(option, True, color)
                 rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))

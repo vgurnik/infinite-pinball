@@ -5,7 +5,7 @@ from json import load
 
 class Config:
     def __init__(self):
-        self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('terminal-grotesque.ttf')
+        self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('lang/terminal-grotesque.ttf')
         self.debug_mode = False
         self.fullscreen = False
         self.resolutions = pygame.display.list_modes()
@@ -94,9 +94,9 @@ class Config:
         self.reroll_cost = 10
         self.inventory_size = 5
 
-        with open(Path(__file__).resolve().with_name("assets").joinpath('cards.json')) as file:
+        with open(Path(__file__).resolve().with_name("assets").joinpath('config/cards.json')) as file:
             self.shop_items = load(file)
-        with open(Path(__file__).resolve().with_name("assets").joinpath('objects.json')) as file:
+        with open(Path(__file__).resolve().with_name("assets").joinpath('config/objects.json')) as file:
             self.objects_settings = load(file)
         self.rarities = self.shop_items.pop("rarities")
 

@@ -2,10 +2,9 @@ import sys
 import random
 import pygame
 
-import effects
 from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
-from misc import display_screen
+from utils.textures import display_screen
 
 
 class PinballRound:

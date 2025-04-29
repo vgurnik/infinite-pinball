@@ -1,9 +1,12 @@
 import sys
 import math
 from pathlib import Path
+from json import load
+
 import pygame
 
-import misc
+from utils.misc import load_textures, choose_items
+from utils.textures import mouse_scale, display_screen
 from config import Config
 from field import Field
 from ui import Ui
@@ -12,8 +15,6 @@ from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
 from game_objects import GameObject
 import effects
-from misc import mouse_scale, display_screen
-import sprites
 
 
 class PinballGame:
@@ -25,11 +26,13 @@ class PinballGame:
         self.display = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
                                                (pygame.FULLSCREEN if self.config.fullscreen else 0))
         self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
-        self.textures = self.load_textures()
+        with open(Path(__file__).resolve().with_name("assets").joinpath('config/sprites.json')) as file:
+            sprite_config = load(file)
+        self.textures = load_textures(sprite_config)
         self.field = Field(self)
         self.ui = Ui(self)
         pygame.display.set_caption("Infinite Pinball")
-        icon = pygame.image.load(Path(__file__).resolve().with_name("assets").joinpath('ball.ico'))
+        icon = pygame.image.load(Path(__file__).resolve().with_name("assets").joinpath('textures/ball.ico'))
         pygame.display.set_icon(icon)
 
         self.reroll_cost = 10
@@ -41,76 +44,6 @@ class PinballGame:
         self.immediate = {}
         self.flags = {"charge_bonus": False}
         self.real_fps = 0
-
-    @staticmethod
-    def load_textures():
-        # Load textures
-        simple_sprites = ["field", "ramps", "pin"]
-        textures = {sprite: sprites.Sprite(sprite+'.bmp') for sprite in simple_sprites}
-        # Load animated textures
-        textures["bumper"] = sprites.AnimatedSprite("bumper_big.bmp", uvs=[(0, 0), (32, 0)], wh=(32, 32))
-        textures["bumper_small"] = sprites.AnimatedSprite("bumper_small.bmp", uvs=[(0, 0), (16, 0)], wh=(16, 16))
-        textures["bumper_money"] = sprites.AnimatedSprite("bumper_money.bmp", uvs=[(0, 0), (16, 0)], wh=(16, 16))
-        textures["flipper"] = sprites.AnimatedSprite("flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(40, 10))
-        textures["longboi"] = sprites.AnimatedSprite("longboi.bmp", uvs=[(0, 0), (0, 10)], wh=(45, 10))
-        textures["pro_flipper"] = sprites.AnimatedSprite("pro_flipper.bmp", uvs=[(0, 0), (0, 10)], wh=(30, 10))
-
-        textures["charge_indicator"] = sprites.AnimatedSprite("charge_indicator.bmp",
-                                                              uvs=[(0, 0), (0, 10)], wh=(30, 10))
-        textures["shield"] = sprites.AnimatedSprite("shield.bmp", uvs=[(0, 0), (0, 30), (0, 60)], wh=(200, 30), ft=0.1)
-        textures["spring"] = sprites.AnimatedSprite("spring.bmp", uvs=[(0, 0), (40, 0), (80, 0), (120, 0),
-                                                                       (160, 0), (200, 0), (240, 0)], wh=(40, 60))
-        cards_spritesheet = sprites.Sprite("cards.bmp")
-        textures["buildable_pack"] = sprites.Sprite(cards_spritesheet, (0, 0), (60, 80))
-        textures["slowmo"] = sprites.Sprite(cards_spritesheet, (60, 0), (60, 80))
-        textures["doublescore"] = sprites.Sprite(cards_spritesheet, (120, 0), (60, 80))
-        textures["quintupler"] = sprites.Sprite(cards_spritesheet, (180, 0), (60, 80))
-        textures["overload"] = sprites.Sprite(cards_spritesheet, (240, 0), (60, 80))
-        textures["ticket"] = sprites.Sprite(cards_spritesheet, (300, 0), (60, 80))
-        textures["wrench"] = sprites.Sprite(cards_spritesheet, (360, 0), (60, 80))
-        textures["cardholder"] = sprites.Sprite(cards_spritesheet, (420, 0), (60, 80))
-        textures["shield_card"] = sprites.Sprite(cards_spritesheet, (480, 0), (60, 80))
-
-        textures["+ball"] = sprites.Sprite(cards_spritesheet, (0, 80), (60, 80))
-        textures["backpack"] = sprites.Sprite(cards_spritesheet, (60, 80), (60, 80))
-        textures["launcher"] = sprites.Sprite(cards_spritesheet, (60, 160), (60, 80))
-
-        textures["slimeball_card"] = sprites.Sprite(cards_spritesheet, (120, 80), (60, 80))
-        textures["agile_card"] = sprites.Sprite(cards_spritesheet, (180, 80), (60, 80))
-        textures["bumperball_card"] = sprites.Sprite(cards_spritesheet, (240, 80), (60, 80))
-        textures["goldball_card"] = sprites.Sprite(cards_spritesheet, (300, 80), (60, 80))
-        textures["sellball"] = sprites.Sprite(cards_spritesheet, (360, 80), (60, 80))
-        textures["multiball"] = sprites.Sprite(cards_spritesheet, (420, 80), (60, 80))
-        textures["bonus_ball"] = sprites.Sprite(cards_spritesheet, (480, 80), (60, 80))
-
-        textures["5xscore"] = sprites.Sprite(cards_spritesheet, (120, 160), (60, 80))
-        textures["platinum"] = sprites.Sprite(cards_spritesheet, (180, 160), (60, 80))
-        textures["luckyball_card"] = sprites.Sprite(cards_spritesheet, (240, 160), (60, 80))
-        textures["1up_card"] = sprites.Sprite(cards_spritesheet, (300, 160), (60, 80))
-
-        ball_spritesheet = sprites.Sprite("balls.bmp")
-        textures["ball"] = sprites.Sprite(ball_spritesheet, (0, 0), (16, 16))
-        textures["goldball"] = sprites.Sprite(ball_spritesheet, (16, 0), (16, 16))
-        textures["slimeball"] = sprites.Sprite(ball_spritesheet, (0, 16), (16, 16))
-        textures["luckyball"] = sprites.Sprite(ball_spritesheet, (16, 16), (16, 16))
-        textures["1up"] = sprites.Sprite(ball_spritesheet, (16, 32), (16, 16))
-
-        pack_spritesheet = sprites.Sprite("packs.bmp")
-        textures["card_pack"] = sprites.Sprite(pack_spritesheet, (0, 10), (60, 80))
-        textures["card_pack_opening"] = sprites.AnimatedSprite(pack_spritesheet, uvs=[(60, 0), (120, 0), (180, 0),
-                                                                                      (240, 0), (300, 0), (360, 0),
-                                                                                      (420, 0)], wh=(60, 90), ft=0.07)
-        textures["object_pack"] = sprites.Sprite(pack_spritesheet, (0, 100), (60, 80))
-        textures["object_pack_opening"] = sprites.AnimatedSprite(pack_spritesheet,
-                                                                 uvs=[(60, 90), (120, 90), (180, 90),
-                                                                      (240, 90), (300, 90), (360, 90),
-                                                                      (420, 90)], wh=(60, 90), ft=0.07)
-        textures["epic_pack"] = sprites.Sprite(pack_spritesheet, (0, 190), (60, 80))
-        textures["epic_pack_opening"] = sprites.AnimatedSprite(pack_spritesheet,
-                                                               uvs=[(60, 180), (120, 180), (180, 180),
-                                                                    (240, 180), (300, 180), (360, 180),
-                                                                    (420, 180)], wh=(60, 90), ft=0.07)
-        return textures
 
     def callback(self, event, arbiters=None):
         for card in self.inventory.items:
@@ -138,37 +71,30 @@ class PinballGame:
                     if arb.shape.type != 'ball' and arb.cooldown > 0:
                         arb.cooldown_timer = arb.cooldown
 
-    def main_menu(self):
-        if self.debug_mode:
-            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Settings", "Exit", "Debug_Shop"])
-        else:
-            choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Settings", "Exit"])
-        return choice
-
     def shop_screen(self, _shop=None):
         clock = pygame.time.Clock()
         dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
         self.ui.change_mode("shop")
         if _shop is None:
             shop = Inventory(self.config)
-            items = misc.choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
+            items = choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_cards[0] + i * 130,
                                                              self.config.shop_pos_cards[1])))
-            items = misc.choose_items(self, 2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
+            items = choose_items(self, 2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
             for i, item in enumerate(items):
                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get("buildable_pack"), properties=item,
                                             target_position=(self.config.shop_pos_objects[0] + i * 130,
                                                              self.config.shop_pos_objects[1]),
                               for_buildable=self.textures.get(obj_def["texture"])))
-            items = misc.choose_items(self, 1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
+            items = choose_items(self, 1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_effects[0] + i * 130,
                                                              self.config.shop_pos_effects[1])))
-            items = misc.choose_items(self, 2, self.config.shop_items["pack"], self.config.rarities["pack"])
+            items = choose_items(self, 2, self.config.shop_items["pack"], self.config.rarities["pack"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
@@ -189,13 +115,12 @@ class PinballGame:
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                            items = misc.choose_items(self, 3, self.config.shop_items["card"],
-                                                      self.config.rarities["card"])
+                            items = choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
                             for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")),
                                                             properties=item, target_position=(
                                         self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
-                            items = misc.choose_items(self, 2, self.config.shop_items["buildable"],
+                            items = choose_items(self, 2, self.config.shop_items["buildable"],
                                                       self.config.rarities["buildable"])
                             for i, item in enumerate(items):
                                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
@@ -242,13 +167,13 @@ class PinballGame:
                             shop.remove_item(item)
                             if item.properties["kind"] == "oneof":
                                 pool = self.config.shop_items[item.properties["item_type"]]
-                                items = misc.choose_items(self, item.properties["amount"][1], pool,
+                                items = choose_items(self, item.properties["amount"][1], pool,
                                                           self.config.rarities[item.properties["item_type"]])
                             elif item.properties["kind"] == "all":
                                 pool = self.config.shop_items[item.properties["item_type"]]
-                                positive = misc.choose_items(self, item.properties["amount"][1], pool,
+                                positive = choose_items(self, item.properties["amount"][1], pool,
                                                              {"epic": {"value": 1}})
-                                negative = misc.choose_items(self, item.properties["amount"][2], pool,
+                                negative = choose_items(self, item.properties["amount"][2], pool,
                                                              {"negative": {"value": 1}})
                                 items = positive + negative
                             else:
@@ -447,7 +372,11 @@ class PinballGame:
 
     def run(self):
         while True:
-            choice = self.main_menu()
+            if self.debug_mode:
+                choice = self.ui.overlay_menu(self.screen, "Main Menu",
+                                              ["Start Game", "Settings", "Exit", "Debug_Shop"])
+            else:
+                choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Settings", "Exit"])
             if choice == "Exit":
                 break
             if choice == "Settings":

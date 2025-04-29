@@ -1,0 +1,122 @@
+{
+  "simple": ["field", "ramps"],
+  "animated": {
+    "bumper": {
+      "file": "bumper_big.bmp",
+      "uvs": [[0, 0], [32, 0]],
+      "wh": [32, 32]
+    },
+    "bumper_small": {
+      "file": "bumper_small.bmp",
+      "uvs": [[0, 0], [16, 0]],
+      "wh": [16, 16]
+    },
+    "bumper_money": {
+      "file": "bumper_money.bmp",
+      "uvs": [[0, 0], [16, 0]],
+      "wh": [16, 16]
+    },
+    "flipper": {
+      "file": "flipper.bmp",
+      "uvs": [[0, 0], [0, 10]],
+      "wh": [40, 10]
+    },
+    "longboi": {
+      "file": "longboi.bmp",
+      "uvs": [[0, 0], [0, 10]],
+      "wh": [45, 10]
+    },
+    "pro_flipper": {
+      "file": "pro_flipper.bmp",
+      "uvs": [[0, 0], [0, 10]],
+      "wh": [30, 10]
+    },
+    "charge_indicator": {
+      "file": "charge_indicator.bmp",
+      "uvs": [[0, 0], [0, 10]],
+      "wh": [30, 10]
+    },
+    "shield": {
+      "file": "shield.bmp",
+      "uvs": [[0, 0], [0, 30], [0, 60]],
+      "wh": [200, 30],
+      "ft": 0.1
+    },
+    "spring": {
+      "file": "spring.bmp",
+      "uvs": [[0, 0], [40, 0], [80, 0], [120, 0], [160, 0], [200, 0], [240, 0]],
+      "wh": [40, 60]
+    }
+  },
+  "spritesheets": ["cards", "balls", "packs", "pins"],
+  "sheet_static": {
+    "cards": {
+      "buildable_pack": [[0, 0], [60, 80]],
+      "slowmo": [[60, 0], [60, 80]],
+      "doublescore": [[120, 0], [60, 80]],
+      "quintupler": [[180, 0], [60, 80]],
+      "overload": [[240, 0], [60, 80]],
+      "ticket": [[300, 0], [60, 80]],
+      "wrench": [[360, 0], [60, 80]],
+      "cardholder": [[420, 0], [60, 80]],
+      "shield_card": [[480, 0], [60, 80]],
+
+      "+ball": [[0, 80], [60, 80]],
+      "backpack": [[60, 80], [60, 80]],
+      "launcher": [[60, 160], [60, 80]],
+
+      "slimeball_card": [[120, 80], [60, 80]],
+      "agile_card": [[180, 80], [60, 80]],
+      "bumperball_card": [[240, 80], [60, 80]],
+      "goldball_card": [[300, 80], [60, 80]],
+      "sellball": [[360, 80], [60, 80]],
+      "multiball": [[420, 80], [60, 80]],
+      "bonus_ball": [[480, 80], [60, 80]],
+
+      "5xscore": [[120, 160], [60, 80]],
+      "platinum": [[180, 160], [60, 80]],
+      "luckyball_card": [[240, 160], [60, 80]],
+      "1up_card": [[300, 160], [60, 80]]
+    },
+    "balls": {
+      "ball": [[0, 0], [16, 16]],
+      "goldball": [[16, 0], [16, 16]],
+      "slimeball": [[0, 16], [16, 16]],
+      "luckyball": [[16, 16], [16, 16]],
+      "1up": [[16, 32], [16, 16]]
+    },
+    "packs": {
+      "card_pack": [[0, 10], [60, 80]],
+      "object_pack": [[0, 100], [60, 80]],
+      "epic_pack": [[0, 190], [60, 80]]
+    },
+    "pins": {
+      "pin": [[0, 0], [10, 20]]
+    }
+  },
+  "sheet_animated": {
+    "packs": {
+      "card_pack_opening": {
+        "uvs": [[60, 0], [120, 0], [180, 0], [240, 0], [300, 0], [360, 0], [420, 0]],
+        "wh": [60, 90],
+        "ft": 0.07
+      },
+      "object_pack_opening": {
+        "uvs": [[60, 90], [120, 90], [180, 90], [240, 90], [300, 90], [360, 90], [420, 90]],
+        "wh": [60, 90],
+        "ft": 0.07
+      },
+      "epic_pack_opening": {
+        "uvs": [[60, 180], [120, 180], [180, 180], [240, 180], [300, 180], [360, 180], [420, 180]],
+        "wh": [60, 90],
+        "ft": 0.07
+      }
+    },
+    "pins": {
+      "pin_points": {
+        "uvs": [[10, 0], [20, 0]],
+        "wh": [10, 20]
+      }
+    }
+  }
+}

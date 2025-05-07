@@ -4,6 +4,7 @@ import pygame
 from game_effects import ContextWindow, AnimatedEffect
 from inventory import InventoryItem, PackInventory
 from utils.textures import mouse_scale, display_screen
+from utils.text import format_text
 
 
 class Button:
@@ -345,9 +346,8 @@ class Ui:
             if self.mode == 'round_finishable':
                 self.play_button.draw(ui_surface)
             score = self.game.round_instance.score
-            min_score_text = font.render(f"Required score: {req}", True, (255, 255, 255))
-            score_text = font.render(f"Score: {int(score) if score == int(score) else score}",
-                                     True, (255, 255, 255))
+            min_score_text = font.render(format_text("Required score: {}", req), True, (255, 255, 255))
+            score_text = font.render(format_text("Score: {}", score), True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_score_pos)
             ui_surface.blit(min_score_text, self.config.ui_min_score_pos)
 
@@ -356,10 +356,10 @@ class Ui:
             self.field_button.draw(ui_surface)
             if self.mode == 'shop':
                 self.reroll_button.draw(ui_surface, self.game.money < self.game.reroll_cost)
-            score_text = font.render(f"Next score: {req}", True, (255, 255, 255))
+            score_text = font.render(format_text("Next score: {}", req), True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_min_score_pos)
 
-        round_text = font.render(f"Round {self.game.round + 1}", True, (255, 100, 200))
+        round_text = font.render(format_text("Round: {}", self.game.round + 1), True, (255, 100, 200))
         ui_surface.blit(round_text, self.config.ui_round_pos)
         money_text = font.render(
             f"$ {round(self.game.money) if self.game.money == round(self.game.money) else self.game.money}",

@@ -2,9 +2,9 @@ from pathlib import Path
 import math
 import pygame
 from game_effects import ContextWindow
-from utils.multiline_text import multiline
-import effects
+from utils.text import multiline
 from utils.textures import mouse_scale
+import effects
 
 
 class InventoryItem:
@@ -325,9 +325,7 @@ class PlayerInventory(Inventory):
             return True
         if not item.sell(self.game_instance, negative=False):
             return False
-        if len(self.items) <= self.max_size:
-            if not item.sell(self.game_instance, negative=True):
-                return False
+        if len(self.items) <= self.max_size and item.sell(self.game_instance, negative=True):
             super().remove_item(item)
             self.recalculate_targets()
             return True

@@ -91,8 +91,10 @@ class Config:
         self.interest_rate = 0.1
         self.interest_cap = 50
         self.score_multiplier = 1
-        self.reroll_cost = 10
+        self.reroll_start_cost = 10
+        self.reroll_next = 2
         self.inventory_size = 5
+        self.start_flags = {"charge_bonus": False, "reroll_mode": 'm'}
 
         with open(Path(__file__).resolve().with_name("assets").joinpath('config/cards.json')) as file:
             self.shop_items = load(file)

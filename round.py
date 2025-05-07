@@ -64,6 +64,9 @@ class PinballRound:
                     x = pos.x + 20
                     y = pos.y
         self.game.callback("collision", arbiters=arbiters)
+        for arb in arbiters:
+            if arb.shape.type not in ['flipper', 'ball'] and arb.cooldown > 1:
+                self.game.callback("cooldown", arbiters=[arb])
         if self.immediate['score']:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \

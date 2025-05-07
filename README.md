@@ -53,6 +53,8 @@ pyinstaller main.spec
 - [ ] Add sounds
 - [x] Pack the app conveniently
 - [ ] Add localization
+- [ ] Add tutorial
 - [ ] Add SCALED resolution maybe, works strangely
 #### Known bugs and TODOs
 - Should probably be able to sell/use cards while opening packs
+- Need to add card ID, card params as list, card description format $flags, #params

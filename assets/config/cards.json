@@ -425,6 +425,33 @@
       "description": "All your current items\nbecome worthless\n\nDoes not take space\nin your inventory"
     },
     {
+      "name": "Brittle field",
+      "price": 100,
+      "type": "card",
+      "rarity": "negative",
+      "effects": [
+        {
+          "effect": "break",
+          "usage": "passive",
+          "negative": true,
+          "trigger": "cooldown"
+        },
+        {
+          "effect": "break",
+          "usage": "passive",
+          "negative": true,
+          "trigger": "use"
+        },
+        {
+          "effect": "inventory_size",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [1]
+        }
+      ],
+      "description": "Cooldowned objects break\ninstead of going on cooldown\nTo sell, you need to break at least\none object by this card\n\nDoes not take space\nin your inventory"
+    },
+    {
       "name": "Pro mode",
       "price": 0,
       "type": "card",
@@ -531,6 +558,41 @@
         }
       ],
       "description": "Upgrade your launch ramp\nwith a charge bonus\n\nCharge bonus will give you $2\nfor each indicator triggered but only\nif the ball launches through the lower exit"
+    },
+    {
+      "name": "Reroll mode",
+      "price": 200,
+      "type": "immediate",
+      "rarity": "common",
+      "effects": [
+        {
+          "effect": "enable_flag",
+          "params": ["reroll_mode", "s"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "functional": [{
+        "name": "check_flag",
+        "params": ["reroll_mode", "m"]
+        }
+      ],
+      "description": "Shop reroll's cost is growing linearly\ninstead of exponentially"
+    },
+    {
+      "name": "Reroll sale",
+      "price": 200,
+      "type": "immediate",
+      "rarity": "common",
+      "effects": [
+        {
+          "effect": "change_reroll_cost",
+          "params": [-1, "s"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Shop rerolls cost $1 less"
     }
   ],
 

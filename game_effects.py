@@ -1,6 +1,6 @@
 import pygame
 from pathlib import Path
-from utils.multiline_text import multiline
+from utils.text import multiline
 import utils.textures
 
 

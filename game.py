@@ -7,6 +7,7 @@ import pygame
 
 from utils.misc import load_textures, choose_items
 from utils.textures import mouse_scale, display_screen
+from utils.text import format_text
 from config import Config
 from field import Field
 from ui import Ui
@@ -35,14 +36,14 @@ class PinballGame:
         icon = pygame.image.load(Path(__file__).resolve().with_name("assets").joinpath('textures/ball.ico'))
         pygame.display.set_icon(icon)
 
-        self.reroll_cost = 10
+        self.reroll_cost = self.config.reroll_start_cost
         self.money = 0
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
         self.inventory = PlayerInventory(self)
         self.round_instance = PinballRound(self)
         self.immediate = {}
-        self.flags = {"charge_bonus": False}
+        self.flags = self.config.start_flags
         self.real_fps = 0
 
     def callback(self, event, arbiters=None):
@@ -111,7 +112,10 @@ class PinballGame:
                     if ui_return == 'reroll':
                         if self.money >= self.reroll_cost:
                             self.money -= self.reroll_cost
-                            self.reroll_cost *= 2
+                            if self.flags['reroll_mode'] == 'm':
+                                self.reroll_cost *= self.config.reroll_next
+                            else:
+                                self.reroll_cost += self.config.reroll_start_cost
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
@@ -151,7 +155,7 @@ class PinballGame:
                             if self.inventory.add_item(item):
                                 self.money -= item.properties["buy_price"]
                                 shop.remove_item(item)
-                                message = f"Purchased {item.name} for {item.properties['buy_price']}!"
+                                message = format_text("Purchased {} for {}!", item.name, item.properties['buy_price'])
                             else:
                                 message = "Not enough inventory space!"
                         elif item.properties["type"] == "immediate":
@@ -159,22 +163,22 @@ class PinballGame:
                                 visual_effects.append(DisappearingItem(item, 0.3))
                                 shop.remove_item(item)
                                 self.money -= item.properties["buy_price"]
-                                message = f"Purchased {item.name} for {item.properties['buy_price']}!"
+                                message = format_text("Purchased {} for {}!", item.name, item.properties['buy_price'])
                             else:
-                                message = f"{item.name} cannot be applied!"
+                                message = format_text("{} cannot be applied!", item.name)
                         elif item.properties["type"] == "pack":
                             self.money -= item.properties["buy_price"]
                             shop.remove_item(item)
                             if item.properties["kind"] == "oneof":
                                 pool = self.config.shop_items[item.properties["item_type"]]
                                 items = choose_items(self, item.properties["amount"][1], pool,
-                                                          self.config.rarities[item.properties["item_type"]])
+                                                     self.config.rarities[item.properties["item_type"]])
                             elif item.properties["kind"] == "all":
                                 pool = self.config.shop_items[item.properties["item_type"]]
                                 positive = choose_items(self, item.properties["amount"][1], pool,
-                                                             {"epic": {"value": 1}})
+                                                        {"epic": {"value": 1}})
                                 negative = choose_items(self, item.properties["amount"][2], pool,
-                                                             {"negative": {"value": 1}})
+                                                        {"negative": {"value": 1}})
                                 items = positive + negative
                             else:
                                 items = []
@@ -182,13 +186,14 @@ class PinballGame:
                                               self.textures.get(item.properties["sprite"]+"_opening"))
                             _ = clock.tick(self.config.fps)
                     else:
-                        message = f"Not enough money for {item.name}."
+                        message = format_text("Not enough money for {}.", item.name)
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         visual_effects.append(DisappearingItem(ret["try_selling"], 0.1))
                         self.money += ret["try_selling"].properties["price"]
-                        message = f"Sold {ret['try_selling'].name} for {ret['try_selling'].properties['price']}!"
+                        message = format_text("Sold {} for {}!", ret['try_selling'].name,
+                                              ret['try_selling'].properties['price'])
                     elif "try_using" in ret:
                         item = ret["try_using"]
                         allow = False
@@ -323,9 +328,8 @@ class PinballGame:
             result = 'lose'
             texts = [
                 "Game Over!",
-                f"Score: {int(score) if score == int(score) else score}",
-                f"Required Minimum Score: {min_score}",
-                f"Total Money: {self.money}",
+                format_text("Score: {}/{}", score, min_score),
+                format_text("Total Money: {}", self.money),
                 "Press ENTER or click to return to main menu"
             ]
             for i, line in enumerate(texts):
@@ -336,18 +340,18 @@ class PinballGame:
             result = 'win'
             texts = [
                 "Round Complete!",
-                f"Score: {int(score) if score == int(score) else score}",
-                f"Required Minimum Score: {min_score}",
-                f"Award: {self.config.base_award}",
-                f"Total Money: {self.money}",
+                format_text("Score: {}/{}", score, min_score),
+                format_text("Award: {}", self.config.base_award),
+                format_text("Total Money: {}", self.money),
                 "Press ENTER or click to continue..."
             ]
             if interest_reward > 0:
-                texts.insert(4, f"{round(self.config.interest_rate * 100)}% interest: {interest_reward} (max {self.config.interest_cap})")
+                texts.insert(3, format_text("{}% interest: {} (max {})", round(self.config.interest_rate * 100),
+                                            interest_reward, self.config.interest_cap))
             if order_reward > 0:
-                texts.insert(4, f"Award for extra score: {order_reward}")
+                texts.insert(3, format_text("Award for extra score: {}", order_reward))
             if ball_reward > 0:
-                texts.insert(4, f"Award for balls left: {ball_reward}")
+                texts.insert(3, format_text("Award for balls left: {}", ball_reward))
             for i, line in enumerate(texts):
                 if i == 0:
                     txt = font.render(line, True, (0, 255, 0))
@@ -397,7 +401,7 @@ class PinballGame:
                 self.config = Config()
                 self.inventory = PlayerInventory(self)
                 self.field = Field(self)
-                self.flags = {"charge_bonus": False}
+                self.flags = self.config.start_flags
                 self.money = 0
                 self.round = 0
                 self.score_needed = self.config.min_score[0]
@@ -416,7 +420,7 @@ class PinballGame:
                         self.score_needed = self.config.min_score[-1] * 10 ** (self.round -
                                                                                len(self.config.min_score) + 1)
                     shop = None
-                    self.reroll_cost = self.config.reroll_cost
+                    self.reroll_cost = self.config.reroll_start_cost
                     while result in ['win', 'back']:
                         result, shop = self.shop_screen(shop)
                         if result == 'field_setup':

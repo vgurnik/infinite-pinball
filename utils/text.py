@@ -1,6 +1,44 @@
 import pygame
 
 
+def format_number(number: int | float, places: int = 10) -> str:
+    """Formats a number to a string with the specified number of decimal places.
+
+    Parameters
+    ----------
+    number - the number to format.
+    places - the number of decimal places to keep.
+
+    Returns
+    -------
+    A string representation of the number with the specified number of decimal places.
+    """
+    if isinstance(number, int) or int(number) == number:
+        return str(number)
+    elif isinstance(number, float):
+        if len(str(int(number))) >= places:
+            return f"{number:,.1e}"
+        return f"{number:,.{max(places-len(str(int(number))), 0)}f}"
+    else:
+        raise TypeError("Number must be an int or float.")
+
+
+def format_text(text: str, *args):
+    """Formats a string with the specified arguments.
+
+    Parameters
+    ----------
+    text - the string to format.
+    *args - the arguments to format the string with.
+
+    Returns
+    -------
+    A formatted string.
+    """
+    new_args = [format_number(arg) if isinstance(arg, (int, float)) else arg for arg in args]
+    return text.format(*new_args)
+
+
 def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rect,
                       font_color: tuple, bg_color: tuple, justification=0):
     """Returns a surface containing the passed text string, reformatted
@@ -55,7 +93,7 @@ def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rec
     accumulated_height = 0
     for line in final_lines:
         if accumulated_height + font.size(line)[1] >= rect.height:
-             raise Exception("Once word-wrapped, the text string was too tall to fit in the rect.")
+            raise Exception("Once word-wrapped, the text string was too tall to fit in the rect.")
         if line != "":
             temp_surface = font.render(line, 1, font_color)
             if justification == 0:

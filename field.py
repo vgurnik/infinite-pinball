@@ -193,7 +193,14 @@ class Field:
         self.objects.append(obj)
         return True
 
-    def delete(self, mouse_pos):
+    def delete(self, mouse_object):
+        if issubclass(mouse_object.__class__, game_objects.GameObject):
+            if mouse_object in self.objects:
+                self.objects.remove(mouse_object)
+                self.space.remove(mouse_object.body, mouse_object.shape)
+                return True
+            return False
+        mouse_pos = mouse_object
         for obj in self.objects[:]:
             if obj.shape.point_query((mouse_pos[0] - self.position[0],
                                       mouse_pos[1] - self.position[1])).distance <= obj.radius:

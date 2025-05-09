@@ -1,8 +1,8 @@
-def effect(game_instance, difference):
-    game_instance.inventory.max_size += difference
+def effect(game, difference):
+    game.inventory.max_size += difference
     return True
 
 
-def negative_effect(game_instance, difference):
-    game_instance.inventory.max_size -= difference
+def negative_effect(game, difference):
+    game.inventory.max_size -= difference
     return True

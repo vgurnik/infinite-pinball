@@ -99,7 +99,7 @@ class PinballGame:
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
-                                                             self.config.shop_pos_packs[1])))
+                                                             self.config.shop_pos_packs[1]), card_size=(123, 163)))
             self.callback("shop_create", arbiters=[shop])
         else:
             shop = _shop

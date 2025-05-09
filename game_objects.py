@@ -11,6 +11,7 @@ class GameObject:
         self.sprite = sprite
         if hasattr(self.sprite, "copy"):
             self.sprite = sprite.copy()
+        self.flags = config.get("flags", {}).copy()
         self.effects = [{
             "name": effect.get("effect", None),
             "effect": effects.get_object_function(effect.get("effect", None)),
@@ -46,6 +47,8 @@ class GameObject:
                 self.shape.sensor = True
             else:
                 self.shape.sensor = False
+        if "sprite" in self.flags:
+            self.sprite.set_frame(self.flags["sprite"])
 
 
 class Ball(GameObject):
@@ -92,8 +95,6 @@ class Ball(GameObject):
 class Bumper(GameObject):
     def __init__(self, space, config, sprite=None):
         super().__init__(config, (0, 0), sprite, space)
-        self.config = config
-        self.space = space
         self.pos = config["pos"]
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = self.pos
@@ -148,8 +149,6 @@ class Bumper(GameObject):
 class Pin(GameObject):
     def __init__(self, space, config, sprite=None):
         super().__init__(config, (0, 0), sprite, space)
-        self.config = config
-        self.space = space
         self.pos = config["pos"]
         self.len = config["size"]
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
@@ -190,8 +189,6 @@ class Flipper(GameObject):
 
     def __init__(self, space, flipper_def, is_left, config, sprite=None, additional=False):
         super().__init__(flipper_def, (0, 0), sprite, space)
-        self.space = space
-        self.config = config
         self.is_left = is_left
         self.mass = 100
         self.length, self.width = flipper_def["size"]

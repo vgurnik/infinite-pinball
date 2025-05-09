@@ -1,6 +1,6 @@
 from pathlib import Path
-import pygame
 from json import load
+import pygame
 
 
 class Config:

@@ -68,6 +68,36 @@
       "description": "Increase points scored\nx5 for 5 s"
     },
     {
+      "name": "Collector",
+      "price": 150,
+      "type": "card",
+      "rarity": "uncommon",
+      "sprite": "collection",
+      "effects": [
+        {
+          "effect": "collector",
+          "usage": "passive",
+          "trigger": "collision",
+          "params": [4, "m"]
+        }
+      ],
+      "description": "Increase points scored x4\nif all your balls are different"
+    },
+    {
+      "name": "Forget",
+      "price": 100,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "reroll_reset",
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Reset reroll price"
+    },
+    {
       "name": "Bonus Ball",
       "price": 150,
       "type": "card",
@@ -87,7 +117,7 @@
       "name": "Doubler",
       "price": 150,
       "type": "card",
-      "rarity": "rare",
+      "rarity": "uncommon",
       "sprite": "doublescore",
       "effects": [
         {
@@ -129,6 +159,21 @@
         }
       ],
       "description": "Destroy an object\nin field modification mode"
+    },
+    {
+      "name": "Special Edition",
+      "price": 300,
+      "type": "card",
+      "rarity": "rare",
+      "effects": [
+        {
+          "effect": "change_rarities",
+          "usage": "passive",
+          "trigger": "use",
+          "params": ["common", 0.5]
+        }
+      ],
+      "description": "All common cards\nare 2x less common"
     },
     {
       "name": "Multiball",
@@ -242,6 +287,22 @@
       "description": "Convert your current ball\ninto 1-UP\n1-UP ball adds 1 to each bumper's\npoints on each hit"
     },
     {
+      "name": "8 ball",
+      "price": 200,
+      "type": "card",
+      "rarity": "uncommon",
+      "sprite": "8ball_card",
+      "effects": [
+        {
+          "effect": "convert_ball",
+          "params": ["8ball"],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "Convert your current ball into 8 ball\n8 ball has a 1/8 chance to score 800 points\non each hit, but it sets your score and money to 0\nif it is lost before 8 hits"
+    },
+    {
       "name": "Sell ball",
       "price": 50,
       "type": "card",
@@ -262,6 +323,7 @@
       "price": 500,
       "type": "card",
       "rarity": "rare",
+      "sprite": "giveaway",
       "effects": [
         {
           "effect": "giveaway",
@@ -485,7 +547,7 @@
           "params": [1]
         }
       ],
-      "description": "Score requirement is doubled for each round\nTo sell, you need to score 2x current score requirement\n\nDoes not take space\nin your inventory"
+      "description": "Score requirement is doubled for each round\nTo sell, you need to score 2x current score requirement\n\nDoes not take space in your inventory"
     }
   ],
 
@@ -660,6 +722,15 @@
       "object_type": "pin",
       "class": "pin",
       "description": "The PIN in PINball"
+    },
+    {
+      "name": "Pinpoint",
+      "price": 80,
+      "rarity": "common",
+      "type": "buildable",
+      "object_type": "pin",
+      "class": "pin_points",
+      "description": "Activated pin.\nIf all pins of this type on the field\nare activated, you score 100 for each pin\n(A single pin scores 10)"
     }
   ],
 

@@ -128,8 +128,8 @@ class Ui:
         self.game.inventory.update(dt)
         self.game.inventory.draw(self.game.screen)
         opening_inventory.draw(self.game.screen)
-        opening_effect.start(self.game.screen, opening_sprite, (start.x, start.y - 20),
-                             (120, 180))
+        opening_effect.start(self.game.screen, opening_sprite, (start.x - 3, start.y - 23),
+                             (126, 188))
         clock.tick(self.config.fps)
         dt = 0
         while taken < amount:

@@ -97,6 +97,7 @@ class PinballRound:
         self.active_balls.append(self.ball_queue.pop())
         self.ball_queue_coords.pop()
         self.active_balls[-1].activate(self.field.space, self.config.ball_start)
+        self.game.callback("recharge", arbiters=[self.active_balls[-1]])
         self.ball_launched = False
         self.launch_charge = 0
         self.launch_indicators = 0
@@ -190,6 +191,7 @@ class PinballRound:
         exit_option = "exit"
         self.ui.change_mode("round")
         self.recharge()
+        self.game.callback("round_start", arbiters=self.field.objects + self.active_balls)
         dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
 
         while self.running:

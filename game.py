@@ -7,7 +7,7 @@ import pygame
 
 from utils.misc import load_textures, choose_items
 from utils.textures import mouse_scale, display_screen
-from utils.text import format_text
+from utils.text import format_text, loc
 from config import Config
 from field import Field
 from ui import Ui
@@ -80,24 +80,24 @@ class PinballGame:
             shop = Inventory(self.config)
             items = choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
+                shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_cards[0] + i * 130,
                                                              self.config.shop_pos_cards[1])))
             items = choose_items(self, 2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
             for i, item in enumerate(items):
                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
-                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get("buildable_pack"), properties=item,
+                shop.add_item(InventoryItem(properties=item, sprite=self.textures.get("buildable_pack"),
                                             target_position=(self.config.shop_pos_objects[0] + i * 130,
                                                              self.config.shop_pos_objects[1]),
                               for_buildable=self.textures.get(obj_def["texture"])))
             items = choose_items(self, 1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
+                shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_effects[0] + i * 130,
                                                              self.config.shop_pos_effects[1])))
             items = choose_items(self, 2, self.config.shop_items["pack"], self.config.rarities["pack"])
             for i, item in enumerate(items):
-                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")), properties=item,
+                shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
                                                              self.config.shop_pos_packs[1]), card_size=(123, 163)))
             self.callback("shop_create", arbiters=[shop])
@@ -121,16 +121,17 @@ class PinballGame:
                                     shop.remove_item(item)
                             items = choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
                             for i, item in enumerate(items):
-                                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get(item.get("sprite")),
-                                                            properties=item, target_position=(
-                                        self.config.shop_pos_cards[0] + i * 130, self.config.shop_pos_cards[1])))
+                                shop.add_item(InventoryItem(properties=item,
+                                                            sprite=self.textures.get(item.get("sprite")),
+                                                            target_position=(self.config.shop_pos_cards[0] + i * 130,
+                                                                             self.config.shop_pos_cards[1])))
                             items = choose_items(self, 2, self.config.shop_items["buildable"],
-                                                      self.config.rarities["buildable"])
+                                                 self.config.rarities["buildable"])
                             for i, item in enumerate(items):
                                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
-                                shop.add_item(InventoryItem(item["name"], sprite=self.textures.get("buildable_pack"),
-                                                            properties=item, target_position=(
-                                        self.config.shop_pos_objects[0] + i * 130, self.config.shop_pos_objects[1]),
+                                shop.add_item(InventoryItem(properties=item, sprite=self.textures.get("buildable_pack"),
+                                                            target_position=(self.config.shop_pos_objects[0] + i * 130,
+                                                                             self.config.shop_pos_objects[1]),
                                                             for_buildable=self.textures.get(obj_def["texture"])))
                     else:
                         return ui_return, shop
@@ -139,11 +140,11 @@ class PinballGame:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        choice = self.ui.overlay_menu(self.screen, "Paused", [
-                            "Resume", "Settings", "Exit to Main Menu"])
-                        if choice == "Exit to Main Menu":
+                        choice = self.ui.overlay_menu(self.screen, "ui.text.pause",
+                                                      ["ui.buttons.resume", "ui.buttons.settings", "ui.buttons.exit"])
+                        if choice == "ui.buttons.exit":
                             return 'menu', shop
-                        if choice == "Settings":
+                        if choice == "ui.buttons.settings":
                             self.ui.settings_menu()
                         _ = clock.tick(self.config.fps)
                     elif event.key == pygame.K_RETURN:
@@ -155,17 +156,19 @@ class PinballGame:
                             if self.inventory.add_item(item):
                                 self.money -= item.properties["buy_price"]
                                 shop.remove_item(item)
-                                message = format_text("Purchased {} for {}!", item.name, item.properties['buy_price'])
+                                message = format_text("ui.message.purchased", self.config.lang, item.name,
+                                                      item.properties['buy_price'])
                             else:
-                                message = "Not enough inventory space!"
+                                message = loc("ui.message.not_enough_space", self.config.lang)
                         elif item.properties["type"] == "immediate":
                             if item.use(self):
                                 visual_effects.append(DisappearingItem(item, 0.3))
                                 shop.remove_item(item)
                                 self.money -= item.properties["buy_price"]
-                                message = format_text("Purchased {} for {}!", item.name, item.properties['buy_price'])
+                                message = format_text("ui.message.purchased", self.config.lang, item.name,
+                                                      item.properties['buy_price'])
                             else:
-                                message = format_text("{} cannot be applied!", item.name)
+                                message = format_text("ui.message.not_purchased", self.config.lang, item.name)
                         elif item.properties["type"] == "pack":
                             self.money -= item.properties["buy_price"]
                             shop.remove_item(item)
@@ -186,13 +189,13 @@ class PinballGame:
                                               self.textures.get(item.properties["sprite"]+"_opening"))
                             _ = clock.tick(self.config.fps)
                     else:
-                        message = format_text("Not enough money for {}.", item.name)
+                        message = format_text("ui.message.not_enough_money", self.config.lang, item.name)
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         visual_effects.append(DisappearingItem(ret["try_selling"], 0.1))
                         self.money += ret["try_selling"].properties["price"]
-                        message = format_text("Sold {} for {}!", ret['try_selling'].name,
+                        message = format_text("ui.message.sold", self.config.lang, ret['try_selling'].name,
                                               ret['try_selling'].properties['price'])
                     elif "try_using" in ret:
                         item = ret["try_using"]
@@ -210,7 +213,7 @@ class PinballGame:
             self.screen.fill((20, 20, 70))
 
             big_font = pygame.font.Font(self.config.fontfile, 36)
-            header = big_font.render("Game Shop", True, (255, 255, 255))
+            header = big_font.render(loc("ui.text.shop", self.config.lang), True, (255, 255, 255))
             self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
             shop.update(dt)
             shop.draw(self.screen)
@@ -253,11 +256,11 @@ class PinballGame:
                         sys.exit()
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            choice = self.ui.overlay_menu(self.screen, "Paused", [
-                                "Resume", "Settings", "Exit to Main Menu"])
-                            if choice == "Exit to Main Menu":
+                            choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
+                                "ui.buttons.resume", "ui.buttons.settings", "ui.buttons.exit"])
+                            if choice == "ui.buttons.exit":
                                 return 'menu'
-                            if choice == "Settings":
+                            if choice == "ui.buttons.settings":
                                 self.ui.settings_menu()
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_RETURN:
@@ -327,10 +330,10 @@ class PinballGame:
         if score < min_score:
             result = 'lose'
             texts = [
-                "Game Over!",
-                format_text("Score: {}/{}", score, min_score),
-                format_text("Total Money: {}", self.money),
-                "Press ENTER or click to return to main menu"
+                loc("ui.message.lose", self.config.lang),
+                format_text("ui.message.score", self.config.lang, score, min_score),
+                format_text("ui.message.money", self.config.lang, self.money),
+                loc("ui.message.return_lose", self.config.lang)
             ]
             for i, line in enumerate(texts):
                 txt = font.render(line, True, (255, 100, 100))
@@ -339,19 +342,20 @@ class PinballGame:
         else:
             result = 'win'
             texts = [
-                "Round Complete!",
-                format_text("Score: {}/{}", score, min_score),
-                format_text("Award: {}", self.config.base_award),
-                format_text("Total Money: {}", self.money),
-                "Press ENTER or click to continue..."
+                loc("ui.message.complete", self.config.lang),
+                format_text("ui.message.score", self.config.lang, score, min_score),
+                format_text("ui.message.reward", self.config.lang, self.config.base_award),
+                format_text("ui.message.money", self.config.lang, self.money),
+                loc("ui.message.go_next", self.config.lang)
             ]
             if interest_reward > 0:
-                texts.insert(3, format_text("{}% interest: {} (max {})", round(self.config.interest_rate * 100),
-                                            interest_reward, self.config.interest_cap))
+                texts.insert(3, format_text("ui.message.interest", self.config.lang,
+                                            round(self.config.interest_rate * 100), interest_reward,
+                                            self.config.interest_cap))
             if order_reward > 0:
-                texts.insert(3, format_text("Award for extra score: {}", order_reward))
+                texts.insert(3, format_text("ui.message.score_reward", self.config.lang, order_reward))
             if ball_reward > 0:
-                texts.insert(3, format_text("Award for balls left: {}", ball_reward))
+                texts.insert(3, format_text("ui.message.ball_reward", self.config.lang, ball_reward))
             for i, line in enumerate(texts):
                 if i == 0:
                     txt = font.render(line, True, (0, 255, 0))
@@ -377,13 +381,14 @@ class PinballGame:
     def run(self):
         while True:
             if self.debug_mode:
-                choice = self.ui.overlay_menu(self.screen, "Main Menu",
-                                              ["Start Game", "Settings", "Exit", "Debug_Shop"])
+                choice = self.ui.overlay_menu(self.screen, "ui.text.main",
+                                              ["ui.button.start", "ui.button.settings", "ui.button.exit", "Debug_Shop"])
             else:
-                choice = self.ui.overlay_menu(self.screen, "Main Menu", ["Start Game", "Settings", "Exit"])
-            if choice == "Exit":
+                choice = self.ui.overlay_menu(self.screen, "ui.text.main",
+                                              ["ui.button.start", "ui.button.settings", "ui.button.exit"])
+            if choice == "ui.button.exit":
                 break
-            if choice == "Settings":
+            if choice == "ui.button.settings":
                 self.ui.settings_menu()
                 continue
             if choice == "Debug_Shop":
@@ -397,7 +402,7 @@ class PinballGame:
                         result = self.field_modification_screen()
                 self.money = 0
                 continue
-            if choice == "Start Game":
+            if choice == "ui.button.start":
                 self.config = Config()
                 self.inventory = PlayerInventory(self)
                 self.field = Field(self)

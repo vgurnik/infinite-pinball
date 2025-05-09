@@ -1,4 +1,14 @@
+from pathlib import Path
+from json import load
 import pygame
+
+
+langs = ["en", "ru"]
+lang_file = {}
+for lang in langs:
+    with open(Path(__file__).parent.resolve().with_name("assets").joinpath(f'lang/{lang}.json'),
+              encoding='utf-8') as file:
+        lang_file[lang] = load(file)
 
 
 def format_number(number: int | float, places: int = 10) -> str:
@@ -15,7 +25,7 @@ def format_number(number: int | float, places: int = 10) -> str:
     """
     if isinstance(number, int) or int(number) == number:
         return str(number)
-    elif isinstance(number, float):
+    if isinstance(number, float):
         if len(str(int(number))) >= places:
             return f"{number:,.1e}"
         return f"{number:,.{max(places-len(str(int(number))), 0)}f}"
@@ -23,7 +33,7 @@ def format_number(number: int | float, places: int = 10) -> str:
         raise TypeError("Number must be an int or float.")
 
 
-def format_text(text: str, *args):
+def format_text(text: str, lang, *args):
     """Formats a string with the specified arguments.
 
     Parameters
@@ -36,7 +46,35 @@ def format_text(text: str, *args):
     A formatted string.
     """
     new_args = [format_number(arg) if isinstance(arg, (int, float)) else arg for arg in args]
+    text = loc(text, lang)
     return text.format(*new_args)
+
+
+def loc(text, lang):
+    """Returns the localized string for the specified text and language.
+
+    Parameters
+    ----------
+    text - the string to localize.
+    lang - the language to localize the string to.
+
+    Returns
+    -------
+    A localized string.
+    """
+    if lang in langs:
+        if isinstance(text, str):
+            dct = lang_file[lang]
+            for key in text.split('.'):
+                if key in dct:
+                    dct = dct[key]
+                else:
+                    return text
+            return dct
+        elif isinstance(text, list):
+            return loc(text[0], lang).format(*map(loc, text[1:], [lang]*(len(text)-1)))
+    else:
+        raise NotImplementedError("Localization not implemented for this language.")
 
 
 def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rect,

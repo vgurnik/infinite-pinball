@@ -5,10 +5,12 @@ import pygame
 
 class Config:
     def __init__(self):
-        self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('lang/terminal-grotesque.ttf')
+        self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('lang/TDATextCondensed.ttf')
         self.debug_mode = False
         self.fullscreen = False
         self.resolutions = pygame.display.list_modes()
+        self.langs = ["en", "ru"]
+        self.lang = self.langs[1]
         self.base_resolution = (1280, 720)
 
         # Screen and simulation settings.
@@ -33,12 +35,6 @@ class Config:
         self.ui_inventory_pos = (60, 300)
         self.ui_inventory_height = 300
         self.ui_deletion_size = (200, 150)
-
-        self.play_description = "Continue to the\nnext round"
-        self.reroll_description = "Reroll buildables and cards\nfor ${}"
-        self.back_description = "Return to shop"
-        self.field_description = "Configure the playing field\nwith buildables and object removing cards"
-        self.finish_description = "Finish round early to get\nbonus $ for balls remaining"
 
         # Table boundaries.
         self.field_pos = (350, 0)

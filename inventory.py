@@ -2,19 +2,19 @@ from pathlib import Path
 import math
 import pygame
 from game_effects import ContextWindow
-from utils.text import multiline
+from utils.text import multiline, loc
 from utils.textures import mouse_scale
 import effects
 
 
 class InventoryItem:
-    def __init__(self, name, sprite=None, properties=None, target_position=(0, 0), card_size=(120, 160),
+    def __init__(self, properties=None, sprite=None, target_position=(0, 0), card_size=(120, 160),
                  init_pos=None, for_buildable=None):
         if properties is None:
             properties = {}
-        self.name = name
         self.sprite = sprite
         self.properties = properties.copy()
+        self.name = properties["name"]
         if self.properties.get("type") == "buildable":
             if hasattr(for_buildable, "copy"):
                 self.buildable_sprite = for_buildable.copy()
@@ -120,7 +120,7 @@ class InventoryItem:
                 self.highlighted = False
         self.rect.topleft = (int(self.pos.x), int(self.pos.y))
 
-    def draw(self, surface):
+    def draw(self, surface, lang='en'):
         if not self.visibility:
             return
         if self.highlighted:
@@ -158,8 +158,8 @@ class InventoryItem:
             pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
             font = pygame.font.Font(Path(__file__).resolve().with_name(
-                "assets").joinpath('lang/terminal-grotesque.ttf'), 20)
-            text_surface = font.render(self.name, True, (0, 0, 0))
+                "assets").joinpath('lang/TDATextCondensed.ttf'), 20)
+            text_surface = font.render(loc(self.name, lang), True, (0, 0, 0))
             x = rect.x + (rect.width - text_surface.get_width()) / 2
             y = rect.y + 5
             surface.blit(text_surface, (x, y))
@@ -401,7 +401,7 @@ class PlayerInventory(Inventory):
             alpha_surface = pygame.Surface(self.deletion_zone.size, pygame.SRCALPHA)
             alpha_surface.fill((0, 0, 0, 0))
             pygame.draw.rect(alpha_surface, (255, 100, 100, 100), alpha_surface.get_rect(), border_radius=10)
-            text_surface = multiline("Drop item here\nto sell it", font, (0, 0, 0, 255))
+            text_surface = multiline(loc("ui.text.sell_zone", self.config.lang), font, (0, 0, 0, 255))
             alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
                                               (self.deletion_zone.height - text_surface.get_height()) / 2))
             surface.blit(alpha_surface, self.deletion_zone.topleft)

@@ -1,0 +1,296 @@
+{
+  "lang_name": "English",
+  "card": {
+    "convert_ball": "Convert your current\nball into {}.\n{}",
+    "shield": {
+      "name": "Shield",
+      "description": "Allow the ball to bounce\nfrom the bottom for 10 s"
+    },
+    "slowmo": {
+      "name": "SlowMo",
+      "description": "Slow down time\nfor 10 s"
+    },
+    "overload": {
+      "name": "Overload",
+      "description": "Increase the strength of all bumpers\nx2 for 10 s"
+    },
+    "bonus": {
+      "name": "Bonus",
+      "description": "Increase points scored\nx5 for 5 s"
+    },
+    "collector": {
+      "name": "Collector",
+      "description": "Increase points scored x4\nif all your balls are different"
+    },
+    "forget": {
+      "name": "Forget",
+      "description": "Reset reroll price"
+    },
+    "bonusball": {
+      "name": "Bonus Ball",
+      "description": "Get an additional ball\nwhile this card is in your inventory\n\nCaution: selling this card removes\nlast ball added"
+    },
+    "doubler": {
+      "name": "Doubler",
+      "description": "Earn double score"
+    },
+    "cardholder": {
+      "name": "Cardholder",
+      "description": "Get extra inventory slot\nwhile this card is in your inventory\nThis card does not take space"
+    },
+    "wrench": {
+      "name": "Wrench",
+      "description": "Destroy an object\nin field modification mode"
+    },
+    "special": {
+      "name": "Special Edition",
+      "description": "All common cards\nare 2x less common"
+    },
+    "multiball": {
+      "name": "Multiball",
+      "description": "Split the currently launched\nball into 2 balls"
+    },
+    "sellball": {
+      "name": "Sell ball",
+      "description": "Sell your current ball\nfor $250. Be careful, do not\nsell your last ball!"
+    },
+    "giveaway": {
+      "name": "Giveaway",
+      "description": "One card or buildable in the shop\nis free (before reroll)"
+    },
+    "quintupler": {
+      "name": "Quintupler",
+      "description": "Earn 5x score until\nthe end of a round"
+    },
+    "ticket": {
+      "name": "Lucky Ticket",
+      "description": "Double your money\n(max $1000)"
+    },
+    "bank_dep": {
+      "name": "Bank deposit",
+      "description": "Increase maximum interest on\nyour money by additional $50"
+    },
+    "ball_loan": {
+      "name": "Ball loan",
+      "description": "Earn extra $100\nper ball left on round win"
+    },
+    "platinum": {
+      "name": "Platinum card",
+      "description": "Earn additional 10%\ninterest on your money"
+    },
+    "rewind": {
+      "name": "Rewind",
+      "description": "Chance 10% for each ball\nto return if it is lost"
+    },
+    "dupe": {
+      "name": "Dupe exploit",
+      "description": "Activate your topmost usable\ncard when the ball is lost\n\nThe card is not used up!"
+    },
+    "no_score": {
+      "name": "No score",
+      "description": "You earn no score while\nthis card is in your inventory\n\nDoes not take space\nin your inventory"
+    },
+    "debt": {
+      "name": "Debt",
+      "description": "All your current items\nbecome worthless\n\nDoes not take space\nin your inventory"
+    },
+    "brittle": {
+      "name": "Brittle field",
+      "description": "Cooldowned objects break\ninstead of going on cooldown\nTo sell, you need to break at least\none object by this card\n\nDoes not take space\nin your inventory"
+    },
+    "pro_mode": {
+      "name": "Pro mode",
+      "description": "Score requirement is doubled for each round\nTo sell, you need to score 2x current score requirement\n\nDoes not take space in your inventory"
+    }
+  },
+  "immediate": {
+    "backpack": {
+      "name": "Little Backpack",
+      "description": "Gives additional\ninventory slot"
+    },
+    "ball": {
+      "name": "Ball",
+      "description": "Gives additional\nstandard ball"
+    },
+    "multiplier": {
+      "name": "Multiplier chip",
+      "description": "Score 50% more points"
+    },
+    "launcher": {
+      "name": "Launcher",
+      "description": "Upgrade your launch ramp\nwith a charge bonus\n\nCharge bonus will give you $2\nfor each indicator triggered but only\nif the ball launches through the lower exit"
+    },
+    "reroll_mode": {
+      "name": "Reroll mode",
+      "description": "Shop reroll's cost is growing linearly\ninstead of exponentially"
+    },
+    "reroll_sale": {
+      "name": "Reroll sale",
+      "description": "Shop rerolls cost $1 less"
+    }
+  },
+  "object": {
+    "ball": {
+      "name": "Ball",
+      "description": "Standard ball"
+    },
+    "agile": {
+      "name": "Agile",
+      "description": "Agile ball is smaller and faster"
+    },
+    "bumperball": {
+      "name": "Bumperball",
+      "description": "Bumper ball is a bumper by itself!"
+    },
+    "slime": {
+      "name": "Slimeball",
+      "description": "Slimeball is very sticky!"
+    },
+    "gold": {
+      "name": "Golden ball",
+      "description": "Golden ball earns $5 for each hit!"
+    },
+    "lucky": {
+      "name": "Lucky Ball",
+      "description": "Lucky ball has a 30% chance\nto return if it is lost"
+    },
+    "1up": {
+      "name": "1-UP",
+      "description": "1-UP ball adds 1 to each bumper's\npoints on each hit"
+    },
+    "8ball": {
+      "name": "8 ball",
+      "description": "8 ball has a 1/8 chance to score 800 points\non each hit, but it sets your score and money to 0\nif it is lost before 8 hits"
+    },
+    "bumper": {
+      "name": "Bumper",
+      "description": "Additional big bumper"
+    },
+    "small_bumper": {
+      "name": "Small Bumper",
+      "description": "Additional small bumper"
+    },
+    "coin": {
+      "name": "Bouncy Coin",
+      "description": "Bumper that gives $10\nfor each hit"
+    },
+    "flipper": {
+      "name": "Flipper",
+      "description": "Standard flipper"
+    },
+    "longboi": {
+      "name": "Long boi",
+      "description": "Long easier flipper, but each hit\nwill cost you $10"
+    },
+    "pro_flipper": {
+      "name": "Pro flipper",
+      "description": "Flipper for professionals\nEarn $10 per hit"
+    },
+    "pin": {
+      "name": "Pin",
+      "description": "The PIN in PINball"
+    },
+    "pinpoint": {
+      "name": "Pinpoint",
+      "description": "Activated pin.\nIf all pins of this type on the field\nare activated, you score 100 for each pin\n(A single pin scores 10)"
+    }
+  },
+  "pack": {
+    "card": {
+      "name": "Card Pack",
+      "description": "Choose 1 of 4 cards"
+    },
+    "object": {
+      "name": "Object Pack",
+      "description": "Choose 1 of 4 objects"
+    },
+    "epic": {
+      "name": "Epic Pack",
+      "description": "Get a guaranteed epic card\nbut together with a negative card"
+    },
+    "big_card": {
+      "name": "Big Card Pack",
+      "description": "Choose 1 of 6 cards"
+    },
+    "big_object": {
+      "name": "Big Object Pack",
+      "description": "Choose 1 of 6 objects"
+    },
+    "mega_card": {
+      "name": "Mega Card Pack",
+      "description": "Choose 2 of 4 cards"
+    },
+    "mega_object": {
+      "name": "Mega Object Pack",
+      "description": "Choose 2 of 4 objects"
+    }
+  },
+  "rarity": {
+    "negative": "Negative",
+    "common": "Common",
+    "uncommon": "Uncommon",
+    "rare": "Rare",
+    "epic": "Epic"
+  },
+  "ui": {
+    "button": {
+      "start": "Start Game",
+      "exit": "Exit",
+      "resume": "Resume",
+      "settings": "Settings",
+      "main": "Exit to Main Menu",
+      "play": "Play",
+      "field": "Field",
+      "reroll": "Reroll",
+      "back": "Back",
+      "skip": "Skip",
+      "finish": "Finish"
+    },
+    "text": {
+      "main": "Main Menu",
+      "settings": "Settings",
+      "pause": "Paused",
+      "shop": "Game Shop",
+      "score": "Score: {}",
+      "req_score": "Required score: {}",
+      "next_score": "Next score: {}",
+      "round": "Round: {}",
+      "take": "Take {}/{}",
+      "take_all": "Take all or skip",
+      "sell_zone": "Drop item here\nto sell it",
+      "sell+": "Drop to sell\nfor ${}",
+      "sell-": "Drop to pay ${}\nto get rid of it"
+    },
+    "message": {
+      "complete": "Round complete",
+      "lose": "Game over!",
+      "score": "Score: {}/{}",
+      "money": "Total money: ${}",
+      "reward": "Reward: ${}",
+      "interest": "{}% interest: ${} (max ${})",
+      "ball_reward": "Reward for balls left: ${}",
+      "score_reward": "Reward for extra score: ${}",
+      "return_lose": "Press ENTER or click to return to main menu",
+      "go_next": "Press ENTER or click to continue",
+      "purchased": "Purchased {} for ${}!",
+      "not_purchased": "{} cannot be applied!",
+      "not_enough_money": "Not enough money for {}.",
+      "not_enough_space": "Not enough inventory space.",
+      "sold": "Sold {} for ${}!",
+      "play_description": "Continue to the\nnext round",
+      "back_description": "Return to shop",
+      "reroll_description": "Reroll buildables and cards\nfor ${}",
+      "field_description": "Configure the playing field\nwith buildables and object removing cards",
+      "finish_description": "Finish round early to get\nbonus $ for balls remaining"
+    },
+    "settings": {
+      "resolution": "Resolution: {}",
+      "fullscreen": "Fullscreen: {}",
+      "language": "Language: {}",
+      "debug": "Debug mode: {}",
+      "back": "Go back",
+      "on": "On",
+      "off": "Off"
+    }
+  }
+}

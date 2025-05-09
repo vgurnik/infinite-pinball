@@ -1,12 +1,13 @@
 import pygame
 from pathlib import Path
-from utils.text import multiline
+from utils.text import multiline, loc
 import utils.textures
 
 
 class ContextWindow:
     def __init__(self, config, pos=(0, 0), item=None, visible=False):
         self.rarities = config.rarities
+        self.lang = config.lang
         self.x, self.y = pos
         self.item = item
         self.visible = visible
@@ -23,10 +24,10 @@ class ContextWindow:
     def draw(self, surface):
         if self.visible:
             font = pygame.font.Font(Path(__file__).resolve().with_name(
-                "assets").joinpath('lang/terminal-grotesque.ttf'), 20)
+                "assets").joinpath('lang/TDATextCondensed.ttf'), 20)
             match self.mode:
                 case 'text':
-                    text_surface = multiline(self.item, font, (0, 0, 0), (200, 200, 200))
+                    text_surface = multiline(loc(self.item, self.lang), font, (0, 0, 0), (200, 200, 200))
                     rect = text_surface.get_rect().inflate((6, 6))
                     if self.x + rect.width > surface.get_width():
                         self.x = surface.get_width() - rect.width
@@ -38,15 +39,15 @@ class ContextWindow:
                     # Draw the item name centered at the top of the card.
                     surface.blit(text_surface, (rect.x + 3, rect.y + 3))
                 case 'description':
-                    header = multiline(self.item.name, font, (50, 50, 50))
-                    description = multiline(self.item.properties["description"], font, (0, 0, 0))
+                    header = multiline(loc(self.item.name, self.lang), font, (50, 50, 50))
+                    description = multiline(loc(self.item.properties["description"], self.lang), font, (0, 0, 0))
                     price = font.render("$" + str(self.item.properties["price"]), 1, (255, 255, 0))
                     width = max(header.get_width(), price.get_width(), description.get_width()) + 12
                     height = header.get_height() + price.get_height() + description.get_height() + 18
                     rarity = self.item.properties.get("rarity", None)
                     if rarity is not None:
                         rarity = self.rarities[self.item.properties["type"]][rarity]
-                        rarity = font.render(rarity["name"], 1, utils.textures.color(rarity["color"]))
+                        rarity = font.render(loc(rarity["name"], self.lang), 1, utils.textures.color(rarity["color"]))
                         height += rarity.get_height() + 6
                     if self.x + width > surface.get_width():
                         self.x = surface.get_width() - width
@@ -66,11 +67,11 @@ class ContextWindow:
                                               self.y + height - rarity.get_height() - 3))
                 case 'sell':
                     if self.item >= 0:
-                        text_surface = multiline("Drop to sell\nfor $" + str(self.item), font,
-                                                 (0, 0, 0), (200, 200, 200))
+                        text_surface = multiline(loc("ui.text.sell+", self.lang).format(self.item), font, (0, 0, 0),
+                                                 (200, 200, 200))
                     else:
-                        text_surface = multiline("Drop to pay $" + str(-self.item) + "\nto get rid of it", font,
-                                                 (0, 0, 0), (200, 200, 200))
+                        text_surface = multiline(loc("ui.text.sell-", self.lang).format(-self.item), font, (0, 0, 0),
+                                                 (200, 200, 200))
                     rect = text_surface.get_rect().inflate((6, 6))
                     if self.x + rect.width > surface.get_width():
                         self.x = surface.get_width() - rect.width
@@ -109,7 +110,7 @@ class HitEffect(BaseEffect):
         self.text = text
         self.color = color
         self.font = pygame.font.Font(Path(__file__).resolve().with_name(
-            "assets").joinpath('lang/terminal-grotesque.ttf'), 24)
+            "assets").joinpath('lang/TDATextCondensed.ttf'), 24)
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
@@ -152,7 +153,7 @@ class DisappearingItem(BaseEffect):
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
             font = pygame.font.Font(Path(__file__).resolve().with_name(
-                "assets").joinpath('lang/terminal-grotesque.ttf'), 20)
+                "assets").joinpath('lang/TDATextCondensed.ttf'), 20)
             text_surface = font.render(self.item.name, True, (0, 0, 0))
             new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)

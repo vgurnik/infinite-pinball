@@ -210,13 +210,13 @@ class PinballRound:
                         sys.exit()
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            choice = self.ui.overlay_menu(self.screen, "Paused", [
-                                "Resume", "Settings", "Exit to Main Menu"])
-                            if choice == "Exit to Main Menu":
+                            choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
+                                "ui.button.resume", "ui.button.settings", "ui.button.exit"])
+                            if choice == "ui.button.exit":
                                 exit_option = "menu"
                                 self.running = False
                                 break
-                            if choice == "Settings":
+                            if choice == "ui.button.settings":
                                 self.game.ui.settings_menu()
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_SPACE and not self.ball_launched:

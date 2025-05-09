@@ -1,7 +1,7 @@
 {
   "card": [
     {
-      "name": "Shield",
+      "name": "card.shield.name",
       "price": 60,
       "type": "card",
       "rarity": "common",
@@ -14,10 +14,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Allow the ball to bounce\nfrom the bottom for 10 s"
+      "description": "card.shield.description"
     },
     {
-      "name": "SlowMo",
+      "name": "card.slowmo.name",
       "price": 90,
       "type": "card",
       "rarity": "common",
@@ -31,10 +31,10 @@
           "duration": 10
         }
       ],
-      "description": "Slow down time\nfor 10 s"
+      "description": "card.slowmo.description"
     },
     {
-      "name": "Overload",
+      "name": "card.overload.name",
       "price": 120,
       "type": "card",
       "rarity": "common",
@@ -48,10 +48,10 @@
           "duration": 10
         }
       ],
-      "description": "Increase the strength of all bumpers\nx2 for 10 s"
+      "description": "card.overload.description"
     },
     {
-      "name": "Bonus",
+      "name": "card.bonus.name",
       "price": 150,
       "type": "card",
       "rarity": "rare",
@@ -65,10 +65,10 @@
           "duration": 5
         }
       ],
-      "description": "Increase points scored\nx5 for 5 s"
+      "description": "card.bonus.description"
     },
     {
-      "name": "Collector",
+      "name": "card.collector.name",
       "price": 150,
       "type": "card",
       "rarity": "uncommon",
@@ -81,13 +81,14 @@
           "params": [4, "m"]
         }
       ],
-      "description": "Increase points scored x4\nif all your balls are different"
+      "description": "card.collector.description"
     },
     {
-      "name": "Forget",
+      "name": "card.forget.name",
       "price": 100,
       "type": "card",
       "rarity": "uncommon",
+      "sprite": "forget",
       "effects": [
         {
           "effect": "reroll_reset",
@@ -95,10 +96,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Reset reroll price"
+      "description": "card.forget.description"
     },
     {
-      "name": "Bonus Ball",
+      "name": "card.bonusball.name",
       "price": 150,
       "type": "card",
       "rarity": "rare",
@@ -111,10 +112,10 @@
           "params": [1]
         }
       ],
-      "description": "Get an additional ball\nwhile this card is in your inventory\n\nCaution: selling this card removes\nlast ball added"
+      "description": "card.bonusball.description"
     },
     {
-      "name": "Doubler",
+      "name": "card.doubler.name",
       "price": 150,
       "type": "card",
       "rarity": "uncommon",
@@ -127,10 +128,10 @@
           "params": [2, "m"]
         }
       ],
-      "description": "Earn double score"
+      "description": "card.doubler.description"
     },
     {
-      "name": "Cardholder",
+      "name": "card.cardholder.name",
       "price": 150,
       "type": "card",
       "rarity": "rare",
@@ -143,10 +144,10 @@
           "params": [2]
         }
       ],
-      "description": "Get extra inventory slot\nwhile this card is in your inventory\nThis card does not take space"
+      "description": "card.cardholder.description"
     },
     {
-      "name": "Wrench",
+      "name": "card.wrench.name",
       "price": 50,
       "type": "card",
       "rarity": "uncommon",
@@ -158,13 +159,14 @@
           "trigger": "use"
         }
       ],
-      "description": "Destroy an object\nin field modification mode"
+      "description": "card.wrench.description"
     },
     {
-      "name": "Special Edition",
+      "name": "card.special.name",
       "price": 300,
       "type": "card",
       "rarity": "rare",
+      "sprite": "special",
       "effects": [
         {
           "effect": "change_rarities",
@@ -173,10 +175,10 @@
           "params": ["common", 0.5]
         }
       ],
-      "description": "All common cards\nare 2x less common"
+      "description": "card.special.description"
     },
     {
-      "name": "Multiball",
+      "name": "card.multiball.name",
       "price": 150,
       "type": "card",
       "rarity": "rare",
@@ -188,10 +190,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Split the currently launched\nball into 2 balls"
+      "description": "card.multiball.description"
     },
     {
-      "name": "Agile",
+      "name": "object.agile.name",
       "price": 200,
       "type": "card",
       "rarity": "uncommon",
@@ -204,10 +206,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto Agile ball\nAgile ball is smaller and faster"
+      "description": ["card.convert_ball", "object.agile.name", "object.agile.description"]
     },
     {
-      "name": "Bumperball",
+      "name": "object.bumperball.name",
       "price": 200,
       "type": "card",
       "rarity": "uncommon",
@@ -220,10 +222,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto Bumper ball\nBumper ball is a bumper by itself!"
+      "description": ["card.convert_ball", "object.bumperball.name", "object.bumperball.description"]
     },
     {
-      "name": "Slimeball",
+      "name": "object.slime.name",
       "price": 100,
       "type": "card",
       "rarity": "rare",
@@ -236,10 +238,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto Slimeball\nSlimeball is very sticky!"
+      "description": ["card.convert_ball", "object.slime.name", "object.slime.description"]
     },
     {
-      "name": "Golden ball",
+      "name": "object.gold.name",
       "price": 500,
       "type": "card",
       "rarity": "epic",
@@ -252,10 +254,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto Golden ball\nGolden ball earns $5 for each hit!"
+      "description": ["card.convert_ball", "object.gold.name", "object.gold.description"]
     },
     {
-      "name": "Lucky Ball",
+      "name": "object.lucky.name",
       "price": 500,
       "type": "card",
       "rarity": "rare",
@@ -268,10 +270,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto Lucky ball\nLucky ball has a 30% chance\nto return if it is lost"
+      "description": ["card.convert_ball", "object.lucky.name", "object.lucky.description"]
     },
     {
-      "name": "1-UP",
+      "name": "object.1up.name",
       "price": 400,
       "type": "card",
       "rarity": "epic",
@@ -284,10 +286,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball\ninto 1-UP\n1-UP ball adds 1 to each bumper's\npoints on each hit"
+      "description": ["card.convert_ball", "object.1up.name", "object.1up.description"]
     },
     {
-      "name": "8 ball",
+      "name": "object.8ball.name",
       "price": 200,
       "type": "card",
       "rarity": "uncommon",
@@ -300,10 +302,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Convert your current ball into 8 ball\n8 ball has a 1/8 chance to score 800 points\non each hit, but it sets your score and money to 0\nif it is lost before 8 hits"
+      "description": ["card.convert_ball", "object.8ball.name", "object.8ball.description"]
     },
     {
-      "name": "Sell ball",
+      "name": "card.sellball.name",
       "price": 50,
       "type": "card",
       "rarity": "rare",
@@ -316,10 +318,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Sell your current ball\nfor $250. Be careful, do not\nsell your last ball!"
+      "description": "card.sellball.description"
     },
     {
-      "name": "Giveaway",
+      "name": "card.giveaway.name",
       "price": 500,
       "type": "card",
       "rarity": "rare",
@@ -332,10 +334,10 @@
           "trigger": "shop_create"
         }
       ],
-      "description": "One card or buildable in the shop\nis free (before reroll)"
+      "description": "card.giveaway.description"
     },
     {
-      "name": "Quintupler",
+      "name": "card.quintupler.name",
       "price": 400,
       "type": "card",
       "rarity": "epic",
@@ -349,10 +351,10 @@
           "duration": -1
         }
       ],
-      "description": "Earn 5x score until\nthe end of a round"
+      "description": "card.quintupler.description"
     },
     {
-      "name": "Lucky Ticket",
+      "name": "card.ticket.name",
       "price": 50,
       "type": "card",
       "rarity": "epic",
@@ -365,10 +367,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Double your money\n(max $1000)"
+      "description": "card.ticket.description"
     },
     {
-      "name": "Bank deposit",
+      "name": "card.bank_dep.name",
       "price": 300,
       "type": "card",
       "rarity": "epic",
@@ -380,10 +382,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Increase maximum interest on\nyour money by additional $50"
+      "description": "card.bank_dep.description"
     },
     {
-      "name": "Ball loan",
+      "name": "card.ball_loan.name",
       "price": 300,
       "type": "card",
       "rarity": "epic",
@@ -395,10 +397,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Earn extra $100\nper ball left on round win"
+      "description": "card.ball_loan.description"
     },
     {
-      "name": "Platinum card",
+      "name": "card.platinum.name",
       "price": 500,
       "type": "card",
       "rarity": "epic",
@@ -411,10 +413,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Earn additional 10%\ninterest on your money"
+      "description": "card.platinum.description"
     },
     {
-      "name": "Rewind",
+      "name": "card.rewind.name",
       "price": 300,
       "type": "card",
       "rarity": "epic",
@@ -426,10 +428,10 @@
           "trigger": "ball_lost"
         }
       ],
-      "description": "Chance 10% for each ball\nto return if it is lost"
+      "description": "card.rewind.description"
     },
     {
-      "name": "Dupe exploit",
+      "name": "card.dupe.name",
       "price": 400,
       "type": "card",
       "rarity": "epic",
@@ -440,10 +442,10 @@
           "trigger": "ball_lost"
         }
       ],
-      "description": "Activate your topmost usable\ncard when the ball is lost\n\nThe card is not used up!"
+      "description": "card.dupe.description"
     },
     {
-      "name": "No score",
+      "name": "card.no_score.name",
       "price": -500,
       "type": "card",
       "rarity": "negative",
@@ -462,10 +464,10 @@
           "params": [1]
         }
       ],
-      "description": "You earn no score while\nthis card is in your inventory\n\nDoes not take space\nin your inventory"
+      "description": "card.no_score.description"
     },
     {
-      "name": "Debt",
+      "name": "card.debt.name",
       "price": 0,
       "type": "card",
       "rarity": "negative",
@@ -484,10 +486,10 @@
           "params": [1]
         }
       ],
-      "description": "All your current items\nbecome worthless\n\nDoes not take space\nin your inventory"
+      "description": "card.debt.description"
     },
     {
-      "name": "Brittle field",
+      "name": "card.brittle.name",
       "price": 100,
       "type": "card",
       "rarity": "negative",
@@ -511,10 +513,10 @@
           "params": [1]
         }
       ],
-      "description": "Cooldowned objects break\ninstead of going on cooldown\nTo sell, you need to break at least\none object by this card\n\nDoes not take space\nin your inventory"
+      "description": "card.brittle.description"
     },
     {
-      "name": "Pro mode",
+      "name": "card.pro_mode.name",
       "price": 0,
       "type": "card",
       "rarity": "negative",
@@ -547,14 +549,14 @@
           "params": [1]
         }
       ],
-      "description": "Score requirement is doubled for each round\nTo sell, you need to score 2x current score requirement\n\nDoes not take space in your inventory"
+      "description": "card.pro_mode.description"
     }
   ],
 
 
   "immediate": [
     {
-      "name": "Little Backpack",
+      "name": "immediate.backpack.name",
       "price": 300,
       "type": "immediate",
       "rarity": "rare",
@@ -567,10 +569,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Gives additional\ninventory slot"
+      "description": "immediate.backpack.description"
     },
     {
-      "name": "Ball",
+      "name": "immediate.ball.name",
       "price": 150,
       "type": "immediate",
       "rarity": "uncommon",
@@ -583,13 +585,14 @@
           "trigger": "use"
         }
       ],
-      "description": "Gives additional\nstandard ball"
+      "description": "immediate.ball.description"
     },
     {
-      "name": "Multiplier",
+      "name": "immediate.multiplier.name",
       "price": 100,
       "type": "immediate",
       "rarity": "common",
+      "sprite": "multiplier",
       "effects": [
         {
           "effect": "change_score_multiplier",
@@ -598,10 +601,10 @@
           "trigger": "use"
         }
       ],
-      "description": "Score 50% more points"
+      "description": "immediate.multiplier.description"
     },
     {
-      "name": "Launcher",
+      "name": "immediate.launcher.name",
       "price": 200,
       "type": "immediate",
       "rarity": "uncommon",
@@ -619,10 +622,10 @@
         "params": ["charge_bonus", false]
         }
       ],
-      "description": "Upgrade your launch ramp\nwith a charge bonus\n\nCharge bonus will give you $2\nfor each indicator triggered but only\nif the ball launches through the lower exit"
+      "description": "immediate.launcher.description"
     },
     {
-      "name": "Reroll mode",
+      "name": "immediate.reroll_mode.name",
       "price": 200,
       "type": "immediate",
       "rarity": "common",
@@ -639,10 +642,10 @@
         "params": ["reroll_mode", "m"]
         }
       ],
-      "description": "Shop reroll's cost is growing linearly\ninstead of exponentially"
+      "description": "immediate.reroll_mode.description"
     },
     {
-      "name": "Reroll sale",
+      "name": "immediate.reroll_sale.name",
       "price": 200,
       "type": "immediate",
       "rarity": "common",
@@ -654,90 +657,90 @@
           "trigger": "use"
         }
       ],
-      "description": "Shop rerolls cost $1 less"
+      "description": "immediate.reroll_sale.description"
     }
   ],
 
 
   "buildable": [
     {
-      "name": "Bumper",
+      "name": "object.bumper.name",
       "price": 75,
       "rarity": "common",
       "type": "buildable",
       "object_type": "bumper",
       "class": "bumper_big",
-      "description": "Additional big bumper"
+      "description": "object.bumper.description"
     },
     {
-      "name": "Small Bumper",
+      "name": "object.small_bumper.name",
       "price": 50,
       "rarity": "common",
       "type": "buildable",
       "object_type": "bumper",
       "class": "bumper_small",
-      "description": "Additional small bumper"
+      "description": "object.small_bumper.description"
     },
     {
-      "name": "Bouncy Coin",
+      "name": "object.coin.name",
       "price": 200,
       "rarity": "rare",
       "type": "buildable",
       "object_type": "bumper",
       "class": "bouncy_coin",
-      "description": "Bumper that gives $10\nfor each hit"
+      "description": "object.coin.description"
     },
     {
-      "name": "Flipper",
+      "name": "object.flipper.name",
       "price": 100,
       "rarity": "rare",
       "type": "buildable",
       "object_type": "flipper",
       "class": "flipper_standard",
-      "description": "Standard flipper"
+      "description": "object.flipper.description"
     },
     {
-      "name": "Long boi",
+      "name": "object.longboi.name",
       "price": 200,
       "rarity": "uncommon",
       "type": "buildable",
       "object_type": "flipper",
       "class": "longboi",
-      "description": "Long easier flipper, but each hit\nwill cost you $10"
+      "description": "object.longboi.description"
     },
     {
-      "name": "Pro flipper",
+      "name": "object.pro_flipper.name",
       "price": 200,
       "rarity": "rare",
       "type": "buildable",
       "object_type": "flipper",
       "class": "flipper_money",
-      "description": "Flipper for professionals\nEarn $10 per hit"
+      "description": "object.pro_flipper.description"
     },
     {
-      "name": "Pin",
+      "name": "object.pin.name",
       "price": 50,
       "rarity": "common",
       "type": "buildable",
       "object_type": "pin",
       "class": "pin",
-      "description": "The PIN in PINball"
+      "description": "object.pin.description"
     },
     {
-      "name": "Pinpoint",
+      "name": "object.pinpoint.name",
       "price": 80,
       "rarity": "common",
       "type": "buildable",
       "object_type": "pin",
       "class": "pin_points",
-      "description": "Activated pin.\nIf all pins of this type on the field\nare activated, you score 100 for each pin\n(A single pin scores 10)"
+      "description": "object.pinpoint.description"
     }
   ],
 
 
   "pack": [
     {
-      "name": "Card Pack",
+      "name": "pack.card.name",
       "price": 200,
       "rarity": "common",
       "sprite": "card_pack",
@@ -745,10 +748,10 @@
       "type": "pack",
       "kind": "oneof",
       "amount": [1, 4],
-      "description": "Choose 1 of 4 cards"
+      "description": "pack.card.description"
     },
     {
-      "name": "Big Card Pack",
+      "name": "pack.big_card.name",
       "price": 300,
       "rarity": "uncommon",
       "sprite": "card_pack",
@@ -756,10 +759,10 @@
       "type": "pack",
       "kind": "oneof",
       "amount": [1, 6],
-      "description": "Choose 1 of 6 cards"
+      "description": "pack.big_card.description"
     },
     {
-      "name": "Object Pack",
+      "name": "pack.object.name",
       "price": 100,
       "rarity": "common",
       "sprite": "object_pack",
@@ -767,10 +770,10 @@
       "type": "pack",
       "kind": "oneof",
       "amount": [1, 4],
-      "description": "Choose 1 of 4 objects"
+      "description": "pack.object.description"
     },
     {
-      "name": "Big Object Pack",
+      "name": "pack.big_object.name",
       "price": 200,
       "rarity": "uncommon",
       "sprite": "object_pack",
@@ -778,10 +781,10 @@
       "type": "pack",
       "kind": "oneof",
       "amount": [1, 6],
-      "description": "Choose 1 of 6 objects"
+      "description": "pack.big_object.description"
     },
     {
-      "name": "Mega Card Pack",
+      "name": "pack.mega_card.name",
       "price": 400,
       "rarity": "rare",
       "sprite": "card_pack",
@@ -789,10 +792,10 @@
       "type": "pack",
       "kind": "oneof",
       "amount": [2, 4],
-      "description": "Choose 2 of 4 cards"
+      "description": "pack.mega_card.description"
     },
     {
-      "name": "Mega Object Pack",
+      "name": "pack.mega_object.name",
       "price": 300,
       "rarity": "rare",
       "sprite": "object_pack",
@@ -800,10 +803,10 @@
       "type": "pack",
       "kind": "oneof",
       "amount": [2, 4],
-      "description": "Choose 2 of 4 objects"
+      "description": "pack.mega_object.description"
     },
     {
-      "name": "Epic Pack",
+      "name": "pack.epic.name",
       "price": 200,
       "rarity": "uncommon",
       "sprite": "epic_pack",
@@ -811,7 +814,7 @@
       "type": "pack",
       "kind": "all",
       "amount": [1, 1, 1],
-      "description": "Get a guaranteed epic card\nbut together with a negative card"
+      "description": "pack.epic.description"
     }
   ],
 
@@ -819,78 +822,78 @@
   "rarities": {
     "card": {
       "negative": {
-        "name": "Negative",
+        "name": "rarity.negative",
         "color": "#000000",
         "value": 0
       },
       "common": {
-        "name": "Common",
+        "name": "rarity.common",
         "color": "#eeeeee",
         "value": 50
       },
       "uncommon": {
-        "name": "Uncommon",
+        "name": "rarity.uncommon",
         "color": "#00ff00",
         "value": 30
       },
       "rare": {
-        "name": "Rare",
+        "name": "rarity.rare",
         "color": "#0000ff",
         "value": 18
       },
       "epic": {
-        "name": "Epic",
+        "name": "rarity.epic",
         "color": "#ff00ff",
         "value": 2
       }
     },
     "immediate": {
       "common": {
-        "name": "Common",
+        "name": "rarity.common",
         "color": "#eeeeee",
         "value": 50
       },
       "uncommon": {
-        "name": "Uncommon",
+        "name": "rarity.uncommon",
         "color": "#00ff00",
         "value": 35
       },
       "rare": {
-        "name": "Rare",
+        "name": "rarity.rare",
         "color": "#0000ff",
         "value": 15
       }
     },
     "buildable": {
       "common": {
-        "name": "Common",
+        "name": "rarity.common",
         "color": "#eeeeee",
         "value": 50
       },
       "uncommon": {
-        "name": "Uncommon",
+        "name": "rarity.uncommon",
         "color": "#00ff00",
         "value": 35
       },
       "rare": {
-        "name": "Rare",
+        "name": "rarity.rare",
         "color": "#0000ff",
         "value": 15
       }
     },
     "pack": {
       "common": {
-        "name": "Common",
+        "name": "rarity.common",
         "color": "#eeeeee",
         "value": 50
       },
       "uncommon": {
-        "name": "Uncommon",
+        "name": "rarity.uncommon",
         "color": "#00ff00",
         "value": 35
       },
       "rare": {
-        "name": "Rare",
+        "name": "rarity.rare",
         "color": "#0000ff",
         "value": 15
       }

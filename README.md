@@ -52,7 +52,7 @@ pyinstaller main.spec
 #### ?
 - [ ] Add sounds
 - [x] Pack the app conveniently
-- [ ] Add localization
+- [x] Add localization
 - [ ] Add tutorial
 - [ ] Add SCALED resolution maybe, works strangely
 #### Known bugs and TODOs

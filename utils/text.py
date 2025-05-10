@@ -45,7 +45,7 @@ def format_text(text: str, lang, *args):
     -------
     A formatted string.
     """
-    new_args = [format_number(arg) if isinstance(arg, (int, float)) else arg for arg in args]
+    new_args = [format_number(arg) if isinstance(arg, (int, float)) else loc(arg, lang) for arg in args]
     text = loc(text, lang)
     return text.format(*new_args)
 

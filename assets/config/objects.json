@@ -159,7 +159,7 @@
         },
         {
           "effect": "change_flag",
-          "params": ["Pinpoint", "sprite", 0, "e"],
+          "params": ["object.pinpoint.name", "sprite", 0, "e"],
           "trigger": "round_start"
         }
       ]

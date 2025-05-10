@@ -401,7 +401,7 @@ class PlayerInventory(Inventory):
             alpha_surface = pygame.Surface(self.deletion_zone.size, pygame.SRCALPHA)
             alpha_surface.fill((0, 0, 0, 0))
             pygame.draw.rect(alpha_surface, (255, 100, 100, 100), alpha_surface.get_rect(), border_radius=10)
-            text_surface = multiline(loc("ui.text.sell_zone", self.config.lang), font, (0, 0, 0, 255))
+            text_surface = multiline(loc("ui.text.sell_zone", self.config.lang), font, (0, 0, 0, 255), justification=1)
             alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
                                               (self.deletion_zone.height - text_surface.get_height()) / 2))
             surface.blit(alpha_surface, self.deletion_zone.topleft)

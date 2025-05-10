@@ -141,10 +141,10 @@ class PinballGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         choice = self.ui.overlay_menu(self.screen, "ui.text.pause",
-                                                      ["ui.buttons.resume", "ui.buttons.settings", "ui.buttons.exit"])
-                        if choice == "ui.buttons.exit":
+                                                      ["ui.button.resume", "ui.button.settings", "ui.button.exit"])
+                        if choice == "ui.button.exit":
                             return 'menu', shop
-                        if choice == "ui.buttons.settings":
+                        if choice == "ui.button.settings":
                             self.ui.settings_menu()
                         _ = clock.tick(self.config.fps)
                     elif event.key == pygame.K_RETURN:
@@ -215,19 +215,20 @@ class PinballGame:
             big_font = pygame.font.Font(self.config.fontfile, 36)
             header = big_font.render(loc("ui.text.shop", self.config.lang), True, (255, 255, 255))
             self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
-            shop.update(dt)
-            shop.draw(self.screen)
-
-            self.ui.draw(self.screen)
-            self.ui.update(dt)
 
             if message:
                 font = pygame.font.Font(self.config.fontfile, 24)
                 msg_text = font.render(message, True, (0, 255, 0))
                 self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
 
+            self.ui.draw(self.screen)
+            self.ui.update(dt)
+
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
+
+            shop.update(dt)
+            shop.draw(self.screen)
 
             for effect in visual_effects[:]:
                 effect.update(dt)
@@ -257,10 +258,10 @@ class PinballGame:
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
-                                "ui.buttons.resume", "ui.buttons.settings", "ui.buttons.exit"])
-                            if choice == "ui.buttons.exit":
+                                "ui.button.resume", "ui.button.settings", "ui.button.exit"])
+                            if choice == "ui.button.exit":
                                 return 'menu'
-                            if choice == "ui.buttons.settings":
+                            if choice == "ui.button.settings":
                                 self.ui.settings_menu()
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_RETURN:

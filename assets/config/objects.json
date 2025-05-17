@@ -93,7 +93,7 @@
         },
         {
           "effect": "change_flag",
-          "params": ["8 Ball", "hits", 0, "e"],
+          "params": ["object.8ball.name", "hits", 0, "e"],
           "trigger": "recharge"
         }
       ]

@@ -22,16 +22,16 @@ class Config:
 
         # UI panel settings.
         self.ui_pos = (50, 0)
-        self.ui_width = 250
+        self.ui_width = 280
         self.ui_round_pos = (10, 10)
         self.ui_min_score_pos = (10, 40)
         self.ui_score_pos = (10, 70)
         self.ui_money_pos = (10, 100)
-        self.ui_butt_width_1 = 200
-        self.ui_butt_width_2 = 80
+        self.ui_butt_width_1 = 230
+        self.ui_butt_width_2 = 100
         self.ui_continue_pos = (20, 150)
         self.ui_field_config_pos = (20, 220)
-        self.ui_reroll_pos = (140, 220)
+        self.ui_reroll_pos = (150, 220)
         self.ui_inventory_pos = (60, 300)
         self.ui_inventory_height = 300
         self.ui_deletion_size = (200, 150)

@@ -15,6 +15,7 @@ class ContextWindow:
 
     def update(self, pos, mode, item):
         self.x, self.y = pos
+        self.x += 10
         self.mode = mode
         self.item = item
 
@@ -42,11 +43,13 @@ class ContextWindow:
                     header = multiline(loc(self.item.name, self.lang), font, (50, 50, 50))
                     description = multiline(loc(self.item.properties["description"], self.lang), font, (0, 0, 0))
                     price = font.render("$" + str(self.item.properties["price"]), 1, (255, 255, 0))
+                    price_shadow = font.render("$" + str(self.item.properties["price"]), 1, (0, 0, 0))
                     width = max(header.get_width(), price.get_width(), description.get_width()) + 12
                     height = header.get_height() + price.get_height() + description.get_height() + 18
                     rarity = self.item.properties.get("rarity", None)
                     if rarity is not None:
                         rarity = self.rarities[self.item.properties["type"]][rarity]
+                        rarity_shadow = font.render(loc(rarity["name"], self.lang), 1, (0, 0, 0))
                         rarity = font.render(loc(rarity["name"], self.lang), 1, utils.textures.color(rarity["color"]))
                         height += rarity.get_height() + 6
                     if self.x + width > surface.get_width():
@@ -60,9 +63,15 @@ class ContextWindow:
                         self.x + 6, self.y + header.get_height() + 9)).inflate((6, 6)), border_radius=5)
                     surface.blit(header, (self.x + (width - header.get_width()) / 2, self.y + 3))
                     surface.blit(description, (self.x + 6, self.y + 9 + header.get_height()))
+                    for x, y in zip((0, -1, 0, 1), (-1, 0, 1, 0)):
+                        surface.blit(price_shadow, (self.x + (width - price.get_width()) / 2 + x,
+                                                    self.y + 15 + header.get_height() + description.get_height() + y))
                     surface.blit(price, (self.x + (width - price.get_width()) / 2,
                                          self.y + 15 + header.get_height() + description.get_height()))
                     if rarity is not None:
+                        for x, y in zip((0, -1, 0, 1), (-1, 0, 1, 0)):
+                            surface.blit(rarity_shadow, (self.x + (width - rarity.get_width()) / 2 + x,
+                                                        self.y + height - rarity.get_height() - 3 + y))
                         surface.blit(rarity, (self.x + (width - rarity.get_width()) / 2,
                                               self.y + height - rarity.get_height() - 3))
                 case 'sell':

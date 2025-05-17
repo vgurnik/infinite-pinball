@@ -32,8 +32,8 @@ class GameObject:
 
     def update(self, dt):
         self.activations_dt_accum += dt
-        self.activations = max(0, self.activations - int(self.activations_dt_accum // 0.5))
-        self.activations_dt_accum = self.activations_dt_accum % 0.5
+        self.activations = max(0, self.activations - int(self.activations_dt_accum // 1))
+        self.activations_dt_accum = self.activations_dt_accum % 1
         if self.cooldown_timer > 0:
             self.cooldown_timer = max(0, self.cooldown_timer - dt)
         if self.cooldown_timer == 0:

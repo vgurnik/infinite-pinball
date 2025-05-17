@@ -10,6 +10,8 @@ class Field:
         self.config = game.config
         self.game = game
         self.space = pymunk.Space()
+        self.space.sleep_time_threshold = 1
+        self.space.idle_speed_threshold = 5
         self.space.gravity = self.config.gravity
         self.position = self.config.field_pos
 

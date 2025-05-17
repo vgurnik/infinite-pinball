@@ -24,7 +24,7 @@ def format_number(number: int | float, places: int = 10) -> str:
     A string representation of the number with the specified number of decimal places.
     """
     if isinstance(number, int) or int(number) == number:
-        return str(number)
+        return str(int(number))
     if isinstance(number, float):
         if len(str(int(number))) >= places:
             return f"{number:,.1e}"

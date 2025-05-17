@@ -1,6 +1,7 @@
 import sys
 import random
 import pygame
+import pymunk
 
 from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
@@ -48,6 +49,7 @@ class PinballRound:
         self.immediate['score'] = 0
         self.immediate['money'] = 0
         self.immediate['multi'] = 1
+        self.immediate['hits'] = []
         x = 0
         y = 0
         arbiters = []
@@ -88,7 +90,11 @@ class PinballRound:
                 else self.immediate['money']
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]),
                                               f"{'+' if self.immediate['money'] >= 0 else ''}{m_v}", (255, 255, 0)))
+            y += 20
             self.game.money += self.immediate['money']
+        for hit, color in self.immediate['hits']:
+            self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), hit, color))
+            y += 20
         return True
 
     def recharge(self):
@@ -211,8 +217,8 @@ class PinballRound:
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
-                                "ui.button.resume", "ui.button.settings", "ui.button.exit"])
-                            if choice == "ui.button.exit":
+                                "ui.button.resume", "ui.button.settings", "ui.button.main"])
+                            if choice == "ui.button.main":
                                 exit_option = "menu"
                                 self.running = False
                                 break
@@ -262,6 +268,13 @@ class PinballRound:
             # Ramp gate control.
             all_launched = True
             for ball in self.active_balls:
+                if ball.body.is_sleeping and self.ball_launched:
+                    bbs = self.field.space.bb_query(ball.shape.bb, pymunk.ShapeFilter(1))
+                    for other in bbs:
+                        if other.body is not ball.body and other.collision_type == 2:
+                            if ball.shape.shapes_collide(other).points:  # non‐empty list means real contact
+                                other.parent.activations = 10
+                    ball.body.activate()
                 ball.update(dt)
                 if ball.body.velocity.length > ball.max_speed:
                     ball.body.velocity = ball.body.velocity * (ball.max_speed / ball.body.velocity.length)
@@ -305,6 +318,8 @@ class PinballRound:
 
             if self.score >= self.game.score_needed and self.ui.mode != "round_finishable":
                 self.ui.change_mode("round_finishable")
+            if self.score < self.game.score_needed and self.ui.mode == "round_finishable":
+                self.ui.change_mode("round")
 
             # Simulate game physics.
             while self.time_accumulator >= self.config.max_dt:

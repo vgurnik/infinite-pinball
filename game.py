@@ -141,8 +141,8 @@ class PinballGame:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         choice = self.ui.overlay_menu(self.screen, "ui.text.pause",
-                                                      ["ui.button.resume", "ui.button.settings", "ui.button.exit"])
-                        if choice == "ui.button.exit":
+                                                      ["ui.button.resume", "ui.button.settings", "ui.button.main"])
+                        if choice == "ui.button.main":
                             return 'menu', shop
                         if choice == "ui.button.settings":
                             self.ui.settings_menu()
@@ -221,14 +221,14 @@ class PinballGame:
                 msg_text = font.render(message, True, (0, 255, 0))
                 self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
 
+            shop.update(dt)
+            shop.draw(self.screen)
+
             self.ui.draw(self.screen)
             self.ui.update(dt)
 
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
-
-            shop.update(dt)
-            shop.draw(self.screen)
 
             for effect in visual_effects[:]:
                 effect.update(dt)
@@ -258,8 +258,8 @@ class PinballGame:
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
-                                "ui.button.resume", "ui.button.settings", "ui.button.exit"])
-                            if choice == "ui.button.exit":
+                                "ui.button.resume", "ui.button.settings", "ui.button.main"])
+                            if choice == "ui.button.main":
                                 return 'menu'
                             if choice == "ui.button.settings":
                                 self.ui.settings_menu()

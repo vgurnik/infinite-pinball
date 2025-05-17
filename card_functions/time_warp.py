@@ -1,4 +1,8 @@
-def effect(game, scale):
+import game_context
+
+
+def effect(scale):
+    game = game_context.game
     if game.round_instance is None or not game.round_instance.running:
         return False
     game.field.space.gravity *= scale
@@ -8,7 +12,8 @@ def effect(game, scale):
     return True
 
 
-def negative_effect(game, scale):
+def negative_effect(scale):
+    game = game_context.game
     if game.round_instance is None:
         return False
     game.field.space.gravity /= scale

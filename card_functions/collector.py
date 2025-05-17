@@ -1,4 +1,8 @@
-def effect(game, difference, mode, arbiters=None):
+import game_context
+
+
+def effect(difference, mode, arbiters=None):
+    game = game_context.game
     balls = [ball.config["name"] for ball in game.field.balls]
     if len(balls) != len(set(balls)):
         return False

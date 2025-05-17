@@ -1,5 +1,6 @@
 from game import PinballGame
 
 if __name__ == "__main__":
-    game = PinballGame()
-    game.run()
+    import game_context
+    game_context.game = PinballGame()
+    game_context.game.run()

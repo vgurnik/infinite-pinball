@@ -1,4 +1,8 @@
-def effect(game, difference, mode):
+import game_context
+
+
+def effect(difference, mode):
+    game = game_context.game
     if mode == 's':
         game.config.reroll_start_cost += difference
         game.reroll_cost += difference
@@ -8,7 +12,8 @@ def effect(game, difference, mode):
     return True
 
 
-def negative_effect(game, difference, mode):
+def negative_effect(difference, mode):
+    game = game_context.game
     if mode == 's':
         game.config.reroll_start_cost -= difference
         game.reroll_cost -= difference

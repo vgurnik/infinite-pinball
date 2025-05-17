@@ -2,7 +2,6 @@ import sys
 import math
 from pathlib import Path
 from json import load
-
 import pygame
 
 from utils.misc import load_textures, choose_items
@@ -27,11 +26,10 @@ class PinballGame:
         self.display = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
                                                (pygame.FULLSCREEN if self.config.fullscreen else 0))
         self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
+
         with open(Path(__file__).resolve().with_name("assets").joinpath('config/sprites.json')) as file:
-            sprite_config = load(file)
-        self.textures = load_textures(sprite_config)
-        self.field = Field(self)
-        self.ui = Ui(self)
+            sprite_conf = load(file)
+        self.textures = load_textures(sprite_conf)
         pygame.display.set_caption("Infinite Pinball")
         icon = pygame.image.load(Path(__file__).resolve().with_name("assets").joinpath('textures/ball.ico'))
         pygame.display.set_icon(icon)
@@ -40,8 +38,6 @@ class PinballGame:
         self.money = 0
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
-        self.inventory = PlayerInventory(self)
-        self.round_instance = PinballRound(self)
         self.immediate = {}
         self.flags = self.config.start_flags
         self.real_fps = 0
@@ -51,23 +47,23 @@ class PinballGame:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "passive":
                     if arbiters is not None:
-                        effects.call(effect, self, arbiters)
+                        effects.call(effect, arbiters)
                     else:
-                        effects.call(effect, self)
+                        effects.call(effect)
         for card in self.round_instance.applied_cards.items[:]:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "active" and effect["duration"] != 0:
                     if arbiters is not None:
-                        effects.call(effect, self, arbiters)
+                        effects.call(effect, arbiters)
                     else:
-                        effects.call(effect, self)
+                        effects.call(effect)
         if arbiters is not None:
             for arb in arbiters:
                 if issubclass(arb.__class__, GameObject):
                     if arb.cooldown == 0:
                         for effect in arb.effects:
                             if effect["trigger"] == event:
-                                effects.call(effect, self, arbiters)
+                                effects.call(effect, arbiters)
                                 arb.cooldown = max(arb.cooldown, effect["cooldown"])
                     if arb.shape.type != 'ball' and arb.cooldown > 0:
                         arb.cooldown_timer = arb.cooldown
@@ -77,25 +73,25 @@ class PinballGame:
         dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
         self.ui.change_mode("shop")
         if _shop is None:
-            shop = Inventory(self.config)
-            items = choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
+            shop = Inventory()
+            items = choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_cards[0] + i * 130,
                                                              self.config.shop_pos_cards[1])))
-            items = choose_items(self, 2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
+            items = choose_items(2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
             for i, item in enumerate(items):
                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get("buildable_pack"),
                                             target_position=(self.config.shop_pos_objects[0] + i * 130,
                                                              self.config.shop_pos_objects[1]),
                               for_buildable=self.textures.get(obj_def["texture"])))
-            items = choose_items(self, 1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
+            items = choose_items(1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_effects[0] + i * 130,
                                                              self.config.shop_pos_effects[1])))
-            items = choose_items(self, 2, self.config.shop_items["pack"], self.config.rarities["pack"])
+            items = choose_items(2, self.config.shop_items["pack"], self.config.rarities["pack"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_packs[0] + i * 130,
@@ -119,13 +115,13 @@ class PinballGame:
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                            items = choose_items(self, 3, self.config.shop_items["card"], self.config.rarities["card"])
+                            items = choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
                             for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(properties=item,
                                                             sprite=self.textures.get(item.get("sprite")),
                                                             target_position=(self.config.shop_pos_cards[0] + i * 130,
                                                                              self.config.shop_pos_cards[1])))
-                            items = choose_items(self, 2, self.config.shop_items["buildable"],
+                            items = choose_items(2, self.config.shop_items["buildable"],
                                                  self.config.rarities["buildable"])
                             for i, item in enumerate(items):
                                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
@@ -161,7 +157,7 @@ class PinballGame:
                             else:
                                 message = loc("ui.message.not_enough_space", self.config.lang)
                         elif item.properties["type"] == "immediate":
-                            if item.use(self):
+                            if item.use():
                                 visual_effects.append(DisappearingItem(item, 0.3))
                                 shop.remove_item(item)
                                 self.money -= item.properties["buy_price"]
@@ -174,13 +170,13 @@ class PinballGame:
                             shop.remove_item(item)
                             if item.properties["kind"] == "oneof":
                                 pool = self.config.shop_items[item.properties["item_type"]]
-                                items = choose_items(self, item.properties["amount"][1], pool,
+                                items = choose_items(item.properties["amount"][1], pool,
                                                      self.config.rarities[item.properties["item_type"]])
                             elif item.properties["kind"] == "all":
                                 pool = self.config.shop_items[item.properties["item_type"]]
-                                positive = choose_items(self, item.properties["amount"][1], pool,
+                                positive = choose_items(item.properties["amount"][1], pool,
                                                         {"epic": {"value": 1}})
-                                negative = choose_items(self, item.properties["amount"][2], pool,
+                                negative = choose_items(item.properties["amount"][2], pool,
                                                         {"negative": {"value": 1}})
                                 items = positive + negative
                             else:
@@ -206,7 +202,7 @@ class PinballGame:
                                 allow = True
                             if effect["duration"] != 0:
                                 lasting = True
-                        if allow and not lasting and item.use(self):
+                        if allow and not lasting and item.use():
                             self.inventory.remove_item(item)
                             visual_effects.append(DisappearingItem(item, 0.1))
 
@@ -380,6 +376,10 @@ class PinballGame:
         return result
 
     def run(self):
+        self.field = Field()
+        self.ui = Ui()
+        self.inventory = PlayerInventory()
+        self.round_instance = PinballRound()
         while True:
             if self.debug_mode:
                 choice = self.ui.overlay_menu(self.screen, "ui.text.main",
@@ -395,7 +395,7 @@ class PinballGame:
             if choice == "Debug_Shop":
                 self.reroll_cost = 0
                 self.money = 10000
-                self.field = Field(self)
+                self.field = Field()
                 result = 'win'
                 while result in ['win', 'back']:
                     result, shop = self.shop_screen()
@@ -405,14 +405,14 @@ class PinballGame:
                 continue
             if choice == "ui.button.start":
                 self.config = Config()
-                self.inventory = PlayerInventory(self)
-                self.field = Field(self)
+                self.inventory = PlayerInventory()
+                self.field = Field()
                 self.flags = self.config.start_flags
                 self.money = 0
                 self.round = 0
                 self.score_needed = self.config.min_score[0]
                 while True:
-                    self.round_instance = PinballRound(self)
+                    self.round_instance = PinballRound()
                     result, round_score = self.round_instance.run()
                     if result != "round_over":
                         break

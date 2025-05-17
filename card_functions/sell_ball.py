@@ -1,4 +1,8 @@
-def effect(game, sell_for):
+import game_context
+
+
+def effect(sell_for):
+    game = game_context.game
     if game.round_instance is None or not game.round_instance.running:
         return False
     for ball in game.round_instance.active_balls[:]:

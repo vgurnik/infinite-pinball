@@ -1,2 +1,6 @@
-def effect(game_instance, money, arbiters=None):
-    game_instance.round_instance.immediate["money"] += money
+import game_context
+
+
+def effect(money, arbiters=None):
+    game = game_context.game
+    game.round_instance.immediate["money"] += money

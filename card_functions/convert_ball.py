@@ -1,7 +1,9 @@
 from game_objects import Ball
+import game_context
 
 
-def effect(game, ball_name):
+def effect(ball_name):
+    game = game_context.game
     if game.round_instance is not None and game.round_instance.running:
         for ball in game.round_instance.active_balls[:]:
             new_ball = Ball(game.config.objects_settings["ball"][ball_name], game.config.ball_start,

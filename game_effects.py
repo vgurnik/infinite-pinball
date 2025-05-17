@@ -1,11 +1,12 @@
 import pygame
-from pathlib import Path
 from utils.text import multiline, loc
 import utils.textures
+import game_context
 
 
 class ContextWindow:
-    def __init__(self, config, pos=(0, 0), item=None, visible=False):
+    def __init__(self, pos=(0, 0), item=None, visible=False):
+        config = game_context.game.config
         self.rarities = config.rarities
         self.lang = config.lang
         self.x, self.y = pos
@@ -24,8 +25,7 @@ class ContextWindow:
 
     def draw(self, surface):
         if self.visible:
-            font = pygame.font.Font(Path(__file__).resolve().with_name(
-                "assets").joinpath('lang/TDATextCondensed.ttf'), 20)
+            font = pygame.font.Font(game_context.game.config.fontfile, 20)
             match self.mode:
                 case 'text':
                     text_surface = multiline(loc(self.item, self.lang), font, (0, 0, 0), (200, 200, 200))
@@ -118,8 +118,7 @@ class HitEffect(BaseEffect):
         super().__init__(pos, lifetime)
         self.text = text
         self.color = color
-        self.font = pygame.font.Font(Path(__file__).resolve().with_name(
-            "assets").joinpath('lang/TDATextCondensed.ttf'), 24)
+        self.font = pygame.font.Font(game_context.game.config.fontfile, 24)
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
@@ -161,8 +160,7 @@ class DisappearingItem(BaseEffect):
             pygame.draw.rect(new_surface, color, rect, border_radius=5)
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
-            font = pygame.font.Font(Path(__file__).resolve().with_name(
-                "assets").joinpath('lang/TDATextCondensed.ttf'), 20)
+            font = pygame.font.Font(game_context.game.config.fontfile, 20)
             text_surface = font.render(self.item.name, True, (0, 0, 0))
             new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)

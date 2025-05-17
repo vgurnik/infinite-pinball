@@ -53,8 +53,8 @@ class Config:
         self.divider_y2 = 300
 
         # Launch parameters.
-        self.launch_charge_rate = 3000
-        self.launch_max_impulse = 4000
+        self.launch_charge_rate = 1500
+        self.launch_max_impulse = 2000
         self.launch_indicator_size = (40, 60)
 
         # Flipper parameters.

@@ -1,7 +1,9 @@
 from random import random
+import game_context
 
 
-def effect(game, chance, arbiters=None):
+def effect(chance, arbiters=None):
+    game = game_context.game
     if random() < chance:
         for arb in arbiters:
             if arb.shape.type == 'ball':

@@ -1,7 +1,9 @@
 import random
+import game_context
 
 
-def effect(game, score, chance, arbiters=None):
+def effect(score, chance, arbiters=None):
+    game = game_context.game
     for arb in arbiters:
         if arb.shape.type == "flipper":
             return False

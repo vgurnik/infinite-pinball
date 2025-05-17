@@ -1,4 +1,8 @@
-def effect(game, mult, arbiters=None):
+import game_context
+
+
+def effect(mult, arbiters=None):
+    game = game_context.game
     for arb in arbiters:
         if arb.config["name"] == "object.pinpoint.name":
             arb.flags["sprite"] = 1 - arb.flags["sprite"]

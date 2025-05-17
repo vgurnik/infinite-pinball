@@ -3,12 +3,13 @@ import pymunk
 import pymunk.pygame_util
 import game_objects
 from static_objects import StaticObjects
+import game_context
 
 
 class Field:
-    def __init__(self, game):
+    def __init__(self):
+        game = game_context.game
         self.config = game.config
-        self.game = game
         self.space = pymunk.Space()
         self.space.sleep_time_threshold = 1
         self.space.idle_speed_threshold = 5
@@ -17,8 +18,8 @@ class Field:
 
         StaticObjects.create_boundaries(self.space, self.config)
         self.ramp_gate, self.ramp_recline = StaticObjects.create_ramp_gates(self.space, self.config,
-                                                                            self.game.textures.get("ramps"))
-        self.shield = StaticObjects.create_shield(self.space, self.config, self.game.textures.get("shield"))
+                                                                            game.textures.get("ramps"))
+        self.shield = StaticObjects.create_shield(self.space, self.config, game.textures.get("shield"))
 
         self.objects = []
         self.textures = game.textures
@@ -26,18 +27,18 @@ class Field:
             if obj["type"] == "bumper":
                 bumper_def = self.config.objects_settings["bumper"][obj["class"]]
                 bumper_def["pos"] = obj["pos"]
-                bumper = game_objects.Bumper(self.space, bumper_def, sprite=self.textures.get(bumper_def["texture"]))
+                bumper = game_objects.Bumper(self.space, bumper_def, sprite=game.textures.get(bumper_def["texture"]))
                 self.objects.append(bumper)
             elif obj["type"] == "pin":
                 bumper_def = self.config.objects_settings["pin"][obj["class"]]
                 bumper_def["pos"] = obj["pos"]
-                bumper = game_objects.Pin(self.space, bumper_def, sprite=self.textures.get(bumper_def["texture"]))
+                bumper = game_objects.Pin(self.space, bumper_def, sprite=game.textures.get(bumper_def["texture"]))
                 self.objects.append(bumper)
             elif obj["type"] == "flipper":
                 flipper_def = self.config.objects_settings["flipper"][obj["class"]]
                 flipper_def["pos"] = obj["pos"]
                 flipper = game_objects.Flipper(self.space, flipper_def, obj["is_left"], self.config,
-                                               sprite=self.textures.get(flipper_def["texture"]))
+                                               sprite=game.textures.get(flipper_def["texture"]))
                 if obj["is_left"]:
                     self.left_flipper = flipper
                 else:
@@ -48,7 +49,7 @@ class Field:
 
         # Create the balls.
         self.balls = [game_objects.Ball(self.config.objects_settings["ball"]["standard"], self.config.ball_start,
-                                        self.textures.get(self.config.objects_settings["ball"]["standard"]["texture"])
+                                        game.textures.get(self.config.objects_settings["ball"]["standard"]["texture"])
                                         ) for i in range(self.config.balls)]
 
         self.hovered_item = None
@@ -72,7 +73,7 @@ class Field:
     def draw(self):
         field_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
         field_surface.fill((20, 20, 70))
-        if self.game.debug_mode:
+        if game_context.game.debug_mode:
             self.space.debug_draw(pymunk.pygame_util.DrawOptions(field_surface))
         if self.textures.get("field"):
             self.textures.get("field").draw(field_surface, (0, 0), self.config.field_size)

@@ -1,14 +1,17 @@
-def effect(game, difference, mode, arbiters=None):
+import game_context
+
+
+def effect(difference, mode, arbiters=None):
     if mode == 's':
-        game.score_needed += difference
+        game_context.game.score_needed += difference
     elif mode == 'm':
-        game.score_needed *= difference
+        game_context.game.score_needed *= difference
     return True
 
 
-def negative_effect(game, difference, mode, arbiters=None):
+def negative_effect(difference, mode, arbiters=None):
     if mode == 's':
-        game.score_needed -= difference
+        game_context.game.score_needed -= difference
     elif mode == 'm':
-        game.score_needed /= difference
+        game_context.game.score_needed /= difference
     return True

@@ -1,4 +1,4 @@
-def effect(game, difference, mode, arbiters=None):
+def effect(difference, mode, arbiters=None):
     for arb in arbiters:
         if arb.shape.type != "ball":
             is_bump = False

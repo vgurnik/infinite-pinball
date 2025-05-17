@@ -5,12 +5,12 @@ from game_effects import ContextWindow, AnimatedEffect
 from inventory import InventoryItem, PackInventory
 from utils.textures import mouse_scale, display_screen
 from utils.text import format_text, loc
+import game_context
 
 
 class Button:
     def __init__(self, text, pos, size, color, font_size=36, offset=(0, 0)):
-        font_file = Path(__file__).resolve().with_name("assets").joinpath('lang/TDATextCondensed.ttf')
-        font = pygame.font.Font(font_file, font_size)
+        font = pygame.font.Font(game_context.game.config.fontfile, font_size)
         self.color = color
         self.text = font.render(text, True, (0, 0, 0))
         self.button = self.text.get_rect()
@@ -53,7 +53,9 @@ class Button:
 
 class Ui:
 
-    def overlay_menu(self, screen, title, options):
+    @staticmethod
+    def overlay_menu(screen, title, options):
+        game = game_context.game
         selected = 0
         overlay = pygame.Surface((screen.get_width(), screen.get_height()))
         overlay.set_alpha(180)
@@ -83,56 +85,58 @@ class Ui:
                             selected = i
 
             screen.blit(overlay, (0, 0))
-            font = pygame.font.Font(self.config.fontfile, 36)
-            title_text = font.render(loc(title, self.config.lang), True, (255, 255, 255))
+            font = pygame.font.Font(game.config.fontfile, 36)
+            title_text = font.render(loc(title, game.config.lang), True, (255, 255, 255))
             title_rect = title_text.get_rect(center=(screen.get_width() // 2, 150))
             screen.blit(title_text, title_rect)
             option_rects = []
             for idx, option in enumerate(options):
                 if idx == selected:
-                    opt_font = pygame.font.Font(self.config.fontfile, 42)
+                    opt_font = pygame.font.Font(game.config.fontfile, 42)
                     color = (255, 255, 0)
                 else:
-                    opt_font = pygame.font.Font(self.config.fontfile, 36)
+                    opt_font = pygame.font.Font(game.config.fontfile, 36)
                     color = (255, 255, 255)
-                text = opt_font.render(loc(option, self.config.lang), True, color)
+                text = opt_font.render(loc(option, game.config.lang), True, color)
                 rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
                 screen.blit(text, rect)
                 option_rects.append(rect)
-            display_screen(self.game.display, screen, self.game.screen_size)
+            display_screen(game.display, screen, game.screen_size)
 
-    def open_pack(self, items, start, kind, amount, opening_sprite):
+    @staticmethod
+    def open_pack(items, start, kind, amount, opening_sprite):
+        game = game_context.game
         clock = pygame.time.Clock()
-        dt = 1.0 / (self.game.real_fps if self.game.real_fps > 1 else self.config.fps)
-        big_font = pygame.font.Font(self.config.fontfile, 36)
-        opening_inventory = PackInventory(self.game, len(items) * 150)
+        dt = 1.0 / (game.real_fps if game.real_fps > 1 else game.config.fps)
+        big_font = pygame.font.Font(game.config.fontfile, 36)
+        opening_inventory = PackInventory(len(items) * 150)
         for item in items:
             if item["type"] == "buildable":
-                obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
+                obj_def = game.config.objects_settings[item["object_type"]][item["class"]]
                 opening_inventory.add_item(InventoryItem(properties=item,
-                                                         sprite=self.game.textures.get("buildable_pack"),
+                                                         sprite=game.textures.get("buildable_pack"),
                                                          target_position=start, for_buildable=
-                                                         self.game.textures.get(obj_def["texture"])))
+                                                         game.textures.get(obj_def["texture"])))
             else:
-                opening_inventory.add_item(InventoryItem(properties=item, sprite=self.game.textures.get(
+                opening_inventory.add_item(InventoryItem(properties=item, sprite=game.textures.get(
                     item.get("sprite")), target_position=start))
         taken = 0
-        skip_button = Button(loc("ui.button.skip", self.config.lang),
+        skip_button = Button(loc("ui.button.skip", game.config.lang),
                              (opening_inventory.position[0] + opening_inventory.width / 2,
                               opening_inventory.position[1] + 200), "auto", (0, 255, 100))
-        opening_effect = AnimatedEffect(self.game.display, self.game.screen_size)
-        self.game.screen.fill((20, 20, 70))
+        opening_effect = AnimatedEffect(game.display, game.screen_size)
+        game.screen.fill((20, 20, 70))
 
-        header = big_font.render(loc("ui.text.shop", self.config.lang), True, (255, 255, 255))
-        self.game.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
-        self.game.ui.draw(self.game.screen)
-        self.game.ui.update(dt)
-        self.game.inventory.update(dt)
-        self.game.inventory.draw(self.game.screen)
-        opening_inventory.draw(self.game.screen)
-        opening_effect.start(self.game.screen, opening_sprite, (start.x - 3, start.y - 23),
+        header = big_font.render(loc("ui.text.shop", game.config.lang), True, (255, 255, 255))
+        game.screen.blit(header, (game.config.shop_pos[0] + 50, game.config.shop_pos[1]))
+        game.ui.draw(game.screen)
+        game.ui.update(dt)
+        game.inventory.update(dt)
+        game.inventory.draw(game.screen)
+        opening_inventory.draw(game.screen)
+        opening_effect.start(game.screen, opening_sprite, (start.x - 3, start.y - 23),
                              (126, 188))
-        clock.tick(self.config.fps)
+        clock.tick(game.config.fps)
         dt = 0
         while taken < amount:
             opening_inventory.recalculate_targets()
@@ -146,31 +150,31 @@ class Ui:
                 item = opening_inventory.handle_event(event)
                 if item is not None:
                     if kind == 'oneof':
-                        if self.game.inventory.add_item(item):
+                        if game.inventory.add_item(item):
                             opening_inventory.remove_item(item)
                             taken += 1
                     elif kind == 'all':
                         to_remove = []
                         for item in opening_inventory.items:
-                            if self.game.inventory.add_item(item):
+                            if game.inventory.add_item(item):
                                 to_remove.append(item)
                             else:
                                 for i in to_remove:
-                                    self.game.inventory.remove_item(i)
+                                    game.inventory.remove_item(i)
                                 break
                         else:
                             taken = amount
 
-            self.game.screen.fill((20, 20, 70))
+            game.screen.fill((20, 20, 70))
 
-            header = big_font.render(loc("ui.text.shop", self.config.lang), True, (255, 255, 255))
-            self.game.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
-            self.game.ui.draw(self.game.screen)
-            self.game.ui.update(dt)
-            self.game.inventory.update(dt)
-            self.game.inventory.draw(self.game.screen)
+            header = big_font.render(loc("ui.text.shop", game.config.lang), True, (255, 255, 255))
+            game.screen.blit(header, (game.config.shop_pos[0] + 50, game.config.shop_pos[1]))
+            game.ui.draw(game.screen)
+            game.ui.update(dt)
+            game.inventory.update(dt)
+            game.inventory.draw(game.screen)
 
-            opening_surface = pygame.Surface((self.config.screen_width, self.config.screen_height), pygame.SRCALPHA)
+            opening_surface = pygame.Surface((game.config.screen_width, game.config.screen_height), pygame.SRCALPHA)
             opening_surface.fill((20, 20, 20, 150))
             skip_button.draw(opening_surface)
             if skip_button.is_pressed():
@@ -179,69 +183,69 @@ class Ui:
             opening_inventory.update(dt)
             opening_inventory.draw(opening_surface)
             if kind == 'oneof':
-                pack_header = big_font.render(loc("ui.text.take", self.config.lang).format(taken, amount),
+                pack_header = big_font.render(loc("ui.text.take", game.config.lang).format(taken, amount),
                                               True, (255, 255, 255))
             else:
-                pack_header = big_font.render(loc("ui.text.take_all", self.config.lang), True, (255, 255, 255))
+                pack_header = big_font.render(loc("ui.text.take_all", game.config.lang), True, (255, 255, 255))
             opening_surface.blit(pack_header, (opening_inventory.position[0] + (opening_inventory.width -
                                                                                 pack_header.get_width()) / 2,
                                                opening_inventory.position[1] - 50))
 
-            self.game.screen.blit(opening_surface, (0, 0))
-            display_screen(self.game.display, self.game.screen, self.game.screen_size)
-            dt = clock.tick(self.config.fps) / 1000
-            self.game.real_fps = clock.get_fps()
+            game.screen.blit(opening_surface, (0, 0))
+            display_screen(game.display, game.screen, game.screen_size)
+            dt = clock.tick(game.config.fps) / 1000
+            game.real_fps = clock.get_fps()
         return "continue"
 
-    def settings_menu(self):
-        font = pygame.font.Font(self.config.fontfile, 28)
-        bigger_font = pygame.font.Font(self.config.fontfile, 30)
+    @staticmethod
+    def settings_menu():
+        game = game_context.game
+        font = pygame.font.Font(game.config.fontfile, 28)
+        bigger_font = pygame.font.Font(game.config.fontfile, 30)
         pref_running = True
-        resolution_index = self.config.resolutions.index(self.game.screen_size)
+        resolution_index = game.config.resolutions.index(game.screen_size)
         options = ["resolution", "fullscreen", "language", "debug_mode", "back"]
         selected_option = 0
 
         while pref_running:
             reload = False
-            self.game.screen.fill((20, 20, 70))
-            pref_text = font.render(loc("ui.text.settings", self.config.lang), True, (255, 255, 255))
-            resolution_text = font.render(loc("ui.settings.resolution", self.config.lang).format(
-                self.config.resolutions[resolution_index]), True, (255, 255, 255))
-            fullscreen_text = font.render(loc("ui.settings.fullscreen", self.config.lang).format(
-                loc("ui.settings." + ('on' if self.config.fullscreen else 'off'), self.config.lang)),
+            game.screen.fill((20, 20, 70))
+            pref_text = font.render(loc("ui.text.settings", game.config.lang), True, (255, 255, 255))
+            resolution_text = font.render(loc("ui.settings.resolution", game.config.lang).format(
+                game.config.resolutions[resolution_index]), True, (255, 255, 255))
+            fullscreen_text = font.render(loc("ui.settings.fullscreen", game.config.lang).format(
+                loc("ui.settings." + ('on' if game.config.fullscreen else 'off'), game.config.lang)),
                 True, (255, 255, 255))
-            lang_text = font.render(loc("ui.settings.language", self.config.lang).format(
-                loc("lang_name", self.config.lang)), True, (255, 255, 255))
-            debug_text = font.render(loc("ui.settings.debug", self.config.lang).format(
-                loc("ui.settings." + ('on' if self.game.debug_mode else 'off'), self.config.lang)),
+            lang_text = font.render(loc("ui.settings.language", game.config.lang).format(
+                loc("lang_name", game.config.lang)), True, (255, 255, 255))
+            debug_text = font.render(loc("ui.settings.debug", game.config.lang).format(
+                loc("ui.settings." + ('on' if game.debug_mode else 'off'), game.config.lang)),
                 True, (255, 255, 255))
-            back_text = font.render(loc("ui.settings.back", self.config.lang), True, (255, 255, 255))
+            back_text = font.render(loc("ui.settings.back", game.config.lang), True, (255, 255, 255))
             match options[selected_option]:
                 case "resolution":
-                    resolution_text = bigger_font.render(loc("ui.settings.resolution", self.config.lang).format(
-                        self.config.resolutions[resolution_index]), True, (255, 255, 0))
+                    resolution_text = bigger_font.render(loc("ui.settings.resolution", game.config.lang).format(
+                        game.config.resolutions[resolution_index]), True, (255, 255, 0))
                 case "fullscreen":
-                    fullscreen_text = bigger_font.render(loc("ui.settings.fullscreen", self.config.lang).format(
-                        loc("ui.settings." + ('on' if self.config.fullscreen else 'off'), self.config.lang)),
+                    fullscreen_text = bigger_font.render(loc("ui.settings.fullscreen", game.config.lang).format(
+                        loc("ui.settings." + ('on' if game.config.fullscreen else 'off'), game.config.lang)),
                         True, (255, 255, 0))
                 case "language":
-                    lang_text = bigger_font.render(loc("ui.settings.language", self.config.lang).format(
-                        loc("lang_name", self.config.lang)), True, (255, 255, 0))
+                    lang_text = bigger_font.render(loc("ui.settings.language", game.config.lang).format(
+                        loc("lang_name", game.config.lang)), True, (255, 255, 0))
                 case "debug_mode":
-                    debug_text = bigger_font.render(loc("ui.settings.debug", self.config.lang).format(
-                        loc("ui.settings." + ('on' if self.game.debug_mode else 'off'), self.config.lang)), True,
+                    debug_text = bigger_font.render(loc("ui.settings.debug", game.config.lang).format(
+                        loc("ui.settings." + ('on' if game.debug_mode else 'off'), game.config.lang)), True,
                         (255, 255, 0))
                 case "back":
-                    back_text = bigger_font.render(loc("ui.settings.back", self.config.lang), True, (255, 255, 0))
+                    back_text = bigger_font.render(loc("ui.settings.back", game.config.lang), True, (255, 255, 0))
 
-            self.game.screen.blit(pref_text, (self.config.screen_width // 2 - pref_text.get_width() // 2, 100))
-            self.game.screen.blit(resolution_text, (self.config.screen_width // 2 -
-                                                    resolution_text.get_width() // 2, 200))
-            self.game.screen.blit(fullscreen_text, (self.config.screen_width // 2 -
-                                                    fullscreen_text.get_width() // 2, 250))
-            self.game.screen.blit(lang_text, (self.config.screen_width // 2 - lang_text.get_width() // 2, 300))
-            self.game.screen.blit(debug_text, (self.config.screen_width // 2 - debug_text.get_width() // 2, 350))
-            self.game.screen.blit(back_text, (self.config.screen_width // 2 - back_text.get_width() // 2, 400))
+            game.screen.blit(pref_text, (game.config.screen_width // 2 - pref_text.get_width() // 2, 100))
+            game.screen.blit(resolution_text, (game.config.screen_width // 2 - resolution_text.get_width() // 2, 200))
+            game.screen.blit(fullscreen_text, (game.config.screen_width // 2 - fullscreen_text.get_width() // 2, 250))
+            game.screen.blit(lang_text, (game.config.screen_width // 2 - lang_text.get_width() // 2, 300))
+            game.screen.blit(debug_text, (game.config.screen_width // 2 - debug_text.get_width() // 2, 350))
+            game.screen.blit(back_text, (game.config.screen_width // 2 - back_text.get_width() // 2, 400))
 
             for event in pygame.event.get():
                 match event.type:
@@ -257,18 +261,18 @@ class Ui:
                             case pygame.K_RETURN:
                                 match options[selected_option]:
                                     case "resolution":
-                                        resolution_index = (resolution_index + 1) % len(self.config.resolutions)
-                                        self.game.screen_size = self.config.resolutions[resolution_index]
+                                        resolution_index = (resolution_index + 1) % len(game.config.resolutions)
+                                        game.screen_size = game.config.resolutions[resolution_index]
                                         reload = True
                                     case "fullscreen":
-                                        self.config.fullscreen = not self.config.fullscreen
+                                        game.config.fullscreen = not game.config.fullscreen
                                         reload = True
                                     case "language":
-                                        lang = (self.config.langs.index(self.config.lang) + 1) % len(self.config.langs)
-                                        self.config.lang = self.config.langs[lang]
+                                        lang = (game.config.langs.index(game.config.lang) + 1) % len(game.config.langs)
+                                        game.config.lang = game.config.langs[lang]
                                         reload = True
                                     case "debug_mode":
-                                        self.game.debug_mode = not self.game.debug_mode
+                                        game.debug_mode = not game.debug_mode
                                     case "back":
                                         pref_running = False
                             case pygame.K_ESCAPE:
@@ -277,19 +281,19 @@ class Ui:
                             match options[selected_option]:
                                 case "resolution":
                                     resolution_index = (resolution_index + (2 * (event.key == pygame.K_LEFT) - 1))\
-                                                       % len(self.config.resolutions)
-                                    self.game.screen_size = self.config.resolutions[resolution_index]
+                                                       % len(game.config.resolutions)
+                                    game.screen_size = game.config.resolutions[resolution_index]
                                     reload = True
                                 case "fullscreen":
-                                    self.config.fullscreen = not self.config.fullscreen
+                                    game.config.fullscreen = not game.config.fullscreen
                                     reload = True
                                 case "language":
-                                    lang = (self.config.langs.index(self.config.lang) +
-                                            (2 * (event.key == pygame.K_LEFT) - 1)) % len(self.config.langs)
-                                    self.config.lang = self.config.langs[lang]
+                                    lang = (game.config.langs.index(game.config.lang) +
+                                            (2 * (event.key == pygame.K_LEFT) - 1)) % len(game.config.langs)
+                                    game.config.lang = game.config.langs[lang]
                                     reload = True
                                 case "debug_mode":
-                                    self.game.debug_mode = not self.game.debug_mode
+                                    game.debug_mode = not game.debug_mode
                                 case "back":
                                     pref_running = False
                     case pygame.MOUSEBUTTONDOWN:
@@ -306,18 +310,18 @@ class Ui:
                             selected_option = 4
                         match options[selected_option]:
                             case "resolution":
-                                resolution_index = (resolution_index + 1) % len(self.config.resolutions)
-                                self.game.screen_size = self.config.resolutions[resolution_index]
+                                resolution_index = (resolution_index + 1) % len(game.config.resolutions)
+                                game.screen_size = game.config.resolutions[resolution_index]
                                 reload = True
                             case "fullscreen":
-                                self.config.fullscreen = not self.config.fullscreen
+                                game.config.fullscreen = not game.config.fullscreen
                                 reload = True
                             case "language":
-                                lang = (self.config.langs.index(self.config.lang) + 1) % len(self.config.langs)
-                                self.config.lang = self.config.langs[lang]
+                                lang = (game.config.langs.index(game.config.lang) + 1) % len(game.config.langs)
+                                game.config.lang = game.config.langs[lang]
                                 reload = True
                             case "debug_mode":
-                                self.game.debug_mode = not self.game.debug_mode
+                                game.debug_mode = not game.debug_mode
                             case "back":
                                 pref_running = False
                     case pygame.MOUSEMOTION:
@@ -333,13 +337,12 @@ class Ui:
                         elif 400 <= mouse_y <= 430:
                             selected_option = 4
             if reload:
-                self.game.display = pygame.display.set_mode(self.game.screen_size, (
-                    pygame.FULLSCREEN if self.config.fullscreen else 0))
-            display_screen(self.game.display, self.game.screen, self.game.screen_size)
+                game.display = pygame.display.set_mode(game.screen_size, (pygame.FULLSCREEN
+                                                                          if game.config.fullscreen else 0))
+            display_screen(game.display, game.screen, game.screen_size)
 
-    def __init__(self, game):
-        self.game = game
-        self.config = game.config
+    def __init__(self):
+        self.config = game_context.game.config
         self.mode = 'round'
         self.position = self.config.ui_pos
         self.play_button = Button(loc("ui.button.play", self.config.lang), self.config.ui_continue_pos,
@@ -348,7 +351,7 @@ class Ui:
                                    (self.config.ui_butt_width_2, 40), (255, 0, 100), 36, offset=self.position)
         self.reroll_button = Button(loc("ui.button.reroll", self.config.lang), self.config.ui_reroll_pos,
                                     (self.config.ui_butt_width_2, 40), (0, 255, 100), 36, offset=self.position)
-        self.context = ContextWindow(self.config)
+        self.context = ContextWindow()
 
     def change_mode(self, mode):
         assert mode in ['shop', 'round', 'round_finishable', 'field_modification', 'results']
@@ -368,15 +371,15 @@ class Ui:
                                            (self.config.ui_butt_width_2, 40), (255, 0, 100), offset=self.position)
 
     def draw(self, surface):
+        game = game_context.game
         font = pygame.font.Font(self.config.fontfile, 24)
         ui_surface = pygame.Surface((self.config.ui_width, self.config.screen_height))
         ui_surface.fill((20, 10, 60))
-        req = int(self.game.score_needed) if (self.game.score_needed == int(self.game.score_needed)
-                                              ) else self.game.score_needed
+        req = int(game.score_needed) if (game.score_needed == int(game.score_needed)) else game.score_needed
         if self.mode in ['round', 'round_finishable', 'results']:
             if self.mode == 'round_finishable':
                 self.play_button.draw(ui_surface)
-            score = self.game.round_instance.score
+            score = game.round_instance.score
             min_score_text = font.render(format_text("ui.text.req_score", self.config.lang, req), True, (255, 255, 255))
             score_text = font.render(format_text("ui.text.score", self.config.lang, score), True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_score_pos)
@@ -386,15 +389,15 @@ class Ui:
             self.play_button.draw(ui_surface)
             self.field_button.draw(ui_surface)
             if self.mode == 'shop':
-                self.reroll_button.draw(ui_surface, self.game.money < self.game.reroll_cost)
+                self.reroll_button.draw(ui_surface, game.money < game.reroll_cost)
             score_text = font.render(format_text("ui.text.next_score", self.config.lang, req), True, (255, 255, 255))
             ui_surface.blit(score_text, self.config.ui_min_score_pos)
 
-        round_text = font.render(format_text("ui.text.round", self.config.lang, self.game.round + 1),
+        round_text = font.render(format_text("ui.text.round", self.config.lang, game.round + 1),
                                  True, (255, 100, 200))
         ui_surface.blit(round_text, self.config.ui_round_pos)
         money_text = font.render(
-            f"$ {round(self.game.money) if self.game.money == round(self.game.money) else self.game.money}",
+            f"$ {round(game.money) if game.money == round(game.money) else game.money}",
             True, (255, 255, 0))
         ui_surface.blit(money_text, self.config.ui_money_pos)
         surface.blit(ui_surface, self.position)
@@ -413,7 +416,7 @@ class Ui:
             self.context.set_visibility(True)
         elif self.mode == 'shop' and self.reroll_button.is_hovered():
             self.context.update(mpos, 'text', loc("ui.message.reroll_description", self.config.lang
-                                                  ).format(self.game.reroll_cost))
+                                                  ).format(game_context.game.reroll_cost))
             self.context.set_visibility(True)
         elif self.mode == 'round_finishable' and self.play_button.is_hovered():
             self.context.update(mpos, 'text', loc("ui.message.finish_description", self.config.lang))
@@ -422,6 +425,7 @@ class Ui:
             self.context.set_visibility(False)
 
     def handle_event(self, event):
+        game = game_context.game
         if event.type == pygame.MOUSEBUTTONUP:
             if self.mode in ['shop', 'field_modification'] and self.play_button.is_pressed():
                 return "continue"
@@ -432,14 +436,14 @@ class Ui:
             if self.mode == 'round_finishable' and self.play_button.is_pressed():
                 return "round_over"
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r and self.game.debug_mode:
-                self.game.textures = self.game.load_textures()
-                self.game.field.textures = self.game.textures
+            if event.key == pygame.K_r and game.debug_mode:
+                game.textures = game.load_textures()
+                game.field.textures = game.textures
                 print('textures reloaded')
-            if event.key == pygame.K_EQUALS and self.game.debug_mode:
-                self.game.money += 1000
+            if event.key == pygame.K_EQUALS and game.debug_mode:
+                game.money += 1000
                 print('+$1000')
-            if event.key == pygame.K_MINUS and self.game.debug_mode:
-                self.game.round_instance.score += 1000
+            if event.key == pygame.K_MINUS and game.debug_mode:
+                game.round_instance.score += 1000
                 print('+1000 score')
         return None

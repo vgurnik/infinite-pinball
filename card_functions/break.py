@@ -1,4 +1,8 @@
-def effect(game, arbiters=None):
+import game_context
+
+
+def effect(arbiters=None):
+    game = game_context.game
     if arbiters is None:
         return True
     for arb in arbiters:
@@ -9,7 +13,8 @@ def effect(game, arbiters=None):
     return True
 
 
-def negative_effect(game, arbiters=None):
+def negative_effect(arbiters=None):
+    game = game_context.game
     if game.flags.get("broken", 0) > 0:
         game.flags["broken"] = 0
         return True

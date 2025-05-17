@@ -69,7 +69,7 @@
     },
     {
       "name": "card.collector.name",
-      "price": 150,
+      "price": 200,
       "type": "card",
       "rarity": "uncommon",
       "sprite": "collection",
@@ -823,7 +823,7 @@
     "card": {
       "negative": {
         "name": "rarity.negative",
-        "color": "#000000",
+        "color": "#222222",
         "value": 0
       },
       "common": {

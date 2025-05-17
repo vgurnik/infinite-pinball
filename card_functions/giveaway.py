@@ -1,7 +1,7 @@
 from random import randint
 
 
-def effect(game, amount, arbiters=None):
+def effect(amount, arbiters=None):
     shop = arbiters[0]
     appropriate = []
     for item in shop.items:

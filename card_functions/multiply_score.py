@@ -1,4 +1,8 @@
-def effect(game, difference, mode, arbiters=None):
+import game_context
+
+
+def effect(difference, mode, arbiters=None):
+    game = game_context.game
     if game.round_instance is None or not game.round_instance.running:
         return False
     if mode == 's':

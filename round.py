@@ -6,11 +6,12 @@ import pymunk
 from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
 from utils.textures import display_screen
+import game_context
 
 
 class PinballRound:
-    def __init__(self, game):
-        self.game = game
+    def __init__(self):
+        game = game_context.game
         self.screen = game.screen
         self.config = game.config
         self.real_fps = self.config.fps
@@ -36,7 +37,7 @@ class PinballRound:
 
         self.score = 0
         self.hit_effects = []
-        self.applied_cards = PlayerInventory(self.game, overrides=self.config.applied_effects_settings)
+        self.applied_cards = PlayerInventory(overrides=self.config.applied_effects_settings)
         self.immediate = {}
 
         # Collision handler for objects.
@@ -46,6 +47,7 @@ class PinballRound:
         self.time_accumulator = 0
 
     def collision(self, arbiter, _space, _data):
+        game = game_context.game
         self.immediate['score'] = 0
         self.immediate['money'] = 0
         self.immediate['multi'] = 1
@@ -65,10 +67,10 @@ class PinballRound:
                     shape.parent.activations += 1
                     x = pos.x + 20
                     y = pos.y
-        self.game.callback("collision", arbiters=arbiters)
+        game.callback("collision", arbiters=arbiters)
         for arb in arbiters:
             if arb.shape.type not in ['flipper', 'ball'] and arb.cooldown > 1:
-                self.game.callback("cooldown", arbiters=[arb])
+                game.callback("cooldown", arbiters=[arb])
         if self.immediate['score']:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
@@ -91,7 +93,7 @@ class PinballRound:
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]),
                                               f"{'+' if self.immediate['money'] >= 0 else ''}{m_v}", (255, 255, 0)))
             y += 20
-            self.game.money += self.immediate['money']
+            game.money += self.immediate['money']
         for hit, color in self.immediate['hits']:
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), hit, color))
             y += 20
@@ -103,7 +105,7 @@ class PinballRound:
         self.active_balls.append(self.ball_queue.pop())
         self.ball_queue_coords.pop()
         self.active_balls[-1].activate(self.field.space, self.config.ball_start)
-        self.game.callback("recharge", arbiters=[self.active_balls[-1]])
+        game_context.game.callback("recharge", arbiters=[self.active_balls[-1]])
         self.ball_launched = False
         self.launch_charge = 0
         self.launch_indicators = 0
@@ -111,6 +113,7 @@ class PinballRound:
         return True
 
     def draw(self, dt):
+        game = game_context.game
         # Clear screen.
         self.screen.fill((20, 20, 70))
         field_surface = self.field.draw()
@@ -119,7 +122,7 @@ class PinballRound:
         for obj in self.field.objects:
             obj.update(dt)
 
-        if self.game.flags.get("charge_bonus", False):
+        if game.flags.get("charge_bonus", False):
             for i in range(10):
                 if self.launch_indicators > i:
                     self.textures["charge_indicator"].set_frame(1)
@@ -141,7 +144,7 @@ class PinballRound:
                 if effect["duration"] > 0:
                     any_active = True
             if not any_active:
-                card.end_use(self.game)
+                card.end_use()
                 self.applied_cards.remove_item(card)
                 self.hit_effects.append(DisappearingItem(card, 0.5))
 
@@ -183,21 +186,22 @@ class PinballRound:
             if effect.is_dead():
                 self.hit_effects.remove(effect)
 
-        if self.game.debug_mode:
+        if game.debug_mode:
             # Draw the FPS counter.
             font = pygame.font.Font(self.config.fontfile, 24)
             fps_text = font.render(f"FPS: {int(self.real_fps)}", True, (255, 255, 255))
-            self.screen.blit(fps_text, (self.game.screen_size[0] - fps_text.get_width() - 10, 10))
+            self.screen.blit(fps_text, (game.screen_size[0] - fps_text.get_width() - 10, 10))
 
-        display_screen(self.game.display, self.screen, self.game.screen_size)
+        display_screen(game.display, self.screen, game.screen_size)
 
     def run(self):
+        game = game_context.game
         clock = pygame.time.Clock()
         self.running = True
         exit_option = "exit"
         self.ui.change_mode("round")
         self.recharge()
-        self.game.callback("round_start", arbiters=self.field.objects + self.active_balls)
+        game.callback("round_start", arbiters=self.field.objects + self.active_balls)
         dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
 
         while self.running:
@@ -223,7 +227,7 @@ class PinballRound:
                                 self.running = False
                                 break
                             if choice == "ui.button.settings":
-                                self.game.ui.settings_menu()
+                                game.ui.settings_menu()
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_SPACE and not self.ball_launched:
                             self.launch_key_down = True
@@ -239,7 +243,7 @@ class PinballRound:
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
-                        self.game.money += ret["try_selling"].properties["price"]
+                        game.money += ret["try_selling"].properties["price"]
                         self.hit_effects.append(DisappearingItem(ret["try_selling"], 0.5))
                     elif "try_using" in ret:
                         allow = False
@@ -249,7 +253,7 @@ class PinballRound:
                                 allow = True
                             if effect["duration"] != 0:
                                 lasting = True
-                        if allow and ret["try_using"].use(self.game) and self.inventory.remove_item(ret["try_using"]):
+                        if allow and ret["try_using"].use() and self.inventory.remove_item(ret["try_using"]):
                             if lasting:
                                 self.applied_cards.add_item(ret["try_using"])
                                 self.applied_cards.recalculate_targets()
@@ -259,7 +263,7 @@ class PinballRound:
                 if ball.body.position.y > self.config.screen_height + 50:
                     ball.remove(self.field.space)
                     self.active_balls.remove(ball)
-                    self.game.callback("ball_lost", arbiters=[ball])
+                    game.callback("ball_lost", arbiters=[ball])
 
             if len(self.active_balls) == 0 and not self.recharge():
                 exit_option = "round_over"
@@ -291,17 +295,17 @@ class PinballRound:
                         self.field.ramp_recline.sensor = True
                     self.field.ramp_gate.sensor = True
                     all_launched = False
-                    if self.game.flags.get("charge_bonus", False):
+                    if game.flags.get("charge_bonus", False):
                         self.launch_indicators = min(max((self.config.ramp_recline_end[1] - 40 - ball.body.position.y +
                                                           ball.radius) // 25, self.launch_indicators), 10)
 
             if all_launched and not self.ball_launched:
                 self.field.ramp_gate.sensor = False
                 self.ball_launched = True
-                if self.game.flags.get("charge_bonus", False) and self.active_balls[0].body.position.y >\
+                if game.flags.get("charge_bonus", False) and self.active_balls[0].body.position.y >\
                         self.config.ramp_recline_end[1] - 50:
                     bonus = self.launch_indicators * self.config.charge_bonus
-                    self.game.money += bonus
+                    game.money += bonus
                     bonus = str(int(bonus)) if bonus == int(bonus) else str(bonus)
                     self.hit_effects.append(HitEffect((self.field.position[0] + self.config.right_wall_x + 12,
                                                        self.field.position[1] + self.config.ramp_recline_end[1] - 40
@@ -316,9 +320,9 @@ class PinballRound:
                 self.field.right_flipper.active_angle if keys[pygame.K_RIGHT] or keys[pygame.K_d] or keys[pygame.K_s]
                 else self.field.right_flipper.default_angle)
 
-            if self.score >= self.game.score_needed and self.ui.mode != "round_finishable":
+            if self.score >= game.score_needed and self.ui.mode != "round_finishable":
                 self.ui.change_mode("round_finishable")
-            if self.score < self.game.score_needed and self.ui.mode == "round_finishable":
+            if self.score < game.score_needed and self.ui.mode == "round_finishable":
                 self.ui.change_mode("round")
 
             # Simulate game physics.
@@ -338,6 +342,6 @@ class PinballRound:
             self.real_fps = clock.get_fps()
 
         for applied_effect in self.applied_cards.items:
-            applied_effect.end_use(self.game)
+            applied_effect.end_use()
 
         return exit_option, self.score

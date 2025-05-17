@@ -1,8 +1,10 @@
 from game_effects import DisappearingItem
 from inventory import InventoryItem
+import game_context
 
 
-def effect(game, arbiters=None):
+def effect(arbiters=None):
+    game = game_context.game
     for item in game.inventory.items:
         allow = False
         lasting = False
@@ -12,7 +14,7 @@ def effect(game, arbiters=None):
             if e["duration"] != 0:
                 lasting = True
         item_copy = InventoryItem(item.name, item.sprite, item.properties, init_pos=(item.pos[0]+20, item.pos[1]))
-        if allow and item_copy.use(game):
+        if allow and item_copy.use():
             if lasting:
                 game.round_instance.applied_cards.add_item(item_copy)
                 game.round_instance.applied_cards.recalculate_targets()

@@ -58,4 +58,3 @@ pyinstaller main.spec
 #### Known bugs and TODOs
 - Should probably be able to sell/use cards while opening packs
 - Need to add card ID, card params as list, card description format $flags, #params
-- Fix mid-game lang change later

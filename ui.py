@@ -27,8 +27,6 @@ class Button:
         return self.button.inflate(20, 10).move(self.offset).collidepoint(mouse_scale(pygame.mouse.get_pos()))
 
     def update(self):
-        if self.is_hovered() and pygame.mouse.get_pressed()[0]:
-            self.pressed = True
         if not self.is_hovered():
             self.pressed = False
 
@@ -144,6 +142,15 @@ class Ui:
                 return "reroll"
             if self.mode == 'round_finishable' and self.play_button.is_pressed():
                 return "round_over"
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.mode in ['shop', 'field_modification'] and self.play_button.is_hovered():
+                self.play_button.pressed = True
+            if self.mode in ['shop', 'field_modification'] and self.field_button.is_hovered():
+                self.field_button.pressed = True
+            if self.mode == 'shop' and self.reroll_button.is_hovered():
+                self.reroll_button.pressed = True
+            if self.mode == 'round_finishable' and self.play_button.is_hovered():
+                self.play_button.pressed = True
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r and game.debug_mode:
                 game.textures = game.load_textures()

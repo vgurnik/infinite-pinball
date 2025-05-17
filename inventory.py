@@ -121,7 +121,7 @@ class InventoryItem:
                 self.highlighted = False
         self.rect.topleft = (int(self.pos.x), int(self.pos.y))
 
-    def draw(self, surface, lang='en'):
+    def draw(self, surface):
         if not self.visibility:
             return
         if self.highlighted:
@@ -159,7 +159,7 @@ class InventoryItem:
             pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
             font = pygame.font.Font(game_context.game.config.fontfile, 20)
-            text_surface = font.render(loc(self.name, lang), True, (0, 0, 0))
+            text_surface = font.render(loc(self.name, game_context.game.config.lang), True, (0, 0, 0))
             x = rect.x + (rect.width - text_surface.get_width()) / 2
             y = rect.y + 5
             surface.blit(text_surface, (x, y))

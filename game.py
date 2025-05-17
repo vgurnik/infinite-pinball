@@ -236,7 +236,7 @@ class PinballGame:
                 if effect.is_dead():
                     visual_effects.remove(effect)
 
-            display_screen(self.display, self.screen, self.screen_size)
+            display_screen(self.screen)
             dt = clock.tick(self.config.fps) / 1000
             self.real_fps = clock.get_fps()
 
@@ -294,7 +294,7 @@ class PinballGame:
             self.screen.blit(self.field.draw(), self.field.position)
             self.inventory.update(dt)
             self.inventory.draw(self.screen)
-            display_screen(self.display, self.screen, self.screen_size)
+            display_screen(self.screen)
             dt = clock.tick(self.config.fps) / 1000
             self.real_fps = clock.get_fps()
         return 'back'

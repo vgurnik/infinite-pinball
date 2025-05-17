@@ -5,9 +5,9 @@ from game_effects import AnimatedEffect
 from inventory import InventoryItem, PackInventory
 from utils.textures import mouse_scale, display_screen
 from utils.text import format_text, loc
-from ui import Button
+from ui import Button, Ui
+from inventory import PlayerInventory
 from field import Field
-from ui import Ui
 import game_context
 
 
@@ -32,6 +32,8 @@ def overlay_menu(screen, title, options):
                     selected = (selected + 1) % len(options)
                 elif event.key == pygame.K_RETURN:
                     return options[selected]
+                elif event.key == pygame.K_ESCAPE:
+                    return options[0]
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for i, rect in enumerate(option_rects):
                     if rect.collidepoint(mouse_pos):
@@ -58,7 +60,7 @@ def overlay_menu(screen, title, options):
             rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
             screen.blit(text, rect)
             option_rects.append(rect)
-        display_screen(game.display, screen, game.screen_size)
+        display_screen(screen)
 
 
 def open_pack(items, start, kind, amount, opening_sprite):
@@ -104,6 +106,9 @@ def open_pack(items, start, kind, amount, opening_sprite):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return "skip"
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if skip_button.is_hovered():
+                    skip_button.pressed = True
             item = opening_inventory.handle_event(event)
             if item is not None:
                 if kind == 'oneof':
@@ -149,7 +154,7 @@ def open_pack(items, start, kind, amount, opening_sprite):
                                            opening_inventory.position[1] - 50))
 
         game.screen.blit(opening_surface, (0, 0))
-        display_screen(game.display, game.screen, game.screen_size)
+        display_screen(game.screen)
         dt = clock.tick(game.config.fps) / 1000
         game.real_fps = clock.get_fps()
     return "continue"
@@ -295,13 +300,17 @@ def settings_menu():
                     elif 400 <= mouse_y <= 430:
                         selected_option = 4
         if lang_reload:
+            ui_mode = game.ui.mode
+            items = game.inventory.items
             game.field = Field()
             game.ui = Ui()
+            game.ui.change_mode(ui_mode)
             game.inventory = PlayerInventory()
+            game.inventory.items = items
         if screen_reload:
             game.display = pygame.display.set_mode(game.screen_size, (pygame.FULLSCREEN
                                                                       if game.config.fullscreen else 0))
-        display_screen(game.display, game.screen, game.screen_size)
+        display_screen(game.screen)
 
 
 def round_results_overlay(score, min_score):
@@ -382,5 +391,5 @@ def round_results_overlay(score, min_score):
                 case pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         waiting = False
-        display_screen(game.display, game.screen, game.screen_size)
+        display_screen(game.screen)
     return result

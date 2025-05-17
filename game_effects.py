@@ -6,9 +6,6 @@ import game_context
 
 class ContextWindow:
     def __init__(self, pos=(0, 0), item=None, visible=False):
-        config = game_context.game.config
-        self.rarities = config.rarities
-        self.lang = config.lang
         self.x, self.y = pos
         self.item = item
         self.visible = visible
@@ -24,11 +21,12 @@ class ContextWindow:
         self.visible = visibility
 
     def draw(self, surface):
+        lang = game_context.game.config.lang
         if self.visible:
             font = pygame.font.Font(game_context.game.config.fontfile, 20)
             match self.mode:
                 case 'text':
-                    text_surface = multiline(loc(self.item, self.lang), font, (0, 0, 0), (200, 200, 200))
+                    text_surface = multiline(loc(self.item, lang), font, (0, 0, 0), (200, 200, 200))
                     rect = text_surface.get_rect().inflate((6, 6))
                     if self.x + rect.width > surface.get_width():
                         self.x = surface.get_width() - rect.width
@@ -40,17 +38,17 @@ class ContextWindow:
                     # Draw the item name centered at the top of the card.
                     surface.blit(text_surface, (rect.x + 3, rect.y + 3))
                 case 'description':
-                    header = multiline(loc(self.item.name, self.lang), font, (50, 50, 50))
-                    description = multiline(loc(self.item.properties["description"], self.lang), font, (0, 0, 0))
+                    header = multiline(loc(self.item.name, lang), font, (50, 50, 50))
+                    description = multiline(loc(self.item.properties["description"], lang), font, (0, 0, 0))
                     price = font.render("$" + str(self.item.properties["price"]), 1, (255, 255, 0))
                     price_shadow = font.render("$" + str(self.item.properties["price"]), 1, (0, 0, 0))
                     width = max(header.get_width(), price.get_width(), description.get_width()) + 12
                     height = header.get_height() + price.get_height() + description.get_height() + 18
                     rarity = self.item.properties.get("rarity", None)
                     if rarity is not None:
-                        rarity = self.rarities[self.item.properties["type"]][rarity]
-                        rarity_shadow = font.render(loc(rarity["name"], self.lang), 1, (0, 0, 0))
-                        rarity = font.render(loc(rarity["name"], self.lang), 1, utils.textures.color(rarity["color"]))
+                        rarity = game_context.game.config.rarities[self.item.properties["type"]][rarity]
+                        rarity_shadow = font.render(loc(rarity["name"], lang), 1, (0, 0, 0))
+                        rarity = font.render(loc(rarity["name"], lang), 1, utils.textures.color(rarity["color"]))
                         height += rarity.get_height() + 6
                     if self.x + width > surface.get_width():
                         self.x = surface.get_width() - width
@@ -76,10 +74,10 @@ class ContextWindow:
                                               self.y + height - rarity.get_height() - 3))
                 case 'sell':
                     if self.item >= 0:
-                        text_surface = multiline(loc("ui.text.sell+", self.lang).format(self.item), font, (0, 0, 0),
+                        text_surface = multiline(loc("ui.text.sell+", lang).format(self.item), font, (0, 0, 0),
                                                  (200, 200, 200))
                     else:
-                        text_surface = multiline(loc("ui.text.sell-", self.lang).format(-self.item), font, (0, 0, 0),
+                        text_surface = multiline(loc("ui.text.sell-", lang).format(-self.item), font, (0, 0, 0),
                                                  (200, 200, 200))
                     rect = text_surface.get_rect().inflate((6, 6))
                     if self.x + rect.width > surface.get_width():
@@ -161,7 +159,7 @@ class DisappearingItem(BaseEffect):
             pygame.draw.rect(new_surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
             font = pygame.font.Font(game_context.game.config.fontfile, 20)
-            text_surface = font.render(self.item.name, True, (0, 0, 0))
+            text_surface = font.render(loc(self.item.name, game_context.game.config.lang), True, (0, 0, 0))
             new_surface.blit(text_surface, ((rect.width - text_surface.get_width()) / 2, 5))
         surface.blit(new_surface, self.item.rect.topleft)
 
@@ -182,4 +180,4 @@ class AnimatedEffect:
             if sprite.update(dt, end_stop=True):
                 break
             sprite.draw(new_screen, pos, size)
-            utils.textures.display_screen(self.display, new_screen, self.screen_size)
+            utils.textures.display_screen(new_screen)

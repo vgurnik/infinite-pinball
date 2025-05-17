@@ -6,6 +6,7 @@ import pymunk
 from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
 from utils.textures import display_screen
+import screens
 import game_context
 
 
@@ -192,7 +193,7 @@ class PinballRound:
             fps_text = font.render(f"FPS: {int(self.real_fps)}", True, (255, 255, 255))
             self.screen.blit(fps_text, (game.screen_size[0] - fps_text.get_width() - 10, 10))
 
-        display_screen(game.display, self.screen, game.screen_size)
+        display_screen(self.screen)
 
     def run(self):
         game = game_context.game
@@ -220,14 +221,14 @@ class PinballRound:
                         sys.exit()
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
+                            choice = screens.overlay_menu(self.screen, "ui.text.pause", [
                                 "ui.button.resume", "ui.button.settings", "ui.button.main"])
                             if choice == "ui.button.main":
                                 exit_option = "menu"
                                 self.running = False
                                 break
                             if choice == "ui.button.settings":
-                                game.ui.settings_menu()
+                                screens.settings_menu()
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_SPACE and not self.ball_launched:
                             self.launch_key_down = True

@@ -1,4 +1,5 @@
 import pygame
+import game_context
 
 
 def rotoscale(texture, angle, new_size):
@@ -21,7 +22,10 @@ def color(hex_color):
     return [int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:], 16)]
 
 
-def display_screen(display, screen, screen_size):
+def display_screen(screen):
+    game = game_context.game
+    display = game.display
+    screen_size = game.screen_size
     if screen_size[1] / screen_size[0] == 720 / 1280:
         display.blit(scale(screen, screen_size), (0, 0))
     elif screen_size[1] / screen_size[0] > 720 / 1280:

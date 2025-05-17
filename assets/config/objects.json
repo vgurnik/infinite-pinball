@@ -144,12 +144,14 @@
     "pin": {
       "name": "object.pin.name",
       "texture": "pin",
-      "size": 20
+      "size": 20,
+      "spacing": 5
     },
     "pin_points": {
       "name": "object.pinpoint.name",
       "texture": "pin_points",
       "size": 20,
+      "spacing": 5,
       "flags": {"sprite": 1},
       "effects": [
         {

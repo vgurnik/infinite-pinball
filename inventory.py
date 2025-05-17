@@ -27,7 +27,7 @@ class InventoryItem:
         self.card_size = card_size
         self.rect = pygame.Rect(self.pos.x, self.pos.y, card_size[0], card_size[1])
         self.effects = [{
-            "effect_name": effect.get("effect", None),
+            "name": effect.get("effect", None),
             "effect": effects.get_card_function(effect.get("effect", None)),
             "negative_effect": effects.get_card_function(effect.get("effect", None), negative=True),
             "trigger": effect.get("trigger", "use"),

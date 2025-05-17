@@ -313,13 +313,12 @@ class PinballRound:
                 self.launch_indicators = 0
 
             keys = pygame.key.get_pressed()
-            self.field.left_flipper.spring.rest_angle = (
-                self.field.left_flipper.active_angle if keys[pygame.K_LEFT] or keys[pygame.K_a] or keys[pygame.K_s]
-                else self.field.left_flipper.default_angle)
-            self.field.right_flipper.spring.rest_angle = (
-                self.field.right_flipper.active_angle if keys[pygame.K_RIGHT] or keys[pygame.K_d] or keys[pygame.K_s]
-                else self.field.right_flipper.default_angle)
-
+            self.field.left_flipper.spring.rest_angle = (self.field.left_flipper.active_angle if keys[pygame.K_LEFT]
+                                                         or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_DOWN]
+                                                         else self.field.left_flipper.default_angle)
+            self.field.right_flipper.spring.rest_angle = (self.field.right_flipper.active_angle if keys[pygame.K_RIGHT]
+                                                          or keys[pygame.K_d] or keys[pygame.K_s] or keys[pygame.K_DOWN]
+                                                          else self.field.right_flipper.default_angle)
             if self.score >= game.score_needed and self.ui.mode != "round_finishable":
                 self.ui.change_mode("round_finishable")
             if self.score < game.score_needed and self.ui.mode == "round_finishable":

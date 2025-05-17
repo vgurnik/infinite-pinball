@@ -20,6 +20,7 @@ class GameObject:
             "cooldown": effect.get("cooldown", 0)
         } for effect in config.get("effects", [])]
         self.radius = config["size"] if isinstance(config["size"], int) else max(config["size"])
+        self.spacing = config.get("spacing", self.radius)
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = pos
         self.cooldown = 0

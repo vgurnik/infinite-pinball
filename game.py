@@ -1,5 +1,4 @@
 import sys
-import math
 from pathlib import Path
 from json import load
 import pygame
@@ -11,6 +10,7 @@ from config import Config
 from field import Field
 from ui import Ui
 from round import PinballRound
+import screens
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
 from game_objects import GameObject
@@ -41,6 +41,10 @@ class PinballGame:
         self.immediate = {}
         self.flags = self.config.start_flags
         self.real_fps = 0
+        self.ui = None
+        self.inventory = None
+        self.field = None
+        self.round_instance = None
 
     def callback(self, event, arbiters=None):
         for card in self.inventory.items:
@@ -136,12 +140,12 @@ class PinballGame:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        choice = self.ui.overlay_menu(self.screen, "ui.text.pause",
+                        choice = screens.overlay_menu(self.screen, "ui.text.pause",
                                                       ["ui.button.resume", "ui.button.settings", "ui.button.main"])
                         if choice == "ui.button.main":
                             return 'menu', shop
                         if choice == "ui.button.settings":
-                            self.ui.settings_menu()
+                            screens.settings_menu()
                         _ = clock.tick(self.config.fps)
                     elif event.key == pygame.K_RETURN:
                         return "continue", shop
@@ -181,7 +185,7 @@ class PinballGame:
                                 items = positive + negative
                             else:
                                 items = []
-                            self.ui.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0],
+                            screens.open_pack(items, item.pos, item.properties["kind"], item.properties["amount"][0],
                                               self.textures.get(item.properties["sprite"]+"_opening"))
                             _ = clock.tick(self.config.fps)
                     else:
@@ -253,12 +257,12 @@ class PinballGame:
                         sys.exit()
                     case pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            choice = self.ui.overlay_menu(self.screen, "ui.text.pause", [
+                            choice = screens.overlay_menu(self.screen, "ui.text.pause", [
                                 "ui.button.resume", "ui.button.settings", "ui.button.main"])
                             if choice == "ui.button.main":
                                 return 'menu'
                             if choice == "ui.button.settings":
-                                self.ui.settings_menu()
+                                screens.settings_menu()
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_RETURN:
                             waiting = False
@@ -274,7 +278,7 @@ class PinballGame:
                             for effect in item.effects:
                                 if effect["name"] == "delete_object" and\
                                         self.field.delete(mouse_scale(pygame.mouse.get_pos())):
-                                    item.use(self)              # TODO: if usage is not allowed, place object back
+                                    item.use()              # TODO: if usage is not allowed, place object back
                                     self.inventory.remove_item(item)
                                     break
                     if "hovering" in ret:
@@ -295,86 +299,6 @@ class PinballGame:
             self.real_fps = clock.get_fps()
         return 'back'
 
-    def round_results_overlay(self, score, min_score):
-        self.immediate['interest'] = 0
-        self.immediate['interest_cap'] = 0
-        self.immediate['$per_order'] = 0
-        self.immediate['$per_ball'] = 0
-        self.callback("round_win")
-        extra_orders = int(math.log2(score / min_score)) if score >= min_score else 0
-        order_reward = extra_orders * (self.config.extra_award_per_order + self.immediate['$per_order'])
-        charged_ball = 0
-        if len(self.round_instance.active_balls) > 0 and not self.round_instance.ball_launched:
-            charged_ball += 1
-        ball_reward = (len(self.round_instance.ball_queue) + charged_ball) * (
-                self.config.extra_award_per_ball + self.immediate['$per_ball'])
-        interest_reward = min(int((self.config.interest_rate + self.immediate['interest']) * self.money), (
-                self.config.interest_cap + self.immediate['interest_cap']))
-        if score >= min_score:
-            self.money += self.config.base_award + order_reward + ball_reward + interest_reward
-
-        self.screen.fill((20, 20, 70))
-        self.ui.change_mode('results')
-        self.ui.draw(self.screen)
-        self.ui.update(0)
-        self.screen.blit(self.field.draw(), self.field.position)
-
-        font = pygame.font.Font(self.config.fontfile, 36)
-        overlay = pygame.Surface((self.config.screen_width - self.config.ui_width, self.config.screen_height))
-        overlay.fill((20, 20, 20))
-        overlay.set_alpha(200)
-        self.screen.blit(overlay, self.config.field_pos)
-        if score < min_score:
-            result = 'lose'
-            texts = [
-                loc("ui.message.lose", self.config.lang),
-                format_text("ui.message.score", self.config.lang, score, min_score),
-                format_text("ui.message.money", self.config.lang, self.money),
-                loc("ui.message.return_lose", self.config.lang)
-            ]
-            for i, line in enumerate(texts):
-                txt = font.render(line, True, (255, 100, 100))
-                self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
-                                       150 + i * 45))
-        else:
-            result = 'win'
-            texts = [
-                loc("ui.message.complete", self.config.lang),
-                format_text("ui.message.score", self.config.lang, score, min_score),
-                format_text("ui.message.reward", self.config.lang, self.config.base_award),
-                format_text("ui.message.money", self.config.lang, self.money),
-                loc("ui.message.go_next", self.config.lang)
-            ]
-            if interest_reward > 0:
-                texts.insert(3, format_text("ui.message.interest", self.config.lang,
-                                            round(self.config.interest_rate * 100), interest_reward,
-                                            self.config.interest_cap))
-            if order_reward > 0:
-                texts.insert(3, format_text("ui.message.score_reward", self.config.lang, order_reward))
-            if ball_reward > 0:
-                texts.insert(3, format_text("ui.message.ball_reward", self.config.lang, ball_reward))
-            for i, line in enumerate(texts):
-                if i == 0:
-                    txt = font.render(line, True, (0, 255, 0))
-                else:
-                    txt = font.render(line, True, (255, 255, 255))
-                self.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + self.config.ui_width,
-                                       150 + i * 45))
-        waiting = True
-        while waiting:
-            for event in pygame.event.get():
-                match event.type:
-                    case pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
-                    case pygame.MOUSEBUTTONDOWN:
-                        waiting = False
-                    case pygame.KEYDOWN:
-                        if event.key == pygame.K_RETURN:
-                            waiting = False
-            display_screen(self.display, self.screen, self.screen_size)
-        return result
-
     def run(self):
         self.field = Field()
         self.ui = Ui()
@@ -382,15 +306,15 @@ class PinballGame:
         self.round_instance = PinballRound()
         while True:
             if self.debug_mode:
-                choice = self.ui.overlay_menu(self.screen, "ui.text.main",
+                choice = screens.overlay_menu(self.screen, "ui.text.main",
                                               ["ui.button.start", "ui.button.settings", "ui.button.exit", "Debug_Shop"])
             else:
-                choice = self.ui.overlay_menu(self.screen, "ui.text.main",
+                choice = screens.overlay_menu(self.screen, "ui.text.main",
                                               ["ui.button.start", "ui.button.settings", "ui.button.exit"])
             if choice == "ui.button.exit":
                 break
             if choice == "ui.button.settings":
-                self.ui.settings_menu()
+                screens.settings_menu()
                 continue
             if choice == "Debug_Shop":
                 self.reroll_cost = 0
@@ -416,7 +340,7 @@ class PinballGame:
                     result, round_score = self.round_instance.run()
                     if result != "round_over":
                         break
-                    result = self.round_results_overlay(round_score, self.score_needed)
+                    result = screens.round_results_overlay(round_score, self.score_needed)
                     if result == 'lose':
                         break
                     self.round += 1

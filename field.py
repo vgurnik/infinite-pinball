@@ -148,11 +148,15 @@ class Field:
         if not (self.config.left_wall_x < pos[0] < self.config.right_wall_x and
                 self.config.top_wall_y < pos[1] < self.config.field_height):
             return False
-        size = self.config.objects_settings[item.properties["object_type"]][item.properties["class"]]["size"]
+        size = self.config.objects_settings[item.properties["object_type"]][item.properties["class"]]
+        if size.get("spacing") is None:
+            size = size.get("size", 0)
+        else:
+            size = size.get("spacing")
         if len(self.space.point_query(tuple(pos), 10 + size, pymunk.ShapeFilter(1))) > 1:
             return False
         for obj in self.objects:
-            if pos.distance_to(obj.body.position) < 10 + size + obj.radius:
+            if pos.distance_to(obj.body.position) < 10 + size + obj.spacing:
                 return False
         return True
 

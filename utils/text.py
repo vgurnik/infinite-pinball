@@ -23,14 +23,11 @@ def format_number(number: int | float, places: int = 10) -> str:
     -------
     A string representation of the number with the specified number of decimal places.
     """
-    if isinstance(number, int) or int(number) == number:
+    if (isinstance(number, int) or int(number) == number) and len(str(int(number))) <= places:
         return str(int(number))
-    if isinstance(number, float):
-        if len(str(int(number))) >= places:
-            return f"{number:,.1e}"
-        return f"{number:,.{max(places-len(str(int(number))), 0)}f}"
-    else:
-        raise TypeError("Number must be an int or float.")
+    if len(str(int(number))) >= places:
+        return f"{number:,.1e}"
+    return f"{number:,.{max(places-len(str(int(number))), 0)}f}"
 
 
 def format_text(text: str, lang, *args):

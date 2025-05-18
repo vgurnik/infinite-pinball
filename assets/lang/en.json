@@ -71,7 +71,7 @@
       "description": "Increase maximum interest on\nyour money by additional $50"
     },
     "ball_loan": {
-      "name": "Ball loan",
+      "name": "Ball investment",
       "description": "Earn extra $100\nper ball left on round win"
     },
     "platinum": {
@@ -83,11 +83,11 @@
       "description": "Chance 10% for each ball\nto return if it is lost"
     },
     "dupe": {
-      "name": "Dupe exploit",
-      "description": "Activate your topmost usable\ncard when the ball is lost\n\nThe card is not used up!"
+      "name": "Dupe glitch",
+      "description": "Activate copy of your topmost usable\ncard when the ball is lost"
     },
     "no_score": {
-      "name": "No score",
+      "name": "Broken scoring chip",
       "description": "You earn no score while\nthis card is in your inventory\n\nDoes not take space\nin your inventory"
     },
     "debt": {
@@ -121,12 +121,24 @@
       "description": "Upgrade your launch ramp\nwith a charge bonus\n\nCharge bonus will give you $2\nfor each indicator triggered but only\nif the ball launches through the lower exit"
     },
     "reroll_mode": {
-      "name": "Reroll mode",
+      "name": "Reroll stock market",
       "description": "Shop reroll's cost is growing linearly\ninstead of exponentially"
     },
     "reroll_sale": {
       "name": "Reroll sale",
       "description": "Shop rerolls cost $1 less"
+    },
+    "extra_shelf": {
+      "name": "Extra shelf",
+      "description": "Adds 1 more buildable\nobject to the shop"
+    },
+    "extra_showcase": {
+      "name": "Extra showcase",
+      "description": "Adds 1 more card\nto the shop"
+    },
+    "extra_pack": {
+      "name": "Trading card collector",
+      "description": "Adds 1 more pack\nto the shop"
     }
   },
   "object": {
@@ -140,7 +152,7 @@
     },
     "bumperball": {
       "name": "Bumperball",
-      "description": "Bumper ball is a bumper by itself!"
+      "description": "Bumper ball is a bumper by itself!\n(just a very bouncy ball)"
     },
     "slime": {
       "name": "Slimeball",

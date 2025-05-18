@@ -374,6 +374,7 @@
       "price": 300,
       "type": "card",
       "rarity": "epic",
+      "sprite": "deposit",
       "effects": [
         {
           "effect": "change_interest_cap",
@@ -389,6 +390,7 @@
       "price": 300,
       "type": "card",
       "rarity": "epic",
+      "sprite": "investment",
       "effects": [
         {
           "effect": "change_ball_reward",
@@ -420,6 +422,7 @@
       "price": 300,
       "type": "card",
       "rarity": "epic",
+      "sprite": "rewind",
       "effects": [
         {
           "effect": "return_chance",
@@ -435,6 +438,7 @@
       "price": 400,
       "type": "card",
       "rarity": "epic",
+      "sprite": "dupe",
       "effects": [
         {
           "effect": "dupe_activate",
@@ -449,6 +453,7 @@
       "price": -500,
       "type": "card",
       "rarity": "negative",
+      "sprite": "broken_chip",
       "effects": [
         {
           "effect": "multiply_score",
@@ -471,6 +476,7 @@
       "price": 0,
       "type": "card",
       "rarity": "negative",
+      "sprite": "debt",
       "effects": [
         {
           "effect": "multiply_prices",
@@ -493,6 +499,7 @@
       "price": 100,
       "type": "card",
       "rarity": "negative",
+      "sprite": "brittle",
       "effects": [
         {
           "effect": "break",
@@ -628,7 +635,8 @@
       "name": "immediate.reroll_mode.name",
       "price": 200,
       "type": "immediate",
-      "rarity": "common",
+      "rarity": "uncommon",
+      "sprite": "reroll_market",
       "effects": [
         {
           "effect": "enable_flag",
@@ -649,6 +657,7 @@
       "price": 200,
       "type": "immediate",
       "rarity": "common",
+      "sprite": "reroll_sale",
       "effects": [
         {
           "effect": "change_reroll_cost",
@@ -658,6 +667,85 @@
         }
       ],
       "description": "immediate.reroll_sale.description"
+    },
+    {
+      "name": "immediate.extra_shelf.name",
+      "price": 300,
+      "type": "immediate",
+      "rarity": "rare",
+      "sprite": "extra_shelf",
+      "effects": [
+        {
+          "effect": "change_shop_size",
+          "params": [0],
+          "usage": "active",
+          "trigger": "use"
+        },
+        {
+          "effect": "enable_flag",
+          "params": ["shop_upgrade", 1],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "functional": [{
+        "name": "check_flag",
+        "params": ["shop_upgrade", 0]
+        }
+      ],
+      "description": "immediate.extra_shelf.description"
+    },
+    {
+      "name": "immediate.extra_showcase.name",
+      "price": 400,
+      "type": "immediate",
+      "rarity": "rare",
+      "effects": [
+        {
+          "effect": "change_shop_size",
+          "params": [1],
+          "usage": "active",
+          "trigger": "use"
+        },
+        {
+          "effect": "enable_flag",
+          "params": ["shop_upgrade", 2],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "functional": [{
+        "name": "check_flag",
+        "params": ["shop_upgrade", 1]
+        }
+      ],
+      "description": "immediate.extra_showcase.description"
+    },
+    {
+      "name": "immediate.extra_pack.name",
+      "price": 500,
+      "type": "immediate",
+      "rarity": "rare",
+      "effects": [
+        {
+          "effect": "change_shop_size",
+          "params": [3],
+          "usage": "active",
+          "trigger": "use"
+        },
+        {
+          "effect": "enable_flag",
+          "params": ["shop_upgrade", 3],
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "functional": [{
+        "name": "check_flag",
+        "params": ["shop_upgrade", 2]
+        }
+      ],
+      "description": "immediate.extra_pack.description"
     }
   ],
 

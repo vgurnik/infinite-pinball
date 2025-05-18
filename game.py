@@ -76,30 +76,32 @@ class PinballGame:
         clock = pygame.time.Clock()
         dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
         self.ui.change_mode("shop")
+        shop_size = self.config.shop_size
         if _shop is None:
             shop = Inventory()
-            items = choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
+            items = choose_items(shop_size[1], self.config.shop_items["card"], self.config.rarities["card"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
-                                            target_position=(self.config.shop_pos_cards[0] + i * 130,
-                                                             self.config.shop_pos_cards[1])))
-            items = choose_items(2, self.config.shop_items["buildable"], self.config.rarities["buildable"])
+                                            target_position=(self.config.shop_pos_cards[0] + (
+                                                    2 * i - shop_size[1]) * 65, self.config.shop_pos_cards[1])))
+            items = choose_items(shop_size[0], self.config.shop_items["buildable"], self.config.rarities["buildable"])
             for i, item in enumerate(items):
                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get("buildable_pack"),
-                                            target_position=(self.config.shop_pos_objects[0] + i * 130,
-                                                             self.config.shop_pos_objects[1]),
+                                            target_position=(self.config.shop_pos_objects[0] + (
+                                                    2 * i - shop_size[0]) * 65, self.config.shop_pos_objects[1]),
                               for_buildable=self.textures.get(obj_def["texture"])))
-            items = choose_items(1, self.config.shop_items["immediate"], self.config.rarities["immediate"])
+            items = choose_items(shop_size[2], self.config.shop_items["immediate"], self.config.rarities["immediate"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
-                                            target_position=(self.config.shop_pos_effects[0] + i * 130,
-                                                             self.config.shop_pos_effects[1])))
-            items = choose_items(2, self.config.shop_items["pack"], self.config.rarities["pack"])
+                                            target_position=(self.config.shop_pos_effects[0] + (
+                                                    2 * i - shop_size[2]) * 65, self.config.shop_pos_effects[1])))
+            items = choose_items(shop_size[3], self.config.shop_items["pack"], self.config.rarities["pack"])
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
-                                            target_position=(self.config.shop_pos_packs[0] + i * 130,
-                                                             self.config.shop_pos_packs[1]), card_size=(123, 163)))
+                                            target_position=(self.config.shop_pos_packs[0] + (
+                                                    2 * i - shop_size[3]) * 65, self.config.shop_pos_packs[1]),
+                                            card_size=(123, 163)))
             self.callback("shop_create", arbiters=[shop])
         else:
             shop = _shop
@@ -119,18 +121,19 @@ class PinballGame:
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
-                            items = choose_items(3, self.config.shop_items["card"], self.config.rarities["card"])
+                            items = choose_items(shop_size[1], self.config.shop_items["card"],
+                                                 self.config.rarities["card"])
                             for i, item in enumerate(items):
-                                shop.add_item(InventoryItem(properties=item,
-                                                            sprite=self.textures.get(item.get("sprite")),
-                                                            target_position=(self.config.shop_pos_cards[0] + i * 130,
-                                                                             self.config.shop_pos_cards[1])))
-                            items = choose_items(2, self.config.shop_items["buildable"],
+                                shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(
+                                    item.get("sprite")), target_position=(self.config.shop_pos_cards[0] + (
+                                                    2 * i - shop_size[1]) * 65, self.config.shop_pos_cards[1])))
+                            items = choose_items(shop_size[0], self.config.shop_items["buildable"],
                                                  self.config.rarities["buildable"])
                             for i, item in enumerate(items):
                                 obj_def = self.config.objects_settings[item["object_type"]][item["class"]]
                                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get("buildable_pack"),
-                                                            target_position=(self.config.shop_pos_objects[0] + i * 130,
+                                                            target_position=(self.config.shop_pos_objects[0] +
+                                                                             (2 * i - shop_size[0]) * 65,
                                                                              self.config.shop_pos_objects[1]),
                                                             for_buildable=self.textures.get(obj_def["texture"])))
                     else:

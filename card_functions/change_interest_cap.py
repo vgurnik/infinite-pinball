@@ -9,7 +9,7 @@ def effect(difference, mode):
     return True
 
 
-def negative_effect(game, difference, mode):
+def negative_effect(difference, mode):
     if mode == 's':
         game_context.game.config.interest_cap -= difference
     elif mode == 'm':

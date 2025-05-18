@@ -90,7 +90,9 @@ class Config:
         self.reroll_start_cost = 10
         self.reroll_next = 2
         self.inventory_size = 5
-        self.start_flags = {"charge_bonus": False, "reroll_mode": 'm'}
+        self.start_flags = {"charge_bonus": False, "reroll_mode": 'm', "shop_upgrade": 0}
+
+        self.shop_size = [2, 3, 1, 2]
 
         with open(Path(__file__).resolve().with_name("assets").joinpath('config/cards.json')) as file:
             self.shop_items = load(file)
@@ -114,11 +116,11 @@ class Config:
 
         # Derived values.
         self.shop_pos = (self.ui_pos[0] + self.ui_width + 10, self.ui_pos[1] + 50)
-        self.pack_opening_pos = (self.shop_pos[0] + 50, self.shop_pos[1] + 200)
-        self.shop_pos_objects = (self.shop_pos[0] + 30, 150)
-        self.shop_pos_cards = (self.shop_pos_objects[0] + 300, 150)
-        self.shop_pos_effects = (self.shop_pos[0] + 100, 350)
-        self.shop_pos_packs = (self.shop_pos_effects[0] + 300, 350)
+        self.pack_opening_pos = (self.shop_pos[0] + 30, self.shop_pos[1] + 200)
+        self.shop_pos_objects = (self.shop_pos[0] + 200, 150)
+        self.shop_pos_cards = (self.shop_pos[0] + 670, 150)
+        self.shop_pos_effects = (self.shop_pos[0] + 200, 350)
+        self.shop_pos_packs = (self.shop_pos[0] + 670, 350)
         self.right_wall_x = self.left_wall_x + self.field_width
         self.bottom_wall_y = self.top_wall_y + self.field_height
         self.launch_opening_top = self.top_wall_y + self.launch_opening_height

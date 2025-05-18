@@ -152,10 +152,6 @@ class Ui:
             if self.mode == 'round_finishable' and self.play_button.is_hovered():
                 self.play_button.pressed = True
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r and game.debug_mode:
-                game.textures = game.load_textures()
-                game.field.textures = game.textures
-                print('textures reloaded')
             if event.key == pygame.K_EQUALS and game.debug_mode:
                 game.money += 1000
                 print('+$1000')

@@ -3,9 +3,12 @@ from json import load
 import pygame
 
 
+asset_path = Path(__file__).resolve().with_name("assets")
+fontfile = asset_path.joinpath('lang/TDATextCondensed.ttf')
+
+
 class Config:
     def __init__(self):
-        self.fontfile = Path(__file__).resolve().with_name("assets").joinpath('lang/TDATextCondensed.ttf')
         self.debug_mode = False
         self.fullscreen = False
         self.resolutions = pygame.display.list_modes()
@@ -94,9 +97,9 @@ class Config:
 
         self.shop_size = [2, 3, 1, 2]
 
-        with open(Path(__file__).resolve().with_name("assets").joinpath('config/cards.json')) as file:
+        with open(asset_path.joinpath('config/cards.json')) as file:
             self.shop_items = load(file)
-        with open(Path(__file__).resolve().with_name("assets").joinpath('config/objects.json')) as file:
+        with open(asset_path.joinpath('config/objects.json')) as file:
             self.objects_settings = load(file)
         self.rarities = self.shop_items.pop("rarities")
 

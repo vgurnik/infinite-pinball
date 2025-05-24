@@ -7,6 +7,7 @@ from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
 from utils.textures import display_screen
 import screens
+from config import fontfile
 import game_context
 
 
@@ -180,6 +181,10 @@ class PinballRound:
         self.inventory.draw(self.screen)
         self.applied_cards.draw(self.screen)
 
+        for splash in self.immediate.get("splash", []):
+            self.hit_effects.append(HitEffect((splash[0] + self.field.position[0], splash[1] + self.field.position[1]),
+                                              splash[2], splash[3]))
+
         # Draw hit effects.
         for effect in self.hit_effects[:]:
             effect.update(dt)
@@ -189,7 +194,7 @@ class PinballRound:
 
         if game.debug_mode:
             # Draw the FPS counter.
-            font = pygame.font.Font(self.config.fontfile, 24)
+            font = pygame.font.Font(fontfile, 24)
             fps_text = font.render(f"FPS: {int(self.real_fps)}", True, (255, 255, 255))
             self.screen.blit(fps_text, (game.screen_size[0] - fps_text.get_width() - 10, 10))
 
@@ -206,6 +211,7 @@ class PinballRound:
         dt = 1.0 / (self.real_fps if self.real_fps > 1 else self.config.fps)
 
         while self.running:
+            self.immediate["splash"] = []
             self.time_accumulator += dt
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
@@ -232,6 +238,9 @@ class PinballRound:
                             _ = clock.tick(self.config.fps)
                         elif event.key == pygame.K_SPACE and not self.ball_launched:
                             self.launch_key_down = True
+                        elif event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_a, pygame.K_s,
+                                           pygame.K_d]:
+                            game.sound.play('flipper_on')
                     case pygame.KEYUP:
                         if event.key == pygame.K_SPACE and not self.ball_launched:
                             if self.launch_key_down:
@@ -239,8 +248,12 @@ class PinballRound:
                                     if ball.body.position.y > self.config.bottom_wall_y - ball.radius * 2:
                                         impulse = min(self.launch_charge, self.config.launch_max_impulse)
                                         ball.body.apply_impulse_at_local_point((0, -impulse), (0, 0))
+                                        game.sound.play("launch")
                                 self.launch_charge = 0
                                 self.launch_key_down = False
+                        elif event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_a, pygame.K_s,
+                                           pygame.K_d]:
+                            game.sound.play('flipper_off')
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
@@ -261,9 +274,10 @@ class PinballRound:
                             self.hit_effects.append(DisappearingItem(ret["try_using"], 0.5))
 
             for ball in self.active_balls[:]:
-                if ball.body.position.y > self.config.screen_height + 50:
+                if ball.body.position.y > self.config.screen_height + 15:
                     ball.remove(self.field.space)
                     self.active_balls.remove(ball)
+                    game.sound.play('buzz')
                     game.callback("ball_lost", arbiters=[ball])
 
             if len(self.active_balls) == 0 and not self.recharge():

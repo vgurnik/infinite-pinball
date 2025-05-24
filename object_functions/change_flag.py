@@ -1,8 +1,4 @@
-import game_context
-
-
 def effect(obj_name, flags_name, flags_val, mode, arbiters=None):
-    game = game_context.game
     for arb in arbiters:
         if arb.config["name"] == obj_name:
             if mode == 'e':

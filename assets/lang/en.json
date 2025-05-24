@@ -80,7 +80,7 @@
     },
     "rewind": {
       "name": "Rewind",
-      "description": "Chance 10% for each ball\nto return if it is lost"
+      "description": "Chance 20% for each ball\nto return if it is lost"
     },
     "dupe": {
       "name": "Dupe glitch",
@@ -243,6 +243,14 @@
     "uncommon": "Uncommon",
     "rare": "Rare",
     "epic": "Epic"
+  },
+  "effect": {
+    "splash": {
+      "punish": "Punished!",
+      "safe": "Safe",
+      "no": "Nope",
+      "yes": "Yep"
+    }
   },
   "ui": {
     "button": {

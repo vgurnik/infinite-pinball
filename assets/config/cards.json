@@ -426,7 +426,7 @@
       "effects": [
         {
           "effect": "return_chance",
-          "params": [0.1],
+          "params": [0.2],
           "usage": "passive",
           "trigger": "ball_lost"
         }
@@ -437,7 +437,7 @@
       "name": "card.dupe.name",
       "price": 400,
       "type": "card",
-      "rarity": "epic",
+      "rarity": "common",
       "sprite": "dupe",
       "effects": [
         {

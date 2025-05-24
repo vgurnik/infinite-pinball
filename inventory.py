@@ -4,6 +4,7 @@ from game_effects import ContextWindow
 from utils.text import multiline, loc
 from utils.textures import mouse_scale
 import effects
+from config import fontfile
 import game_context
 
 
@@ -158,8 +159,8 @@ class InventoryItem:
             pygame.draw.rect(surface, color, rect, border_radius=5)
             pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
-            font = pygame.font.Font(game_context.game.config.fontfile, 20)
-            text_surface = font.render(loc(self.name, game_context.game.config.lang), True, (0, 0, 0))
+            font = pygame.font.Font(fontfile, 20)
+            text_surface = font.render(loc(self.name), True, (0, 0, 0))
             x = rect.x + (rect.width - text_surface.get_width()) / 2
             y = rect.y + 5
             surface.blit(text_surface, (x, y))
@@ -393,17 +394,17 @@ class PlayerInventory(Inventory):
                 self.context.set_visibility(True)
 
     def draw(self, surface):
-        font = pygame.font.Font(self.config.fontfile, 25)
+        font = pygame.font.Font(fontfile, 25)
         if self.deletion_zone is not None:
             alpha_surface = pygame.Surface(self.deletion_zone.size, pygame.SRCALPHA)
             alpha_surface.fill((0, 0, 0, 0))
             pygame.draw.rect(alpha_surface, (255, 100, 100, 100), alpha_surface.get_rect(), border_radius=10)
-            text_surface = multiline(loc("ui.text.sell_zone", self.config.lang), font, (0, 0, 0, 255), justification=1)
+            text_surface = multiline(loc("ui.text.sell_zone"), font, (0, 0, 0, 255), justification=1)
             alpha_surface.blit(text_surface, ((self.deletion_zone.width - text_surface.get_width()) / 2,
                                               (self.deletion_zone.height - text_surface.get_height()) / 2))
             surface.blit(alpha_surface, self.deletion_zone.topleft)
 
-            font = pygame.font.Font(self.config.fontfile, 16)
+            font = pygame.font.Font(fontfile, 16)
             fullness = multiline(f"{len(self.items)} / {self.max_size}", font, (255, 255, 255, 255), justification=1)
             surface.blit(fullness, (self.position.x, self.position.y - 20))
         super().draw(surface)

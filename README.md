@@ -50,7 +50,7 @@ pyinstaller main.spec
 - [ ] Add unlockables (fields, cards, difficulties)
 - [ ] ***Add even more card-object-effect options***
 #### ?
-- [ ] Add sounds
+- [x] Add sounds
 - [x] Pack the app conveniently
 - [x] Add localization
 - [ ] Add tutorial

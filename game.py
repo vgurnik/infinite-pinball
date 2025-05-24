@@ -1,15 +1,15 @@
 import sys
-from pathlib import Path
 from json import load
 import pygame
 
 from utils.misc import load_textures, choose_items
 from utils.textures import mouse_scale, display_screen
 from utils.text import format_text, loc
-from config import Config
+from config import Config, asset_path, fontfile
 from field import Field
 from ui import Ui
 from round import PinballRound
+from sound_engine import SoundEngine
 import screens
 from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
@@ -27,11 +27,11 @@ class PinballGame:
                                                (pygame.FULLSCREEN if self.config.fullscreen else 0))
         self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
 
-        with open(Path(__file__).resolve().with_name("assets").joinpath('config/sprites.json')) as file:
+        with open(asset_path.joinpath('config/sprites.json')) as file:
             sprite_conf = load(file)
         self.textures = load_textures(sprite_conf)
         pygame.display.set_caption("Infinite Pinball")
-        icon = pygame.image.load(Path(__file__).resolve().with_name("assets").joinpath('textures/ball.ico'))
+        icon = pygame.image.load(asset_path.joinpath('textures/ball.ico'))
         pygame.display.set_icon(icon)
 
         self.reroll_cost = self.config.reroll_start_cost
@@ -45,6 +45,7 @@ class PinballGame:
         self.inventory = None
         self.field = None
         self.round_instance = None
+        self.sound = SoundEngine()
 
     def callback(self, event, arbiters=None):
         for card in self.inventory.items:
@@ -159,19 +160,17 @@ class PinballGame:
                             if self.inventory.add_item(item):
                                 self.money -= item.properties["buy_price"]
                                 shop.remove_item(item)
-                                message = format_text("ui.message.purchased", self.config.lang, item.name,
-                                                      item.properties['buy_price'])
+                                message = format_text("ui.message.purchased", item.name, item.properties['buy_price'])
                             else:
-                                message = loc("ui.message.not_enough_space", self.config.lang)
+                                message = loc("ui.message.not_enough_space")
                         elif item.properties["type"] == "immediate":
                             if item.use():
                                 visual_effects.append(DisappearingItem(item, 0.3))
                                 shop.remove_item(item)
                                 self.money -= item.properties["buy_price"]
-                                message = format_text("ui.message.purchased", self.config.lang, item.name,
-                                                      item.properties['buy_price'])
+                                message = format_text("ui.message.purchased", item.name, item.properties['buy_price'])
                             else:
-                                message = format_text("ui.message.not_purchased", self.config.lang, item.name)
+                                message = format_text("ui.message.not_purchased", item.name)
                         elif item.properties["type"] == "pack":
                             self.money -= item.properties["buy_price"]
                             shop.remove_item(item)
@@ -192,13 +191,13 @@ class PinballGame:
                                               self.textures.get(item.properties["sprite"]+"_opening"))
                             _ = clock.tick(self.config.fps)
                     else:
-                        message = format_text("ui.message.not_enough_money", self.config.lang, item.name)
+                        message = format_text("ui.message.not_enough_money", item.name)
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         visual_effects.append(DisappearingItem(ret["try_selling"], 0.1))
                         self.money += ret["try_selling"].properties["price"]
-                        message = format_text("ui.message.sold", self.config.lang, ret['try_selling'].name,
+                        message = format_text("ui.message.sold", ret['try_selling'].name,
                                               ret['try_selling'].properties['price'])
                     elif "try_using" in ret:
                         item = ret["try_using"]
@@ -215,12 +214,12 @@ class PinballGame:
 
             self.screen.fill((20, 20, 70))
 
-            big_font = pygame.font.Font(self.config.fontfile, 36)
-            header = big_font.render(loc("ui.text.shop", self.config.lang), True, (255, 255, 255))
+            big_font = pygame.font.Font(fontfile, 36)
+            header = big_font.render(loc("ui.text.shop"), True, (255, 255, 255))
             self.screen.blit(header, (self.config.shop_pos[0] + 50, self.config.shop_pos[1]))
 
             if message:
-                font = pygame.font.Font(self.config.fontfile, 24)
+                font = pygame.font.Font(fontfile, 24)
                 msg_text = font.render(message, True, (0, 255, 0))
                 self.screen.blit(msg_text, (self.config.shop_pos_effects[0], self.config.shop_pos_effects[1] + 200))
 

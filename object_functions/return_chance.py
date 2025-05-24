@@ -1,12 +1,18 @@
 from random import random
 import game_context
+from utils.text import loc
 
 
 def effect(chance, arbiters=None):
     game = game_context.game
-    if random() < chance:
-        for arb in arbiters:
-            if arb.shape.type == 'ball':
+    for arb in arbiters:
+        if arb.shape.type == 'ball':
+            if random() < chance:
                 game.round_instance.ball_queue.append(arb)
                 game.round_instance.ball_queue_coords.append(arb.body.position.y)
-                return
+                game.round_instance.immediate["splash"].append([arb.body.position.x, arb.body.position.y - 50,
+                                                                loc("effect.splash.yes"), (255, 255, 100)])
+                return True
+            game.round_instance.immediate["splash"].append([arb.body.position.x, arb.body.position.y - 50,
+                                                            loc("effect.splash.no"), (255, 0, 0)])
+            return True

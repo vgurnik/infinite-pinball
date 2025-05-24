@@ -1,14 +1,15 @@
-from pathlib import Path
 from json import load
 import pygame
+import game_context
+from config import asset_path
 
 
 langs = ["en", "ru"]
 lang_file = {}
-for lang in langs:
-    with open(Path(__file__).parent.resolve().with_name("assets").joinpath(f'lang/{lang}.json'),
+for l in langs:
+    with open(asset_path.joinpath(f'lang/{l}.json'),
               encoding='utf-8') as file:
-        lang_file[lang] = load(file)
+        lang_file[l] = load(file)
 
 
 def format_number(number: int | float, places: int = 10) -> str:
@@ -30,7 +31,7 @@ def format_number(number: int | float, places: int = 10) -> str:
     return f"{number:,.{max(places-len(str(int(number))), 0)}f}"
 
 
-def format_text(text: str, lang, *args):
+def format_text(text: str, *args):
     """Formats a string with the specified arguments.
 
     Parameters
@@ -42,23 +43,23 @@ def format_text(text: str, lang, *args):
     -------
     A formatted string.
     """
-    new_args = [format_number(arg) if isinstance(arg, (int, float)) else loc(arg, lang) for arg in args]
-    text = loc(text, lang)
+    new_args = [format_number(arg) if isinstance(arg, (int, float)) else loc(arg) for arg in args]
+    text = loc(text)
     return text.format(*new_args)
 
 
-def loc(text, lang):
-    """Returns the localized string for the specified text and language.
+def loc(text):
+    """Returns the localized string for the specified text.
 
     Parameters
     ----------
     text - the string to localize.
-    lang - the language to localize the string to.
 
     Returns
     -------
-    A localized string.
+    A localized to game.config.lang string.
     """
+    lang = game_context.game.config.lang
     if lang in langs:
         if isinstance(text, str):
             dct = lang_file[lang]
@@ -69,7 +70,7 @@ def loc(text, lang):
                     return text
             return dct
         elif isinstance(text, list):
-            return loc(text[0], lang).format(*map(loc, text[1:], [lang]*(len(text)-1)))
+            return loc(text[0]).format(*map(loc, text[1:]))
     else:
         raise NotImplementedError("Localization not implemented for this language.")
 

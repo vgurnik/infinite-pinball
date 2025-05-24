@@ -2,9 +2,9 @@
 sprites.py
 This module defines classes for handling 2D sprites and animated sprites in a game using Pygame.
 """
-from pathlib import Path
 import pygame
 from utils.textures import scale, rotoscale
+from config import asset_path
 
 
 class Sprite:
@@ -25,7 +25,7 @@ class Sprite:
             wh (tuple, optional): The width and height of the subsurface. Defaults to None.
         """
         if isinstance(texture_file, str):
-            asset_folder = Path(__file__).resolve().with_name("assets").joinpath('textures')
+            asset_folder = asset_path.joinpath('textures')
             self.texture = pygame.image.load(asset_folder.joinpath(texture_file)).convert_alpha()
             if uv is not None:
                 self.texture = self.texture.subsurface(uv[0], uv[1], wh[0], wh[1])

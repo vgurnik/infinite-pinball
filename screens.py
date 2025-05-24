@@ -8,6 +8,7 @@ from utils.text import format_text, loc
 from ui import Button, Ui
 from inventory import PlayerInventory
 from field import Field
+from config import fontfile
 import game_context
 
 
@@ -31,12 +32,15 @@ def overlay_menu(screen, title, options):
                 elif event.key == pygame.K_DOWN:
                     selected = (selected + 1) % len(options)
                 elif event.key == pygame.K_RETURN:
+                    game.sound.play('doubleclick')
                     return options[selected]
                 elif event.key == pygame.K_ESCAPE:
+                    game.sound.play('doubleclick')
                     return options[0]
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for i, rect in enumerate(option_rects):
                     if rect.collidepoint(mouse_pos):
+                        game.sound.play('doubleclick')
                         return options[i]
             elif event.type == pygame.MOUSEMOTION:
                 for i, rect in enumerate(option_rects):
@@ -44,19 +48,19 @@ def overlay_menu(screen, title, options):
                         selected = i
 
         screen.blit(overlay, (0, 0))
-        font = pygame.font.Font(game.config.fontfile, 36)
-        title_text = font.render(loc(title, game.config.lang), True, (255, 255, 255))
+        font = pygame.font.Font(fontfile, 36)
+        title_text = font.render(loc(title), True, (255, 255, 255))
         title_rect = title_text.get_rect(center=(screen.get_width() // 2, 150))
         screen.blit(title_text, title_rect)
         option_rects = []
         for idx, option in enumerate(options):
             if idx == selected:
-                opt_font = pygame.font.Font(game.config.fontfile, 42)
+                opt_font = pygame.font.Font(fontfile, 42)
                 color = (255, 255, 0)
             else:
-                opt_font = pygame.font.Font(game.config.fontfile, 36)
+                opt_font = pygame.font.Font(fontfile, 36)
                 color = (255, 255, 255)
-            text = opt_font.render(loc(option, game.config.lang), True, color)
+            text = opt_font.render(loc(option), True, color)
             rect = text.get_rect(center=(screen.get_width() // 2, 250 + idx * 50))
             screen.blit(text, rect)
             option_rects.append(rect)
@@ -67,7 +71,7 @@ def open_pack(items, start, kind, amount, opening_sprite):
     game = game_context.game
     clock = pygame.time.Clock()
     dt = 1.0 / (game.real_fps if game.real_fps > 1 else game.config.fps)
-    big_font = pygame.font.Font(game.config.fontfile, 36)
+    big_font = pygame.font.Font(fontfile, 36)
     opening_inventory = PackInventory(len(items) * 150)
     for item in items:
         if item["type"] == "buildable":
@@ -80,19 +84,20 @@ def open_pack(items, start, kind, amount, opening_sprite):
             opening_inventory.add_item(InventoryItem(properties=item, sprite=game.textures.get(
                 item.get("sprite")), target_position=start))
     taken = 0
-    skip_button = Button(loc("ui.button.skip", game.config.lang),
+    skip_button = Button(loc("ui.button.skip"),
                          (opening_inventory.position[0] + opening_inventory.width / 2,
                           opening_inventory.position[1] + 200), "auto", (0, 255, 100))
     opening_effect = AnimatedEffect(game.display, game.screen_size)
     game.screen.fill((20, 20, 70))
 
-    header = big_font.render(loc("ui.text.shop", game.config.lang), True, (255, 255, 255))
+    header = big_font.render(loc("ui.text.shop"), True, (255, 255, 255))
     game.screen.blit(header, (game.config.shop_pos[0] + 50, game.config.shop_pos[1]))
     game.ui.draw(game.screen)
     game.ui.update(dt)
     game.inventory.update(dt)
     game.inventory.draw(game.screen)
     opening_inventory.draw(game.screen)
+    game.sound.play('tear')
     opening_effect.start(game.screen, opening_sprite, (start.x - 3, start.y - 23),
                          (126, 188))
     clock.tick(game.config.fps)
@@ -129,7 +134,7 @@ def open_pack(items, start, kind, amount, opening_sprite):
 
         game.screen.fill((20, 20, 70))
 
-        header = big_font.render(loc("ui.text.shop", game.config.lang), True, (255, 255, 255))
+        header = big_font.render(loc("ui.text.shop"), True, (255, 255, 255))
         game.screen.blit(header, (game.config.shop_pos[0] + 50, game.config.shop_pos[1]))
         game.ui.draw(game.screen)
         game.ui.update(dt)
@@ -145,10 +150,10 @@ def open_pack(items, start, kind, amount, opening_sprite):
         opening_inventory.update(dt)
         opening_inventory.draw(opening_surface)
         if kind == 'oneof':
-            pack_header = big_font.render(loc("ui.text.take", game.config.lang).format(taken, amount),
+            pack_header = big_font.render(loc("ui.text.take").format(taken, amount),
                                           True, (255, 255, 255))
         else:
-            pack_header = big_font.render(loc("ui.text.take_all", game.config.lang), True, (255, 255, 255))
+            pack_header = big_font.render(loc("ui.text.take_all"), True, (255, 255, 255))
         opening_surface.blit(pack_header, (opening_inventory.position[0] + (opening_inventory.width -
                                                                             pack_header.get_width()) / 2,
                                            opening_inventory.position[1] - 50))
@@ -162,8 +167,8 @@ def open_pack(items, start, kind, amount, opening_sprite):
 
 def settings_menu():
     game = game_context.game
-    font = pygame.font.Font(game.config.fontfile, 28)
-    bigger_font = pygame.font.Font(game.config.fontfile, 30)
+    font = pygame.font.Font(fontfile, 28)
+    bigger_font = pygame.font.Font(fontfile, 30)
     pref_running = True
     resolution_index = game.config.resolutions.index(game.screen_size)
     options = ["resolution", "fullscreen", "language", "debug_mode", "back"]
@@ -173,35 +178,35 @@ def settings_menu():
         screen_reload = False
         lang_reload = False
         game.screen.fill((20, 20, 70))
-        pref_text = font.render(loc("ui.text.settings", game.config.lang), True, (255, 255, 255))
-        resolution_text = font.render(loc("ui.settings.resolution", game.config.lang).format(
+        pref_text = font.render(loc("ui.text.settings"), True, (255, 255, 255))
+        resolution_text = font.render(loc("ui.settings.resolution").format(
             game.config.resolutions[resolution_index]), True, (255, 255, 255))
-        fullscreen_text = font.render(loc("ui.settings.fullscreen", game.config.lang).format(
-            loc("ui.settings." + ('on' if game.config.fullscreen else 'off'), game.config.lang)),
+        fullscreen_text = font.render(loc("ui.settings.fullscreen").format(
+            loc("ui.settings." + ('on' if game.config.fullscreen else 'off'))),
             True, (255, 255, 255))
-        lang_text = font.render(loc("ui.settings.language", game.config.lang).format(
-            loc("lang_name", game.config.lang)), True, (255, 255, 255))
-        debug_text = font.render(loc("ui.settings.debug", game.config.lang).format(
-            loc("ui.settings." + ('on' if game.debug_mode else 'off'), game.config.lang)),
+        lang_text = font.render(loc("ui.settings.language").format(
+            loc("lang_name")), True, (255, 255, 255))
+        debug_text = font.render(loc("ui.settings.debug").format(
+            loc("ui.settings." + ('on' if game.debug_mode else 'off'))),
             True, (255, 255, 255))
-        back_text = font.render(loc("ui.settings.back", game.config.lang), True, (255, 255, 255))
+        back_text = font.render(loc("ui.settings.back"), True, (255, 255, 255))
         match options[selected_option]:
             case "resolution":
-                resolution_text = bigger_font.render(loc("ui.settings.resolution", game.config.lang).format(
+                resolution_text = bigger_font.render(loc("ui.settings.resolution").format(
                     game.config.resolutions[resolution_index]), True, (255, 255, 0))
             case "fullscreen":
-                fullscreen_text = bigger_font.render(loc("ui.settings.fullscreen", game.config.lang).format(
-                    loc("ui.settings." + ('on' if game.config.fullscreen else 'off'), game.config.lang)),
+                fullscreen_text = bigger_font.render(loc("ui.settings.fullscreen").format(
+                    loc("ui.settings." + ('on' if game.config.fullscreen else 'off'))),
                     True, (255, 255, 0))
             case "language":
-                lang_text = bigger_font.render(loc("ui.settings.language", game.config.lang).format(
-                    loc("lang_name", game.config.lang)), True, (255, 255, 0))
+                lang_text = bigger_font.render(loc("ui.settings.language").format(
+                    loc("lang_name")), True, (255, 255, 0))
             case "debug_mode":
-                debug_text = bigger_font.render(loc("ui.settings.debug", game.config.lang).format(
-                    loc("ui.settings." + ('on' if game.debug_mode else 'off'), game.config.lang)), True,
+                debug_text = bigger_font.render(loc("ui.settings.debug").format(
+                    loc("ui.settings." + ('on' if game.debug_mode else 'off'))), True,
                     (255, 255, 0))
             case "back":
-                back_text = bigger_font.render(loc("ui.settings.back", game.config.lang), True, (255, 255, 0))
+                back_text = bigger_font.render(loc("ui.settings.back"), True, (255, 255, 0))
 
         game.screen.blit(pref_text, (game.config.screen_width // 2 - pref_text.get_width() // 2, 100))
         game.screen.blit(resolution_text, (game.config.screen_width // 2 - resolution_text.get_width() // 2, 200))
@@ -338,7 +343,7 @@ def round_results_overlay(score, min_score):
     game.ui.update(0)
     game.screen.blit(game.field.draw(), game.field.position)
 
-    font = pygame.font.Font(game.config.fontfile, 36)
+    font = pygame.font.Font(fontfile, 36)
     overlay = pygame.Surface((game.config.screen_width - game.config.ui_width, game.config.screen_height))
     overlay.fill((20, 20, 20))
     overlay.set_alpha(200)
@@ -346,10 +351,10 @@ def round_results_overlay(score, min_score):
     if score < min_score:
         result = 'lose'
         texts = [
-            loc("ui.message.lose", game.config.lang),
-            format_text("ui.message.score", game.config.lang, score, min_score),
-            format_text("ui.message.money", game.config.lang, game.money),
-            loc("ui.message.return_lose", game.config.lang)
+            loc("ui.message.lose"),
+            format_text("ui.message.score", score, min_score),
+            format_text("ui.message.money", game.money),
+            loc("ui.message.return_lose")
         ]
         for i, line in enumerate(texts):
             txt = font.render(line, True, (255, 100, 100))
@@ -358,20 +363,19 @@ def round_results_overlay(score, min_score):
     else:
         result = 'win'
         texts = [
-            loc("ui.message.complete", game.config.lang),
-            format_text("ui.message.score", game.config.lang, score, min_score),
-            format_text("ui.message.reward", game.config.lang, game.config.base_award),
-            format_text("ui.message.money", game.config.lang, game.money),
-            loc("ui.message.go_next", game.config.lang)
+            loc("ui.message.complete"),
+            format_text("ui.message.score", score, min_score),
+            format_text("ui.message.reward", game.config.base_award),
+            format_text("ui.message.money", game.money),
+            loc("ui.message.go_next")
         ]
         if interest_reward > 0:
-            texts.insert(3, format_text("ui.message.interest", game.config.lang,
-                                        round(game.config.interest_rate * 100), interest_reward,
+            texts.insert(3, format_text("ui.message.interest", round(game.config.interest_rate * 100), interest_reward,
                                         game.config.interest_cap))
         if order_reward > 0:
-            texts.insert(3, format_text("ui.message.score_reward", game.config.lang, order_reward))
+            texts.insert(3, format_text("ui.message.score_reward", order_reward))
         if ball_reward > 0:
-            texts.insert(3, format_text("ui.message.ball_reward", game.config.lang, ball_reward))
+            texts.insert(3, format_text("ui.message.ball_reward", ball_reward))
         for i, line in enumerate(texts):
             if i == 0:
                 txt = font.render(line, True, (0, 255, 0))

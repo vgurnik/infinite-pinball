@@ -254,6 +254,7 @@
   },
   "ui": {
     "button": {
+      "continue": "Continue",
       "start": "Start Game",
       "exit": "Exit",
       "resume": "Resume",

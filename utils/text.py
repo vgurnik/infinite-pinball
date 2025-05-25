@@ -12,7 +12,7 @@ for l in langs:
         lang_file[l] = load(file)
 
 
-def format_number(number: int | float, places: int = 10) -> str:
+def format_number(number: int | float, places: int = 8) -> str:
     """Formats a number to a string with the specified number of decimal places.
 
     Parameters

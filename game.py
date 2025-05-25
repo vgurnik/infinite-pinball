@@ -1,5 +1,5 @@
 import sys
-from json import load
+import json
 import pygame
 
 from utils.misc import load_textures, choose_items
@@ -15,6 +15,7 @@ from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
 from game_objects import GameObject
 import effects
+from save_system import load, save
 
 
 class PinballGame:
@@ -28,7 +29,7 @@ class PinballGame:
         self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
 
         with open(asset_path.joinpath('config/sprites.json')) as file:
-            sprite_conf = load(file)
+            sprite_conf = json.load(file)
         self.textures = load_textures(sprite_conf)
         pygame.display.set_caption("Infinite Pinball")
         icon = pygame.image.load(asset_path.joinpath('textures/ball.ico'))
@@ -41,6 +42,7 @@ class PinballGame:
         self.immediate = {}
         self.flags = self.config.start_flags
         self.real_fps = 0
+        self.cont = False
         self.ui = None
         self.inventory = None
         self.field = None
@@ -138,6 +140,7 @@ class PinballGame:
                                                                              self.config.shop_pos_objects[1]),
                                                             for_buildable=self.textures.get(obj_def["texture"])))
                     else:
+                        save()
                         return ui_return, shop
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -147,14 +150,17 @@ class PinballGame:
                         choice = screens.overlay_menu(self.screen, "ui.text.pause",
                                                       ["ui.button.resume", "ui.button.settings", "ui.button.main"])
                         if choice == "ui.button.main":
+                            save()
                             return 'menu', shop
                         if choice == "ui.button.settings":
                             screens.settings_menu()
                         _ = clock.tick(self.config.fps)
                     elif event.key == pygame.K_RETURN:
+                        save()
                         return "continue", shop
                 item = shop.handle_event(event)
                 if item is not None:
+                    success = True
                     if self.money >= item.properties["buy_price"]:
                         if item.properties["type"] in ["card", "buildable"]:
                             if self.inventory.add_item(item):
@@ -163,6 +169,7 @@ class PinballGame:
                                 message = format_text("ui.message.purchased", item.name, item.properties['buy_price'])
                             else:
                                 message = loc("ui.message.not_enough_space")
+                                success = False
                         elif item.properties["type"] == "immediate":
                             if item.use():
                                 visual_effects.append(DisappearingItem(item, 0.3))
@@ -171,6 +178,7 @@ class PinballGame:
                                 message = format_text("ui.message.purchased", item.name, item.properties['buy_price'])
                             else:
                                 message = format_text("ui.message.not_purchased", item.name)
+                                success = False
                         elif item.properties["type"] == "pack":
                             self.money -= item.properties["buy_price"]
                             shop.remove_item(item)
@@ -192,6 +200,11 @@ class PinballGame:
                             _ = clock.tick(self.config.fps)
                     else:
                         message = format_text("ui.message.not_enough_money", item.name)
+                        success = False
+                    if success:
+                        self.sound.play("coins-")
+                    else:
+                        self.sound.play("buzz_low")
                 ret = self.inventory.handle_event(event)
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
@@ -199,6 +212,7 @@ class PinballGame:
                         self.money += ret["try_selling"].properties["price"]
                         message = format_text("ui.message.sold", ret['try_selling'].name,
                                               ret['try_selling'].properties['price'])
+                        self.sound.play("coins+")
                     elif "try_using" in ret:
                         item = ret["try_using"]
                         allow = False
@@ -252,6 +266,7 @@ class PinballGame:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return is not None:
+                    save()
                     return {"continue": "continue", "field_setup": "back"}[ui_return]
                 match event.type:
                     case pygame.QUIT:
@@ -262,6 +277,7 @@ class PinballGame:
                             choice = screens.overlay_menu(self.screen, "ui.text.pause", [
                                 "ui.button.resume", "ui.button.settings", "ui.button.main"])
                             if choice == "ui.button.main":
+                                save()
                                 return 'menu'
                             if choice == "ui.button.settings":
                                 screens.settings_menu()
@@ -272,6 +288,7 @@ class PinballGame:
                 if ret:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         self.money += ret["try_selling"].properties["price"] // 2
+                        self.sound.play("coins+")
                     elif "try_using" in ret:
                         item = ret["try_using"]
                         if item.properties["type"] == "buildable" and self.field.place(item):
@@ -306,13 +323,15 @@ class PinballGame:
         self.ui = Ui()
         self.inventory = PlayerInventory()
         self.round_instance = PinballRound()
+        self.cont = load()
         while True:
+            choices = ["ui.button.start", "ui.button.settings", "ui.button.exit"]
+            if self.cont:
+                choices.insert(0, "ui.button.continue")
             if self.debug_mode:
-                choice = screens.overlay_menu(self.screen, "ui.text.main",
-                                              ["ui.button.start", "ui.button.settings", "ui.button.exit", "Debug_Shop"])
-            else:
-                choice = screens.overlay_menu(self.screen, "ui.text.main",
-                                              ["ui.button.start", "ui.button.settings", "ui.button.exit"])
+                choices.append("Debug_Shop")
+
+            choice = screens.overlay_menu(self.screen, "ui.text.main", choices)
             if choice == "ui.button.exit":
                 break
             if choice == "ui.button.settings":
@@ -329,14 +348,15 @@ class PinballGame:
                         result = self.field_modification_screen()
                 self.money = 0
                 continue
-            if choice == "ui.button.start":
+            if choice in ["ui.button.start", "ui.button.continue"]:
                 self.config = Config()
-                self.inventory = PlayerInventory()
-                self.field = Field()
-                self.flags = self.config.start_flags
-                self.money = 0
-                self.round = 0
-                self.score_needed = self.config.min_score[0]
+                if not self.cont:
+                    self.inventory = PlayerInventory()
+                    self.field = Field()
+                    self.flags = self.config.start_flags
+                    self.money = 0
+                    self.round = 0
+                self.score_needed = self.config.min_score[self.round]
                 while True:
                     self.round_instance = PinballRound()
                     result, round_score = self.round_instance.run()
@@ -344,7 +364,9 @@ class PinballGame:
                         break
                     result = screens.round_results_overlay(round_score, self.score_needed)
                     if result == 'lose':
+                        save(delete=True)
                         break
+                    self.sound.play('coins+')
                     self.round += 1
                     if self.round < len(self.config.min_score):
                         self.score_needed = self.config.min_score[self.round]

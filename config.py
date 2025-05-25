@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from json import load
 import pygame
 
@@ -9,6 +10,12 @@ fontfile = asset_path.joinpath('lang/TDATextCondensed.ttf')
 
 class Config:
     def __init__(self):
+
+        appdata_path = os.path.join(os.getenv('APPDATA'), "Infinite Pinball")
+        if not os.path.exists(appdata_path):
+            os.makedirs(appdata_path)
+
+        self.save_path = os.path.join(appdata_path, "save.pbl")
         self.debug_mode = False
         self.fullscreen = False
         self.resolutions = pygame.display.list_modes()

@@ -105,9 +105,7 @@ class Ui:
         round_text = font.render(format_text("ui.text.round", game.round + 1),
                                  True, (255, 100, 200))
         ui_surface.blit(round_text, self.config.ui_round_pos)
-        money_text = font.render(
-            f"$ {round(game.money) if game.money == round(game.money) else game.money}",
-            True, (255, 255, 0))
+        money_text = font.render(format_text("$ {}", game.money), True, (255, 255, 0))
         ui_surface.blit(money_text, self.config.ui_money_pos)
         surface.blit(ui_surface, self.position)
         self.context.draw(surface)
@@ -124,8 +122,8 @@ class Ui:
             self.context.update(mpos, 'text', loc("ui.message.back_description"))
             self.context.set_visibility(True)
         elif self.mode == 'shop' and self.reroll_button.is_hovered():
-            self.context.update(mpos, 'text', loc(
-                "ui.message.reroll_description").format(game_context.game.reroll_cost))
+            self.context.update(mpos, 'text', format_text("ui.message.reroll_description",
+                                                          game_context.game.reroll_cost))
             self.context.set_visibility(True)
         elif self.mode == 'round_finishable' and self.play_button.is_hovered():
             self.context.update(mpos, 'text', loc("ui.message.finish_description"))

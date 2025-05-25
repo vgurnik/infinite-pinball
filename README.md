@@ -27,7 +27,8 @@ pyinstaller main.spec
 - [x] Add negative+rare packs
   - [x] Add negative effects
 #### 3
-- [ ] Add saves
+- [x] Add saves
+  - [ ] Make saves actually viable
 - [x] Add more balls
   - [x] Add multiball possibility
   - [x] Add multiball ability

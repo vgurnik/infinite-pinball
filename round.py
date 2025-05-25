@@ -8,6 +8,7 @@ from game_effects import HitEffect, DisappearingItem
 from utils.textures import display_screen
 import screens
 from config import fontfile
+from save_system import save
 import game_context
 
 
@@ -259,6 +260,7 @@ class PinballRound:
                     if "try_selling" in ret and self.inventory.remove_item(ret["try_selling"]):
                         game.money += ret["try_selling"].properties["price"]
                         self.hit_effects.append(DisappearingItem(ret["try_selling"], 0.5))
+                        game.sound.play("coins+")
                     elif "try_using" in ret:
                         allow = False
                         lasting = False
@@ -277,7 +279,7 @@ class PinballRound:
                 if ball.body.position.y > self.config.screen_height + 15:
                     ball.remove(self.field.space)
                     self.active_balls.remove(ball)
-                    game.sound.play('buzz')
+                    game.sound.play('buzz_high', 'round')
                     game.callback("ball_lost", arbiters=[ball])
 
             if len(self.active_balls) == 0 and not self.recharge():
@@ -357,5 +359,5 @@ class PinballRound:
 
         for applied_effect in self.applied_cards.items:
             applied_effect.end_use()
-
+        save()
         return exit_option, self.score

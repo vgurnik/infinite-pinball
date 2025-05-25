@@ -10,6 +10,7 @@ from inventory import PlayerInventory
 from field import Field
 from config import fontfile
 import game_context
+from save_system import save
 
 
 def overlay_menu(screen, title, options):
@@ -360,6 +361,7 @@ def round_results_overlay(score, min_score):
             txt = font.render(line, True, (255, 100, 100))
             game.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + game.config.ui_width,
                                    150 + i * 45))
+        save(delete=True)
     else:
         result = 'win'
         texts = [
@@ -383,6 +385,7 @@ def round_results_overlay(score, min_score):
                 txt = font.render(line, True, (255, 255, 255))
             game.screen.blit(txt, (overlay.get_width() // 2 - txt.get_width() // 2 + game.config.ui_width,
                                    150 + i * 45))
+        save()
     waiting = True
     while waiting:
         for event in pygame.event.get():

@@ -9,19 +9,24 @@ fontfile = asset_path.joinpath('lang/TDATextCondensed.ttf')
 
 
 class Config:
-    def __init__(self):
+    def __init__(self, old=None):
 
         appdata_path = os.path.join(os.getenv('APPDATA'), "Infinite Pinball")
         if not os.path.exists(appdata_path):
             os.makedirs(appdata_path)
 
         self.save_path = os.path.join(appdata_path, "save.pbl")
+        self.pref_path = os.path.join(appdata_path, "pref.pbl")
         self.debug_mode = False
         self.fullscreen = False
         self.resolutions = pygame.display.list_modes()
         self.langs = ["en", "ru"]
         self.lang = self.langs[1]
         self.base_resolution = (1280, 720)
+
+        if old is not None:
+            self.fullscreen = old.fullscreen
+            self.lang = old.lang
 
         # Screen and simulation settings.
         self.screen_width = 1280

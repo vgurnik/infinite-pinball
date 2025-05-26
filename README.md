@@ -28,7 +28,7 @@ pyinstaller main.spec
   - [x] Add negative effects
 #### 3
 - [x] Add saves
-  - [ ] Make saves actually viable
+  - [x] Make saves actually viable
 - [x] Add more balls
   - [x] Add multiball possibility
   - [x] Add multiball ability
@@ -59,3 +59,5 @@ pyinstaller main.spec
 #### Known bugs and TODOs
 - Should probably be able to sell/use cards while opening packs
 - Need to add card ID, card params as list, card description format $flags, #params
+- Need to save current shop / current field
+- Probably add seeds for shops

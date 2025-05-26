@@ -51,6 +51,21 @@
       "description": "card.overload.description"
     },
     {
+      "name": "card.shuffle.name",
+      "price": 100,
+      "type": "card",
+      "rarity": "common",
+      "sprite": "shuffle",
+      "effects": [
+        {
+          "effect": "shuffle_balls",
+          "usage": "active",
+          "trigger": "use"
+        }
+      ],
+      "description": "card.shuffle.description"
+    },
+    {
       "name": "card.bonus.name",
       "price": 150,
       "type": "card",

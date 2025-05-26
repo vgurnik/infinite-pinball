@@ -10,7 +10,7 @@ from inventory import PlayerInventory
 from field import Field
 from config import fontfile
 import game_context
-from save_system import save
+from save_system import save, save_pref
 
 
 def overlay_menu(screen, title, options):
@@ -317,6 +317,7 @@ def settings_menu():
             game.display = pygame.display.set_mode(game.screen_size, (pygame.FULLSCREEN
                                                                       if game.config.fullscreen else 0))
         display_screen(game.screen)
+    save_pref()
 
 
 def round_results_overlay(score, min_score):

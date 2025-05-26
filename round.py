@@ -217,8 +217,6 @@ class PinballRound:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return == "round_over":
-                    for ball in self.active_balls:
-                        ball.remove(self.field.space)
                     exit_option = ui_return
                     self.running = False
                     break
@@ -322,7 +320,9 @@ class PinballRound:
                 if game.flags.get("charge_bonus", False) and self.active_balls[0].body.position.y >\
                         self.config.ramp_recline_end[1] - 50:
                     bonus = self.launch_indicators * self.config.charge_bonus
-                    game.money += bonus
+                    if bonus > 0:
+                        game.sound.play('coins+')
+                        game.money += bonus
                     bonus = str(int(bonus)) if bonus == int(bonus) else str(bonus)
                     self.hit_effects.append(HitEffect((self.field.position[0] + self.config.right_wall_x + 12,
                                                        self.field.position[1] + self.config.ramp_recline_end[1] - 40
@@ -359,5 +359,7 @@ class PinballRound:
 
         for applied_effect in self.applied_cards.items:
             applied_effect.end_use()
+        for ball in self.active_balls:
+            ball.remove(self.field.space)
         save()
         return exit_option, self.score

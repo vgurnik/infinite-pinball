@@ -14,6 +14,10 @@
       "name": "Overload",
       "description": "Increase the strength of all bumpers\nx2 for 10 s"
     },
+    "shuffle": {
+      "name": "Shuffle",
+      "description": "Shuffle your ball queue,\nincluding charged ball"
+    },
     "bonus": {
       "name": "Bonus",
       "description": "Increase points scored\nx5 for 5 s"

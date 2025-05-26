@@ -15,7 +15,7 @@ from inventory import Inventory, PlayerInventory, InventoryItem
 from game_effects import DisappearingItem
 from game_objects import GameObject
 import effects
-from save_system import load, save
+import save_system
 
 
 class PinballGame:
@@ -24,6 +24,7 @@ class PinballGame:
         self.config = Config()
         self.screen_size = self.config.base_resolution
         self.debug_mode = self.config.debug_mode
+        save_system.load_pref(self)
         self.display = pygame.display.set_mode((self.config.screen_width, self.config.screen_height),
                                                (pygame.FULLSCREEN if self.config.fullscreen else 0))
         self.screen = pygame.Surface(self.config.base_resolution, pygame.SRCALPHA)
@@ -140,7 +141,7 @@ class PinballGame:
                                                                              self.config.shop_pos_objects[1]),
                                                             for_buildable=self.textures.get(obj_def["texture"])))
                     else:
-                        save()
+                        save_system.save()
                         return ui_return, shop
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -150,13 +151,13 @@ class PinballGame:
                         choice = screens.overlay_menu(self.screen, "ui.text.pause",
                                                       ["ui.button.resume", "ui.button.settings", "ui.button.main"])
                         if choice == "ui.button.main":
-                            save()
+                            save_system.save()
                             return 'menu', shop
                         if choice == "ui.button.settings":
                             screens.settings_menu()
                         _ = clock.tick(self.config.fps)
                     elif event.key == pygame.K_RETURN:
-                        save()
+                        save_system.save()
                         return "continue", shop
                 item = shop.handle_event(event)
                 if item is not None:
@@ -266,7 +267,7 @@ class PinballGame:
             for event in pygame.event.get():
                 ui_return = self.ui.handle_event(event)
                 if ui_return is not None:
-                    save()
+                    save_system.save()
                     return {"continue": "continue", "field_setup": "back"}[ui_return]
                 match event.type:
                     case pygame.QUIT:
@@ -277,7 +278,7 @@ class PinballGame:
                             choice = screens.overlay_menu(self.screen, "ui.text.pause", [
                                 "ui.button.resume", "ui.button.settings", "ui.button.main"])
                             if choice == "ui.button.main":
-                                save()
+                                save_system.save()
                                 return 'menu'
                             if choice == "ui.button.settings":
                                 screens.settings_menu()
@@ -323,8 +324,11 @@ class PinballGame:
         self.ui = Ui()
         self.inventory = PlayerInventory()
         self.round_instance = PinballRound()
-        self.cont = load()
         while True:
+            self.cont = save_system.load()
+            continue_from = None
+            if self.cont:
+                continue_from = self.ui.mode
             choices = ["ui.button.start", "ui.button.settings", "ui.button.exit"]
             if self.cont:
                 choices.insert(0, "ui.button.continue")
@@ -349,8 +353,9 @@ class PinballGame:
                 self.money = 0
                 continue
             if choice in ["ui.button.start", "ui.button.continue"]:
-                self.config = Config()
-                if not self.cont:
+                self.config = Config(self.config)
+                if choice == "ui.button.start":
+                    continue_from = None
                     self.inventory = PlayerInventory()
                     self.field = Field()
                     self.flags = self.config.start_flags
@@ -358,16 +363,24 @@ class PinballGame:
                     self.round = 0
                 self.score_needed = self.config.min_score[self.round]
                 while True:
-                    self.round_instance = PinballRound()
-                    result, round_score = self.round_instance.run()
-                    if result != "round_over":
-                        break
-                    result = screens.round_results_overlay(round_score, self.score_needed)
-                    if result == 'lose':
-                        save(delete=True)
-                        break
-                    self.sound.play('coins+')
-                    self.round += 1
+                    if continue_from is None or continue_from in ['round', 'round_finishable']:
+                        continue_from = None
+                        self.round_instance = PinballRound()
+                        result, round_score = self.round_instance.run()
+                        if result != "round_over":
+                            self.cont = True
+                            break
+                        result = screens.round_results_overlay(round_score, self.score_needed)
+                        if result == 'lose':
+                            save_system.save(delete=True)
+                            self.cont = False
+                            break
+                        self.sound.play('coins+')
+                    else:
+                        result = 'win'
+                    if continue_from is None or continue_from == 'results':
+                        self.round += 1
+                    continue_from = None
                     if self.round < len(self.config.min_score):
                         self.score_needed = self.config.min_score[self.round]
                     else:
@@ -380,7 +393,9 @@ class PinballGame:
                         if result == 'field_setup':
                             result = self.field_modification_screen()
                     if result == 'menu':
+                        self.cont = True
                         break
                 if result == "exit":
+                    self.cont = True
                     break
         pygame.quit()

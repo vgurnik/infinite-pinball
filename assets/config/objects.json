@@ -68,8 +68,7 @@
       "effects": [
         {
           "effect": "1up",
-          "params": [1, "s"],
-          "cooldown": 0.5
+          "params": [1, "s"]
         }
       ]
     },
@@ -83,8 +82,7 @@
       "effects": [
         {
           "effect": "8ball",
-          "params": [800, 0.125],
-          "cooldown": 0.3
+          "params": [800, 0.125]
         },
         {
           "effect": "8ball_lost",

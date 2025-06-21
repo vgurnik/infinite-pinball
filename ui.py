@@ -108,6 +108,10 @@ class Ui:
         ui_surface.blit(round_text, self.config.ui_round_pos)
         money_text = font.render(format_text("$ {}", game.money), True, (255, 255, 0))
         ui_surface.blit(money_text, self.config.ui_money_pos)
+        basemult_text = font.render(loc("ui.text.basemult"), True, (255, 20, 50))
+        ui_surface.blit(basemult_text, self.config.ui_basemult_pos)
+        basemult_text = font.render(format_text("x{}", game.flags["base_mult"]), True, (255, 20, 50))
+        ui_surface.blit(basemult_text, (self.config.ui_basemult_pos[0], self.config.ui_basemult_pos[1] + 30))
         surface.blit(ui_surface, self.position)
         self.context.draw(surface)
 

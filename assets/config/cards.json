@@ -66,6 +66,22 @@
       "description": "card.shuffle.description"
     },
     {
+      "name": "card.bonus_mult.name",
+      "price": 50,
+      "type": "card",
+      "rarity": "common",
+      "sprite": "shuffle",
+      "effects": [
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "use",
+          "params": [1, "s"]
+        }
+      ],
+      "description": "card.bonus_mult.description"
+    },
+    {
       "name": "card.peak.name",
       "price": 150,
       "type": "card",
@@ -118,6 +134,12 @@
           "usage": "passive",
           "trigger": "ball_lost",
           "params": ["mult", 1, "e"]
+        },
+        {
+          "effect": "splash",
+          "usage": "passive",
+          "trigger": "ball_lost",
+          "params": ["ball", "ui.text.devil", [255, 0, 0]]
         }
       ],
       "flags": {
@@ -157,7 +179,7 @@
     },
     {
       "name": "card.venture.name",
-      "price": 200,
+      "price": 100,
       "type": "card",
       "rarity": "uncommon",
       "effects": [
@@ -169,6 +191,60 @@
         }
       ],
       "description": "card.venture.description"
+    },
+    {
+      "name": "card.adrenaline.name",
+      "price": 150,
+      "type": "card",
+      "rarity": "common",
+      "effects": [
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "scoring_collision",
+          "params": [0.01, "s"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "scoring_collision",
+          "params": ["addition", 0.01, "s"]
+        },
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "ball_lost",
+          "params": ["addition", "-s"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "ball_lost",
+          "params": ["addition", 0, "e"]
+        },
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "recharge",
+          "params": ["addition", "-s"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "recharge",
+          "params": ["addition", 0, "e"]
+        },
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "sell",
+          "params": ["addition", "-s"]
+        }
+      ],
+      "flags": {
+        "addition": 0
+      },
+      "description": "card.adrenaline.description"
     },
     {
       "name": "card.bonus.name",
@@ -186,6 +262,29 @@
         }
       ],
       "description": "card.bonus.description"
+    },
+    {
+      "name": "card.accumulator.name",
+      "price": 200,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "multiply_score",
+          "usage": "active",
+          "trigger": "collision",
+          "params": [5, "m"],
+          "duration": 10
+        },
+        {
+          "effect": "change_effect_duration",
+          "usage": "active",
+          "trigger": "scoring_collision",
+          "params": ["multiply_score", 1, "s"],
+          "duration": -1
+        }
+      ],
+      "description": "card.accumulator.description"
     },
     {
       "name": "card.collector.name",
@@ -238,7 +337,7 @@
       "name": "card.doubler.name",
       "price": 150,
       "type": "card",
-      "rarity": "uncommon",
+      "rarity": "common",
       "sprite": "doublescore",
       "effects": [
         {
@@ -252,7 +351,7 @@
     },
     {
       "name": "card.cardholder.name",
-      "price": 150,
+      "price": 300,
       "type": "card",
       "rarity": "rare",
       "sprite": "cardholder",
@@ -635,11 +734,11 @@
           "trigger": "cooldown"
         },
         {
-          "effect": "check_card_flag_neg",
+          "effect": "check_card_flag",
           "params": ["broken", 0, ">"],
           "negative": true,
           "usage": "passive",
-          "trigger": "use"
+          "trigger": "sell"
         },
         {
           "effect": "inventory_size",

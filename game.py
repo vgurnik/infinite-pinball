@@ -36,12 +36,12 @@ class PinballGame:
         icon = pygame.image.load(asset_path.joinpath('textures/ball.ico'))
         pygame.display.set_icon(icon)
 
-        self.reroll_cost = self.config.reroll_start_cost
+        self.flags = self.config.start_flags
+        self.reroll_cost = self.flags['reroll_start_cost']
         self.money = 0
         self.round = 0
         self.score_needed = self.config.min_score[self.round]
         self.immediate = {}
-        self.flags = self.config.start_flags
         self.real_fps = 0
         self.cont = False
         self.ui = None
@@ -77,7 +77,8 @@ class PinballGame:
         shop_size = self.config.shop_size
         if _shop is None:
             shop = Inventory()
-            items = choose_items(shop_size[1], self.config.shop_items["card"], self.config.rarities["card"])
+            items = choose_items(shop_size[1], self.config.shop_items["card"], self.config.rarities["card"],
+                                 exclude_pool=self.inventory.collect_names())
             for i, item in enumerate(items):
                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(item.get("sprite")),
                                             target_position=(self.config.shop_pos_cards[0] + (
@@ -115,12 +116,13 @@ class PinballGame:
                             if self.flags['reroll_mode'] == 'm':
                                 self.reroll_cost *= self.config.reroll_next
                             else:
-                                self.reroll_cost += self.config.reroll_start_cost
+                                self.reroll_cost += self.flags["reroll_start_cost"]
                             for item in shop.items[:]:
                                 if item.properties["type"] in ["card", "buildable"]:
                                     shop.remove_item(item)
                             items = choose_items(shop_size[1], self.config.shop_items["card"],
-                                                 self.config.rarities["card"])
+                                                 self.config.rarities["card"],
+                                                 exclude_pool=self.inventory.collect_names())
                             for i, item in enumerate(items):
                                 shop.add_item(InventoryItem(properties=item, sprite=self.textures.get(
                                     item.get("sprite")), target_position=(self.config.shop_pos_cards[0] + (
@@ -180,13 +182,18 @@ class PinballGame:
                             if item.properties["kind"] == "oneof":
                                 pool = self.config.shop_items[item.properties["item_type"]]
                                 items = choose_items(item.properties["amount"][1], pool,
-                                                     self.config.rarities[item.properties["item_type"]])
+                                                     self.config.rarities[item.properties["item_type"]],
+                                                     exclude_pool=self.inventory.collect_names() + shop.collect_names())
                             elif item.properties["kind"] == "all":
                                 pool = self.config.shop_items[item.properties["item_type"]]
                                 positive = choose_items(item.properties["amount"][1], pool,
-                                                        {"epic": {"value": 1}})
+                                                        {"epic": {"value": 1}},
+                                                        exclude_pool=self.inventory.collect_names() +
+                                                        shop.collect_names())
                                 negative = choose_items(item.properties["amount"][2], pool,
-                                                        {"negative": {"value": 1}})
+                                                        {"negative": {"value": 1}},
+                                                        exclude_pool=self.inventory.collect_names() +
+                                                        shop.collect_names())
                                 items = positive + negative
                             else:
                                 items = []
@@ -381,7 +388,7 @@ class PinballGame:
                         self.score_needed = self.config.min_score[-1] * (10 + 2 * (self.round - len(
                             self.config.min_score))) ** (self.round - len(self.config.min_score) + 1)
                     shop = None
-                    self.reroll_cost = self.config.reroll_start_cost
+                    self.reroll_cost = self.flags['reroll_start_cost']
                     while result in ['win', 'back']:
                         result, shop = self.shop_screen(shop)
                         if result == 'field_setup':

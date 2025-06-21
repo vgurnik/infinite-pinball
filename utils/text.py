@@ -14,7 +14,7 @@ for l in langs:
         lang_file[l] = load(file)
 
 
-def format_number(number: int | float, places: int = 8) -> str:
+def format_number(number: int | float | str, places: int = 8) -> str:
     """Formats a number to a string with the specified number of decimal places.
 
     Parameters
@@ -26,6 +26,11 @@ def format_number(number: int | float, places: int = 8) -> str:
     -------
     A string representation of the number with the specified number of decimal places.
     """
+    if isinstance(number, str):
+        try:
+            number = float(number)
+        except ValueError:
+            return number
     s_int = str(int(number))
     if isinstance(number, int) or isclose(number, int(number)):
         if len(s_int) <= places:
@@ -84,7 +89,7 @@ def format_card_description(text: str, effects, flags):
     flags_names = re.findall(r"&\[(.*?)\]", text)
     for flag in flags_names:
         if flag in flags:
-            text = text.replace(f"&[{flag}]", str(flags[flag]))
+            text = text.replace(f"&[{flag}]", str(format_number(flags[flag])))
         else:
             text = text.replace(f"&[{flag}]", "")
     params = re.findall(r"#\[(.*?)\]", text)
@@ -94,9 +99,9 @@ def format_card_description(text: str, effects, flags):
         for effect in effects:
             if effect["name"] == effect_name:
                 if param_name in effect:
-                    to_ret = str(effect[param_name])
+                    to_ret = str(format_number(effect[param_name]))
                 elif param_name.isdigit() and int(param_name) < len(effect["params"]):
-                    to_ret = str(effect["params"][int(param_name)])
+                    to_ret = str(format_number(effect["params"][int(param_name)]))
                 else:
                     to_ret = ""
                 break

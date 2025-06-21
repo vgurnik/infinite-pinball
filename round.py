@@ -6,6 +6,7 @@ import pymunk
 from inventory import PlayerInventory
 from game_effects import HitEffect, DisappearingItem
 from utils.textures import display_screen
+from utils.text import format_number
 import screens
 from config import fontfile
 from save_system import save
@@ -77,24 +78,18 @@ class PinballRound:
         if self.immediate['score'] or self.immediate['money']:
             game.callback("scoring_collision", arbiters=arbiters)
         if self.immediate['score']:
-            add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
-            s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
-                else self.immediate['score']
-            if self.immediate['multi'] * self.config.score_multiplier == int(
-                    self.immediate['multi'] * self.config.score_multiplier):
-                m_v = int(self.immediate['multi'] * self.config.score_multiplier)
-            else:
-                m_v = self.immediate['multi'] * self.config.score_multiplier
-            if m_v != 1:
+            add = self.immediate['score'] * self.immediate['multi'] * game.flags["base_mult"]
+            s_v = format_number(abs(self.immediate['score']))
+            m_v = format_number(abs(self.immediate['multi'] * game.flags["base_mult"]))
+            if m_v != '1':
                 s_str = f"{'+' if add >= 0 else ''}{s_v} X {m_v}"
             else:
                 s_str = f"{'+' if add >= 0 else ''}{s_v}"
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), s_str, (0, 255, 0)))
             y += 20
-            self.score += s_v * m_v
+            self.score += add
         if self.immediate['money']:
-            m_v = int(self.immediate['money']) if self.immediate['money'] == int(self.immediate['money']) \
-                else self.immediate['money']
+            m_v = format_number(self.immediate['money'])
             self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]),
                                               f"{'+' if self.immediate['money'] >= 0 else ''}{m_v}", (255, 255, 0)))
             y += 20
@@ -140,15 +135,15 @@ class PinballRound:
             ball.draw(field_surface)
 
         for card in self.applied_cards.items[:]:
-            any_active = False
+            all_active = True
             for effect in card.effects:
                 if effect["duration"] < 0:
-                    any_active = True
                     continue
                 effect["duration"] = max(0, effect["duration"] - dt)
-                if effect["duration"] > 0:
-                    any_active = True
-            if not any_active:
+                if effect["duration"] == 0:
+                    all_active = False
+                    break
+            if not all_active:
                 card.end_use()
                 self.applied_cards.remove_item(card)
                 self.hit_effects.append(DisappearingItem(card, 0.5))

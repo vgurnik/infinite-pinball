@@ -34,13 +34,21 @@
       "name": "Авантюра",
       "description": "Шанс #[venture.0]% превратить шар в Золотой шар\nИначе уничтожает шар"
     },
+    "adrenaline": {
+      "name": "Адреналин",
+      "description": "Добавляет 0.01 к базовому множителю\nза каждый удар (сейчас +&[addition])\nСбрасывается при потере и перезарядке шара"
+    },
+    "accumulator": {
+      "name": "Аккумулятор",
+      "description": "Даёт множитель х#[multiply_score.0] на #[multiply_score.duration] с\nПродлевает на #[change_effect_duration.1] с за каждый удар"
+    },
     "bonus": {
       "name": "Бонус",
-      "description": "Увеличивает набираемые очки\nв #[multiply_score.0] раз на #[multiply_score.duration] с"
+      "description": "Даёт множитель х#[multiply_score.0]\nна #[multiply_score.duration] с"
     },
     "collector": {
       "name": "Коллекционер",
-      "description": "Увеличивает набираемые очки в #[collector.0] раза,\nесли все ваши шары разные"
+      "description": "Даёт множитель х#[collector.0],\nесли все ваши шары разные"
     },
     "forget": {
       "name": "Забудь",
@@ -134,7 +142,7 @@
     },
     "multiplier": {
       "name": "Чип умножения",
-      "description": "Зарабатывайте на 0.5% больше очков"
+      "description": "Добавляет 0.5 к базовому множителю"
     },
     "launcher": {
       "name": "Пусковая установка",
@@ -269,7 +277,8 @@
       "punish": "Наказание!",
       "safe": "Безопасно",
       "no": "Неа",
-      "yes": "Ага"
+      "yes": "Ага",
+      "devil": "РАСПЛАТА"
     }
   },
   "ui": {
@@ -293,6 +302,7 @@
       "pause": "Пауза",
       "shop": "Магазин",
       "score": "Очки: {}",
+      "basemult": "Базовый множ.",
       "req_score": "Требуемые очки: {}",
       "next_score": "Следующие очки: {}",
       "round": "Раунд: {}",

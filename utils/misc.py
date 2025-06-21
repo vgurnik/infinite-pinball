@@ -17,10 +17,10 @@ def _is_allowed(card):
     return True
 
 
-def choose_items(count, pool, rarity_scoring, unique=True):
+def choose_items(count, pool, rarity_scoring, unique=True, exclude_pool=None):
     rarity_pools = {rarity: [] for rarity in rarity_scoring}
     for item in pool:
-        if item["rarity"] in rarity_scoring and _is_allowed(item):
+        if item["rarity"] in rarity_scoring and _is_allowed(item) and item["name"] not in (exclude_pool or []):
             rarity_pools[item["rarity"]].append(item)
     weights = [rarity_scoring[rarity]["value"] for rarity in rarity_pools.keys()]
     weights = [sum(weights[:i])/sum(weights) for i in range(1, len(weights)+1)]

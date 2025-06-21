@@ -326,7 +326,8 @@ def round_results_overlay(score, min_score):
     game.immediate['interest_cap'] = 0
     game.immediate['$per_order'] = 0
     game.immediate['$per_ball'] = 0
-    game.callback("round_win")
+    game.immediate['$additional'] = []
+    game.callback("round_end")
     extra_orders = int(math.log2(score / min_score)) if score >= min_score else 0
     order_reward = extra_orders * (game.config.extra_award_per_order + game.immediate['$per_order'])
     charged_ball = 0
@@ -334,8 +335,8 @@ def round_results_overlay(score, min_score):
         charged_ball += 1
     ball_reward = (len(game.round_instance.ball_queue) + charged_ball) * (
             game.config.extra_award_per_ball + game.immediate['$per_ball'])
-    interest_reward = min(int((game.config.interest_rate + game.immediate['interest']) * game.money), (
-            game.config.interest_cap + game.immediate['interest_cap']))
+    interest_reward = max(min(int((game.config.interest_rate + game.immediate['interest']) * game.money), (
+            game.config.interest_cap + game.immediate['interest_cap'])), 0)
     if score >= min_score:
         game.money += game.config.base_award + order_reward + ball_reward + interest_reward
 

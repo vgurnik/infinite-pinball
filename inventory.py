@@ -57,12 +57,7 @@ class InventoryItem:
                     break
         else:
             self.active = True
-            self.duration = 0
-            for effect in self.effects:
-                if effect["duration"] == -1:
-                    self.duration = -1
-                    break
-                self.duration = max(self.duration, effect["duration"])
+            self.duration = max(e["duration"] for e in self.effects)
             return True
         for effect in called:
             if not effects.recall(effect, card=self):
@@ -101,6 +96,7 @@ class InventoryItem:
         if negative is None:
             return self.sell(negative=True) and self.sell(negative=False)
         recalled = []
+        called = []
         for effect in self.effects:
             if negative and effect["is_negative"] or (not negative and not effect["is_negative"]):
                 if effect["usage"] == "passive" and effect["trigger"] == "use":
@@ -108,10 +104,18 @@ class InventoryItem:
                         recalled.append(effect)
                     else:
                         break
+                if effect["trigger"] == "sell":
+                    if effects.call(effect, card=self):
+                        called.append(effect)
+                    else:
+                        break
         else:
             return True
         for effect in recalled:
             if not effects.call(effect, card=self):
+                raise RuntimeError("Failed to call just recalled effect (?) probably a design error")
+        for effect in called:
+            if not effects.recall(effect, card=self):
                 raise RuntimeError("Failed to call just recalled effect (?) probably a design error")
         return False
 
@@ -196,6 +200,9 @@ class Inventory:
         self.dragging_item = None
         self.clicked_item = None
         self.context = ContextWindow()
+
+    def collect_names(self):
+        return [item.name for item in self.items]
 
     def add_item(self, item: InventoryItem):
         self.items.append(item)

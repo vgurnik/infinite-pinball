@@ -36,7 +36,7 @@ class Config:
         self.gravity = (0, 900)
 
         # UI panel settings.
-        self.ui_pos = (50, 0)
+        self.ui_pos = (30, 0)
         self.ui_width = 280
         self.ui_round_pos = (10, 10)
         self.ui_min_score_pos = (10, 40)
@@ -47,9 +47,10 @@ class Config:
         self.ui_continue_pos = (20, 150)
         self.ui_field_config_pos = (20, 220)
         self.ui_reroll_pos = (150, 220)
-        self.ui_inventory_pos = (60, 300)
+        self.ui_inventory_pos = (40, 300)
         self.ui_inventory_height = 300
         self.ui_deletion_size = (200, 150)
+        self.ui_basemult_pos = (140, 275)
 
         # Table boundaries.
         self.field_pos = (350, 0)
@@ -101,11 +102,10 @@ class Config:
         self.charge_bonus = 2
         self.interest_rate = 0.2
         self.interest_cap = 50
-        self.score_multiplier = 1
-        self.reroll_start_cost = 10
         self.reroll_next = 2
         self.inventory_size = 5
-        self.start_flags = {"charge_bonus": False, "reroll_mode": 'm', "shop_upgrade": 0}
+        self.start_flags = {"base_mult": 1, "reroll_start_cost": 10, "charge_bonus": False,
+                            "reroll_mode": 'm', "shop_upgrade": 0}
 
         self.shop_size = [2, 3, 1, 2]
 

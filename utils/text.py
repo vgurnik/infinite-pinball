@@ -1,4 +1,6 @@
 from json import load
+import re
+from math import isclose
 import pygame
 import game_context
 from config import asset_path
@@ -24,11 +26,27 @@ def format_number(number: int | float, places: int = 8) -> str:
     -------
     A string representation of the number with the specified number of decimal places.
     """
-    if (isinstance(number, int) or int(number) == number) and len(str(int(number))) <= places:
-        return str(int(number))
-    if len(str(int(number))) >= places:
-        return f"{number:,.1e}"
-    return f"{number:,.{max(places-len(str(int(number))), 0)}f}"
+    s_int = str(int(number))
+    if isinstance(number, int) or isclose(number, int(number)):
+        if len(s_int) <= places:
+            return s_int
+        else:
+            return f"{number:.1e}"
+
+    abs_n = abs(number)
+    if abs_n < 10:
+        s = f"{number:.2f}"
+    elif abs_n < 100:
+        s = f"{number:.1f}"
+    else:
+        s = str(int(number))
+
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+
+    if len(s) > places:
+        s = f"{number:.1e}"
+    return s
 
 
 def format_text(text: str, *args):
@@ -46,6 +64,47 @@ def format_text(text: str, *args):
     new_args = [format_number(arg) if isinstance(arg, (int, float)) else loc(arg) for arg in args]
     text = loc(text)
     return text.format(*new_args)
+
+
+def format_card_description(text: str, effects, flags):
+    """Formats a card description with the card's effects and flags.
+    &[flag_name] is replaced with flags['flag_name']
+    #[effect_name.param] is replaced with effects: effect['name'] == effect_name: effect['params'][param] or effect['param']
+
+    Parameters
+    ----------
+    text - the string to format.
+    effects - the effects of the card.
+    flags - the flags of the card.
+
+    Returns
+    -------
+    A formatted string.
+    """
+    flags_names = re.findall(r"&\[(.*?)\]", text)
+    for flag in flags_names:
+        if flag in flags:
+            text = text.replace(f"&[{flag}]", str(flags[flag]))
+        else:
+            text = text.replace(f"&[{flag}]", "")
+    params = re.findall(r"#\[(.*?)\]", text)
+    for param in params:
+        effect_name, param_name = param.split('.')
+        to_ret = ""
+        for effect in effects:
+            if effect["name"] == effect_name:
+                if param_name in effect:
+                    to_ret = str(effect[param_name])
+                elif param_name.isdigit() and int(param_name) < len(effect["params"]):
+                    to_ret = str(effect["params"][int(param_name)])
+                else:
+                    to_ret = ""
+                break
+        text = text.replace(f"#[{param}]", to_ret)
+    percentages = re.findall(r"(\d+(?:\.\d+)?)%", text)
+    for percentage in percentages:
+        text = text.replace(f"{percentage}%", f"{float(percentage):.0%}")
+    return text
 
 
 def loc(text):

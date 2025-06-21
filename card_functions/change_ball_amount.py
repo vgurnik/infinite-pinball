@@ -2,7 +2,7 @@ from game_objects import Ball
 import game_context
 
 
-def effect(difference):
+def effect(difference, arbiters=None, card=None):
     game = game_context.game
     game.config.balls += difference
     for _ in range(difference):
@@ -14,7 +14,7 @@ def effect(difference):
     return True
 
 
-def negative_effect(difference):
+def negative_effect(difference, arbiters=None, card=None):
     game = game_context.game
     if len(game.field.balls) < difference or (game.round_instance is not None
                                               and len(game.round_instance.ball_queue) < difference):

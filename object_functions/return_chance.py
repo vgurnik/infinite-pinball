@@ -7,6 +7,8 @@ def effect(chance, arbiters=None):
     game = game_context.game
     for arb in arbiters:
         if arb.shape.type == 'ball':
+            if arb in game.round_instance.ball_queue:
+                return True
             if random() < chance:
                 game.round_instance.ball_queue.append(arb)
                 game.round_instance.ball_queue_coords.append(arb.body.position.y)

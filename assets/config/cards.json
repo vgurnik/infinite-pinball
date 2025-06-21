@@ -9,7 +9,7 @@
       "effects": [
         {
           "effect": "shield",
-          "duration": 10,
+          "duration": 20,
           "usage": "active",
           "trigger": "use"
         }
@@ -28,7 +28,7 @@
           "params": [0.5],
           "usage": "active",
           "trigger": "use",
-          "duration": 10
+          "duration": 20
         }
       ],
       "description": "card.slowmo.description"
@@ -45,7 +45,7 @@
           "usage": "active",
           "trigger": "use",
           "params": [2],
-          "duration": 10
+          "duration": 20
         }
       ],
       "description": "card.overload.description"
@@ -66,6 +66,111 @@
       "description": "card.shuffle.description"
     },
     {
+      "name": "card.peak.name",
+      "price": 150,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "multiply_score",
+          "usage": "passive",
+          "trigger": "collision",
+          "params": ["mult", "m"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "ball_lost",
+          "params": ["mult", -0.25, "s"]
+        }
+      ],
+      "flags": {
+        "mult": 5
+      },
+      "description": "card.peak.description"
+    },
+    {
+      "name": "card.devil.name",
+      "price": 100,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "multiply_score",
+          "usage": "passive",
+          "trigger": "collision",
+          "params": ["mult", "m"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "scoring_collision",
+          "params": ["mult", 1, "s"]
+        },
+        {
+          "effect": "double_money",
+          "usage": "passive",
+          "trigger": "ball_lost",
+          "params": [0, 0]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "ball_lost",
+          "params": ["mult", 1, "e"]
+        }
+      ],
+      "flags": {
+        "mult": 1
+      },
+      "description": "card.devil.description"
+    },
+    {
+      "name": "card.boost.name",
+      "price": 100,
+      "type": "card",
+      "rarity": "common",
+      "effects": [
+        {
+          "effect": "multiply_score",
+          "usage": "passive",
+          "trigger": "collision",
+          "params": ["mult", "m"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "scoring_collision",
+          "params": ["mult", 1, "e"]
+        },
+        {
+          "effect": "change_card_flag",
+          "usage": "passive",
+          "trigger": "recharge",
+          "params": ["mult", 10, "e"]
+        }
+      ],
+      "flags": {
+        "mult": 10
+      },
+      "description": "card.boost.description"
+    },
+    {
+      "name": "card.venture.name",
+      "price": 200,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "venture",
+          "usage": "active",
+          "trigger": "use",
+          "params": [0.1]
+        }
+      ],
+      "description": "card.venture.description"
+    },
+    {
       "name": "card.bonus.name",
       "price": 150,
       "type": "card",
@@ -77,7 +182,7 @@
           "usage": "active",
           "trigger": "collision",
           "params": [5, "m"],
-          "duration": 5
+          "duration": 15
         }
       ],
       "description": "card.bonus.description"
@@ -425,7 +530,7 @@
       "effects": [
         {
           "effect": "change_interest",
-          "params": [0.1, "s"],
+          "params": [0.2, "s"],
           "usage": "passive",
           "trigger": "use"
         }
@@ -452,7 +557,7 @@
       "name": "card.dupe.name",
       "price": 400,
       "type": "card",
-      "rarity": "common",
+      "rarity": "epic",
       "sprite": "dupe",
       "effects": [
         {
@@ -523,9 +628,17 @@
           "trigger": "cooldown"
         },
         {
-          "effect": "break",
+          "effect": "change_card_flag",
+          "params": ["broken", 1, "s"],
           "usage": "passive",
           "negative": true,
+          "trigger": "cooldown"
+        },
+        {
+          "effect": "check_card_flag_neg",
+          "params": ["broken", 0, ">"],
+          "negative": true,
+          "usage": "passive",
           "trigger": "use"
         },
         {
@@ -535,6 +648,9 @@
           "params": [1]
         }
       ],
+      "flags": {
+        "broken": 0
+      },
       "description": "card.brittle.description"
     },
     {

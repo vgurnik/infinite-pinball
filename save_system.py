@@ -77,6 +77,8 @@ def load():
                     if i.get("name") == card_name:
                         item = i
                         break
+            if item is None:
+                continue
             game.inventory.add_item(InventoryItem(properties=item, sprite=game.textures.get(item.get("sprite"))))
 
         balls = save_data.get("balls", [])
@@ -88,6 +90,8 @@ def load():
                 if config.get("name") == ball_name:
                     ball = name
                     break
+            if ball is None:
+                continue
             game.field.balls.append(game_objects.Ball(
                 game.config.objects_settings["ball"][ball], game.config.ball_start,
                 game.textures.get(game.config.objects_settings["ball"][ball]["texture"])))

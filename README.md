@@ -32,12 +32,12 @@ pyinstaller main.spec
 - [x] Add more balls
   - [x] Add multiball possibility
   - [x] Add multiball ability
-- [ ] Add more card-object-effect options
+- [x] Add more card-object-effect options
   - [x] Implement rarity
   - [x] Implement multiple effects per card
   - [x] Rewrite effects as callbacks
   - [x] Implement functionals to check if card is allowed to show up
-  - [ ] Implement card id to allow to affect effects
+  - [x] Allow cards to affect effects (params, flags)
 #### 4
 - [ ] Balance scoring
   - [x] Implement effect cooldown
@@ -58,6 +58,5 @@ pyinstaller main.spec
 - [ ] Add SCALED resolution maybe, works strangely
 #### Known bugs and TODOs
 - Should probably be able to sell/use cards while opening packs
-- Need to add card ID, card params as list, card description format $flags, #params
 - Need to save current shop / current field
 - Probably add seeds for shops

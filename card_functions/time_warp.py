@@ -1,7 +1,7 @@
 import game_context
 
 
-def effect(scale):
+def effect(scale, arbiters=None, card=None):
     game = game_context.game
     if game.round_instance is None or not game.round_instance.running:
         return False
@@ -12,7 +12,7 @@ def effect(scale):
     return True
 
 
-def negative_effect(scale):
+def negative_effect(scale, arbiters=None, card=None):
     game = game_context.game
     if game.round_instance is None:
         return False

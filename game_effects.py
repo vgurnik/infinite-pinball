@@ -1,5 +1,5 @@
 import pygame
-from utils.text import multiline, loc
+from utils.text import multiline, loc, format_card_description
 import utils.textures
 from config import fontfile
 import game_context
@@ -39,7 +39,9 @@ class ContextWindow:
                     surface.blit(text_surface, (rect.x + 3, rect.y + 3))
                 case 'description':
                     header = multiline(loc(self.item.name), font, (50, 50, 50))
-                    description = multiline(loc(self.item.properties["description"]), font, (0, 0, 0))
+                    description = format_card_description(loc(self.item.properties["description"]),
+                                                          self.item.effects, self.item.flags)
+                    description = multiline(description, font, (0, 0, 0))
                     price = font.render("$" + str(self.item.properties["price"]), 1, (255, 255, 0))
                     price_shadow = font.render("$" + str(self.item.properties["price"]), 1, (0, 0, 0))
                     width = max(header.get_width(), price.get_width(), description.get_width()) + 12

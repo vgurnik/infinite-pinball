@@ -15,7 +15,7 @@ class SoundEngine:
         pygame.mixer.set_reserved(len(channels))
         self.sounds = {name: self._load_sounds(name) for name in to_load}
         self.channels = {name: pygame.mixer.Channel(i) for i,name in enumerate(channels)}
-        self.set_volume(0.1)
+        self.set_volume(0.2)
 
     def _load_sounds(self, sound_name):
         appropriate = [s for s in self._files if s.startswith(sound_name)]

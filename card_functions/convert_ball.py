@@ -2,7 +2,7 @@ from game_objects import Ball
 import game_context
 
 
-def effect(ball_name):
+def effect(ball_name, arbiters=None, card=None):
     game = game_context.game
     if game.round_instance is not None and game.round_instance.running:
         for ball in game.round_instance.active_balls[:]:

@@ -54,17 +54,11 @@ class PinballGame:
         for card in self.inventory.items:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "passive":
-                    if arbiters is not None:
-                        effects.call(effect, arbiters)
-                    else:
-                        effects.call(effect)
+                    effects.call(effect, arbiters=arbiters, card=card)
         for card in self.round_instance.applied_cards.items[:]:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "active" and effect["duration"] != 0:
-                    if arbiters is not None:
-                        effects.call(effect, arbiters)
-                    else:
-                        effects.call(effect)
+                    effects.call(effect, arbiters=arbiters, card=card)
         if arbiters is not None:
             for arb in arbiters:
                 if issubclass(arb.__class__, GameObject):
@@ -73,7 +67,7 @@ class PinballGame:
                             if effect["trigger"] == event:
                                 effects.call(effect, arbiters)
                                 arb.cooldown = max(arb.cooldown, effect["cooldown"])
-                    if arb.shape.type != 'ball' and arb.cooldown > 0:
+                    if arb.cooldown > 0:
                         arb.cooldown_timer = arb.cooldown
 
     def shop_screen(self, _shop=None):
@@ -384,8 +378,8 @@ class PinballGame:
                     if self.round < len(self.config.min_score):
                         self.score_needed = self.config.min_score[self.round]
                     else:
-                        self.score_needed = self.config.min_score[-1] * 10 ** (self.round -
-                                                                               len(self.config.min_score) + 1)
+                        self.score_needed = self.config.min_score[-1] * (10 + 2 * (self.round - len(
+                            self.config.min_score))) ** (self.round - len(self.config.min_score) + 1)
                     shop = None
                     self.reroll_cost = self.config.reroll_start_cost
                     while result in ['win', 'back']:

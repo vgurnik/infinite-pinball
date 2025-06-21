@@ -99,7 +99,7 @@ class Config:
         self.extra_award_per_order = 50
         self.extra_award_per_ball = 100
         self.charge_bonus = 2
-        self.interest_rate = 0.1
+        self.interest_rate = 0.2
         self.interest_cap = 50
         self.score_multiplier = 1
         self.reroll_start_cost = 10

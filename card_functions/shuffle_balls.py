@@ -2,7 +2,7 @@ import random
 import game_context
 
 
-def effect():
+def effect(arbiters=None, card=None):
     game = game_context.game
     balls = game.round_instance.ball_queue
     charged = not game.round_instance.ball_launched and len(game.round_instance.active_balls) == 1

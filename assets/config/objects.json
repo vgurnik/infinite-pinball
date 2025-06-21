@@ -41,7 +41,7 @@
         {
           "effect": "earn",
           "params": [5],
-          "cooldown": 0.7
+          "cooldown": 0.2
         }
       ]
     },

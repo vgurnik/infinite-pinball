@@ -27,6 +27,7 @@ class InventoryItem:
         self.target_position = pygame.math.Vector2(target_position)
         self.card_size = card_size
         self.rect = pygame.Rect(self.pos.x, self.pos.y, card_size[0], card_size[1])
+        self.flags = properties.get("flags", {}).copy()
         self.effects = [{
             "name": effect.get("effect", None),
             "effect": effects.get_card_function(effect.get("effect", None)),
@@ -35,7 +36,7 @@ class InventoryItem:
             "usage": effect.get("usage", "passive"),
             "is_negative": effect.get("negative", False),
             "duration": effect.get("duration", 0),
-            "params": effect.get("params", [])
+            "params": effect.get("params", []).copy()
         } for effect in properties.get("effects", [])]
         self.active = False
         self.duration = 0
@@ -50,7 +51,7 @@ class InventoryItem:
         called = []
         for effect in self.effects:
             if effect["usage"] == "active" and effect["trigger"] == "use":
-                if effects.call(effect):
+                if effects.call(effect, card=self):
                     called.append(effect)
                 else:
                     break
@@ -64,7 +65,7 @@ class InventoryItem:
                 self.duration = max(self.duration, effect["duration"])
             return True
         for effect in called:
-            if not effects.recall(effect):
+            if not effects.recall(effect, card=self):
                 raise RuntimeError("Failed to recall just called effect (?) probably a design error")
         return False
 
@@ -72,7 +73,7 @@ class InventoryItem:
         """recall all usage:active trigger:use"""
         for effect in self.effects:
             if effect["usage"] == "active" and effect["trigger"] == "use":
-                if not effects.recall(effect):
+                if not effects.recall(effect, card=self):
                     raise RuntimeError("Failed to recall lasting effect (?) probably a design error")
         return True
 
@@ -84,14 +85,14 @@ class InventoryItem:
         for effect in self.effects:
             if negative and effect["is_negative"] or not negative and not effect["is_negative"]:
                 if effect["usage"] == "passive" and effect["trigger"] == "use":
-                    if effects.call(effect):
+                    if effects.call(effect, card=self):
                         called.append(effect)
                     else:
                         break
         else:
             return True
         for effect in called:
-            if not effects.recall(effect):
+            if not effects.recall(effect, card=self):
                 raise RuntimeError("Failed to recall just called effect (?) probably a design error")
         return False
 
@@ -103,14 +104,14 @@ class InventoryItem:
         for effect in self.effects:
             if negative and effect["is_negative"] or (not negative and not effect["is_negative"]):
                 if effect["usage"] == "passive" and effect["trigger"] == "use":
-                    if effects.recall(effect):
+                    if effects.recall(effect, card=self):
                         recalled.append(effect)
                     else:
                         break
         else:
             return True
         for effect in recalled:
-            if not effects.call(effect):
+            if not effects.call(effect, card=self):
                 raise RuntimeError("Failed to call just recalled effect (?) probably a design error")
         return False
 
@@ -323,7 +324,7 @@ class PlayerInventory(Inventory):
             return True
         if not item.sell(negative=False):
             return False
-        if len(self.items) <= self.max_size and item.sell(negative=True):
+        if len(self.items) - 1 <= self.max_size and item.sell(negative=True):
             super().remove_item(item)
             self.recalculate_targets()
             return True

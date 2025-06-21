@@ -74,6 +74,8 @@ class PinballRound:
         for arb in arbiters:
             if arb.shape.type not in ['flipper', 'ball'] and arb.cooldown > 1:
                 game.callback("cooldown", arbiters=[arb])
+        if self.immediate['score'] or self.immediate['money']:
+            game.callback("scoring_collision", arbiters=arbiters)
         if self.immediate['score']:
             add = self.immediate['score'] * self.immediate['multi'] * self.config.score_multiplier
             s_v = int(self.immediate['score']) if self.immediate['score'] == int(self.immediate['score']) \
@@ -293,6 +295,7 @@ class PinballRound:
                         if other.body is not ball.body and other.collision_type == 2:
                             if ball.shape.shapes_collide(other).points:  # non‐empty list means real contact
                                 other.parent.activations = 10
+                                game.callback("cooldown", arbiters=[other.parent])
                     ball.body.activate()
                 ball.update(dt)
                 if ball.body.velocity.length > ball.max_speed:

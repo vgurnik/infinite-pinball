@@ -3,7 +3,7 @@ from inventory import InventoryItem
 import game_context
 
 
-def effect(arbiters=None):
+def effect(arbiters=None, card=None):
     game = game_context.game
     for item in game.inventory.items:
         allow = False

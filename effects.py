@@ -37,17 +37,29 @@ def get_functional(name):
     return func_module.evaluate
 
 
-def call(effect, arbiters=None):
-    if effect["effect"] is not None:
-        if arbiters is not None:
-            return effect["effect"](*effect["params"], arbiters=arbiters)
-        return effect["effect"](*effect["params"])
-    return True
+def call(effect, arbiters=None, card=None):
+    if effect["effect"] is None:
+        return True
+    e = effect["effect"]
+    p = effect["params"]
+    if arbiters is not None:
+        if card is not None:
+            return e(*p, arbiters=arbiters, card=card)
+        return e(*p, arbiters=arbiters)
+    if card is not None:
+        return e(*p, card=card)
+    return e(*p)
 
 
-def recall(effect, arbiters=None):
-    if effect["negative_effect"] is not None:
-        if arbiters is not None:
-            return effect["negative_effect"](*effect["params"], arbiters=arbiters)
-        return effect["negative_effect"](*effect["params"])
-    return True
+def recall(effect, arbiters=None, card=None):
+    if effect["negative_effect"] is None:
+        return True
+    e = effect["negative_effect"]
+    p = effect["params"]
+    if arbiters is not None:
+        if card is not None:
+            return e(*p, arbiters=arbiters, card=card)
+        return e(*p, arbiters=arbiters)
+    if card is not None:
+        return e(*p, card=card)
+    return e(*p)

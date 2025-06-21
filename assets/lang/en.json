@@ -4,27 +4,43 @@
     "convert_ball": "Convert your current\nball into {}.\n{}",
     "shield": {
       "name": "Shield",
-      "description": "Allow the ball to bounce\nfrom the bottom for 10 s"
+      "description": "Allow the ball to bounce\nfrom the bottom for #[shield.duration] s"
     },
     "slowmo": {
       "name": "SlowMo",
-      "description": "Slow down time\nfor 10 s"
+      "description": "Slow down time\nfor #[time_warp.duration] s"
     },
     "overload": {
       "name": "Overload",
-      "description": "Increase the strength of all bumpers\nx2 for 10 s"
+      "description": "Increase the strength of all bumpers\nx#[bumper_empower.0] for #[bumper_empower.duration] s"
     },
     "shuffle": {
       "name": "Shuffle",
       "description": "Shuffle your ball queue,\nincluding charged ball"
     },
+    "peak": {
+      "name": "Peak",
+      "description": "Gives х&[mult] mult\nLoses 0.25 from this value\nwith every lost ball"
+    },
+    "devil": {
+      "name": "Contract",
+      "description": "Gives х&[mult] mult\nAdds 1 to this value with each bump\nResets to х1 and sets money to $0\non ball loss"
+    },
+    "boost": {
+      "name": "Start boost",
+      "description": "Gives х&[mult]\non first bump of a ball"
+    },
+    "venture": {
+      "name": "Venture",
+      "description": "#[venture.0]% chance to convert ball to Golden ball\nOtherwise, destroys the ball"
+    },
     "bonus": {
       "name": "Bonus",
-      "description": "Increase points scored\nx5 for 5 s"
+      "description": "Increase points scored\nx#[multiply_score.0] for #[multiply_score.duration] s"
     },
     "collector": {
       "name": "Collector",
-      "description": "Increase points scored x4\nif all your balls are different"
+      "description": "Increase points scored x#[collector.0]\nif all your balls are different"
     },
     "forget": {
       "name": "Forget",
@@ -56,7 +72,7 @@
     },
     "sellball": {
       "name": "Sell ball",
-      "description": "Sell your current ball\nfor $250. Be careful, do not\nsell your last ball!"
+      "description": "Sell your current ball\nfor $#[sell_ball.0]. Be careful, do not\nsell your last ball!"
     },
     "giveaway": {
       "name": "Giveaway",
@@ -64,27 +80,27 @@
     },
     "quintupler": {
       "name": "Quintupler",
-      "description": "Earn 5x score until\nthe end of a round"
+      "description": "Earn #[multiply_score.0]x score until\nthe end of a round"
     },
     "ticket": {
       "name": "Lucky Ticket",
-      "description": "Double your money\n(max $1000)"
+      "description": "Double your money\n(max $#[double_money.1])"
     },
     "bank_dep": {
       "name": "Bank deposit",
-      "description": "Increase maximum interest on\nyour money by additional $50"
+      "description": "Increase maximum interest on\nyour money by additional $#[change_interest_cap.0]"
     },
     "ball_loan": {
       "name": "Ball investment",
-      "description": "Earn extra $100\nper ball left on round win"
+      "description": "Earn extra $#[change_ball_reward.0]\nper ball left on round win"
     },
     "platinum": {
       "name": "Platinum card",
-      "description": "Earn additional 10%\ninterest on your money"
+      "description": "Earn additional #[change_interest.0]%\ninterest on your money"
     },
     "rewind": {
       "name": "Rewind",
-      "description": "Chance 20% for each ball\nto return if it is lost"
+      "description": "Chance #[return_chance.0]% for each ball\nto return if it is lost"
     },
     "dupe": {
       "name": "Dupe glitch",
@@ -118,7 +134,7 @@
     },
     "multiplier": {
       "name": "Multiplier chip",
-      "description": "Score 50% more points"
+      "description": "Score 0.5% more points"
     },
     "launcher": {
       "name": "Launcher",
@@ -168,7 +184,7 @@
     },
     "lucky": {
       "name": "Lucky Ball",
-      "description": "Lucky ball has a 30% chance\nto return if it is lost"
+      "description": "Lucky ball has a 0.3% chance\nto return if it is lost"
     },
     "1up": {
       "name": "1-UP",

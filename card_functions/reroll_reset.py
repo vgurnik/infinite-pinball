@@ -1,7 +1,7 @@
 import game_context
 
 
-def effect():
+def effect(arbiters=None, card=None):
     game = game_context.game
     if game.ui.mode != "shop":
         return False

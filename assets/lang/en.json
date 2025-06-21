@@ -18,6 +18,10 @@
       "name": "Shuffle",
       "description": "Shuffle your ball queue,\nincluding charged ball"
     },
+    "bonus_mult": {
+      "name": "Bonus mult",
+      "description": "Adds +#[change_score_multiplier.0] to the base multiplier"
+    },
     "peak": {
       "name": "Peak",
       "description": "Gives х&[mult] mult\nLoses 0.25 from this value\nwith every lost ball"
@@ -27,7 +31,7 @@
       "description": "Gives х&[mult] mult\nAdds 1 to this value with each bump\nResets to х1 and sets money to $0\non ball loss"
     },
     "boost": {
-      "name": "Start boost",
+      "name": "Lightning",
       "description": "Gives х&[mult]\non first bump of a ball"
     },
     "venture": {
@@ -56,7 +60,7 @@
     },
     "doubler": {
       "name": "Doubler",
-      "description": "Earn double score"
+      "description": "Gives x#[multiply_score.0] multiplier"
     },
     "cardholder": {
       "name": "Cardholder",

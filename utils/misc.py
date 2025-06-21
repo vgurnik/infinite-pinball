@@ -22,7 +22,10 @@ def choose_items(count, pool, rarity_scoring, unique=True, exclude_pool=None):
     for item in pool:
         if item["rarity"] in rarity_scoring and _is_allowed(item) and item["name"] not in (exclude_pool or []):
             rarity_pools[item["rarity"]].append(item)
-    weights = [rarity_scoring[rarity]["value"] for rarity in rarity_pools.keys()]
+    for rarity in list(rarity_pools.keys()):
+        if len(rarity_pools[rarity]) == 0:
+            del rarity_pools[rarity]
+    weights = [rarity_scoring[rarity]["value"] for rarity in rarity_pools]
     weights = [sum(weights[:i])/sum(weights) for i in range(1, len(weights)+1)]
     items = []
     for _ in range(count):

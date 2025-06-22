@@ -140,7 +140,7 @@ def loc(text):
 
 
 def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rect,
-                      font_color: tuple, bg_color: tuple, justification=0):
+                      font_color: tuple, bg_color: tuple = (0, 0, 0, 0), justification=0):
     """Returns a surface containing the passed text string, reformatted
     to fit within the given rect, word-wrapping as necessary. The text
     will be anti-aliased.
@@ -169,10 +169,6 @@ def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rec
     for requested_line in requested_lines:
         if font.size(requested_line)[0] > rect.width:
             words = requested_line.split(' ')
-            # if any of our words are too long to fit, return.
-            for word in words:
-                if font.size(word)[0] >= rect.width:
-                    raise Exception("The word " + word + " is too long to fit in the rect passed.")
             # Start a new line
             accumulated_line = ""
             for word in words:
@@ -188,7 +184,7 @@ def multiline_in_rect(string: str, font: pygame.font.Font, rect: pygame.rect.Rec
             final_lines.append(requested_line)
 
     # Let's try to write the text out on the surface.
-    surface = pygame.Surface(rect.size)
+    surface = pygame.Surface(rect.size, pygame.SRCALPHA)
     surface.fill(bg_color)
     accumulated_height = 0
     for line in final_lines:

@@ -141,7 +141,7 @@
           "effect": "splash",
           "usage": "passive",
           "trigger": "ball_lost",
-          "params": ["ball", "ui.text.devil", [255, 0, 0]]
+          "params": ["ball", [0, -30], "effect.splash.devil", [255, 0, 0]]
         }
       ],
       "flags": {
@@ -179,6 +179,36 @@
         "mult": 10
       },
       "description": "card.boost.description"
+    },
+    {
+      "name": "card.cashback.name",
+      "price": 200,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "cashback",
+          "usage": "passive",
+          "trigger": "round_end",
+          "params": [0.5]
+        }
+      ],
+      "description": "card.cashback.description"
+    },
+    {
+      "name": "card.useful.name",
+      "price": 200,
+      "type": "card",
+      "rarity": "uncommon",
+      "effects": [
+        {
+          "effect": "change_score_multiplier",
+          "usage": "passive",
+          "trigger": "reroll",
+          "params": [0.1, "s"]
+        }
+      ],
+      "description": "card.useful.description"
     },
     {
       "name": "card.venture.name",
@@ -603,7 +633,7 @@
       "effects": [
         {
           "effect": "change_interest_cap",
-          "params": [50, "s"],
+          "params": [100, "s"],
           "usage": "passive",
           "trigger": "use"
         }
@@ -1013,6 +1043,15 @@
       "object_type": "bumper",
       "class": "bouncy_coin",
       "description": "object.coin.description"
+    },
+    {
+      "name": "object.chaos.name",
+      "price": 150,
+      "rarity": "rare",
+      "type": "buildable",
+      "object_type": "bumper",
+      "class": "chaos",
+      "description": "object.chaos.description"
     },
     {
       "name": "object.flipper.name",

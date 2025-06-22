@@ -59,16 +59,17 @@ class PinballGame:
             for effect in card.effects:
                 if effect["trigger"] == event and effect["usage"] == "active" and effect["duration"] != 0:
                     effects.call(effect, arbiters=arbiters, card=card)
-        if arbiters is not None:
-            for arb in arbiters:
-                if issubclass(arb.__class__, GameObject):
-                    if arb.cooldown == 0:
-                        for effect in arb.effects:
-                            if effect["trigger"] == event:
-                                effects.call(effect, arbiters)
-                                arb.cooldown = max(arb.cooldown, effect["cooldown"])
-                    if arb.cooldown > 0:
-                        arb.cooldown_timer = arb.cooldown
+        if arbiters is None:
+            return
+        for arb in arbiters:
+            if issubclass(arb.__class__, GameObject):
+                if arb.cooldown == 0:
+                    for effect in arb.effects:
+                        if effect["trigger"] == event:
+                            effects.call(effect, arbiters)
+                            arb.cooldown = max(arb.cooldown, effect["cooldown"])
+                if arb.cooldown > 0:
+                    arb.cooldown_timer = arb.cooldown
 
     def shop_screen(self, _shop=None):
         clock = pygame.time.Clock()
@@ -136,6 +137,7 @@ class PinballGame:
                                                                              (2 * i - shop_size[0]) * 65,
                                                                              self.config.shop_pos_objects[1]),
                                                             for_buildable=self.textures.get(obj_def["texture"])))
+                            self.callback("reroll", arbiters=[shop])
                     else:
                         save_system.save()
                         return ui_return, shop

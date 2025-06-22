@@ -20,7 +20,7 @@
     },
     "bonus_mult": {
       "name": "Bonus mult",
-      "description": "Adds +#[change_score_multiplier.0] to the base multiplier"
+      "description": "Temporarily adds +#[change_score_multiplier.0] to the base multiplier"
     },
     "peak": {
       "name": "Peak",
@@ -34,13 +34,21 @@
       "name": "Lightning",
       "description": "Gives х&[mult]\non first bump of a ball"
     },
+    "cashback": {
+      "name": "Cashback",
+      "description": "Gives #[cashback.0]% of its price\non round end"
+    },
+    "useful": {
+      "name": "Reroll is useful!",
+      "description": "Improves base multiplier by +#[change_score_multiplier.0]\non each reroll"
+    },
     "venture": {
       "name": "Venture",
       "description": "#[venture.0]% chance to convert ball to Golden ball\nOtherwise, destroys the ball"
     },
     "adrenaline": {
       "name": "Adrenaline",
-      "description": "Adds 0.01 to the base multiplier\nfor each hit (currently +&[addition])\nResets on ball lost and recharge"
+      "description": "Temporarily adds 0.01 to the base multiplier\nfor each hit (currently +&[addition])\nResets on ball lost and recharge"
     },
     "bonus": {
       "name": "Bonus",
@@ -213,6 +221,10 @@
     "coin": {
       "name": "Bouncy Coin",
       "description": "Bumper that gives $10\nfor each hit"
+    },
+    "chaos": {
+      "name": "Chaos",
+      "description": "Gives from -50 to 200 points randomly\nand deflects the ball with random force"
     },
     "flipper": {
       "name": "Flipper",

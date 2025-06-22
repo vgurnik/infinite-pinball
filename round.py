@@ -82,10 +82,11 @@ class PinballRound:
             s_v = format_number(abs(self.immediate['score']))
             m_v = format_number(abs(self.immediate['multi'] * game.flags["base_mult"]))
             if m_v != '1':
-                s_str = f"{'+' if add >= 0 else ''}{s_v} X {m_v}"
+                s_str = f"{'+' if add >= 0 else '-'}{s_v} X {m_v}"
             else:
-                s_str = f"{'+' if add >= 0 else ''}{s_v}"
-            self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), s_str, (0, 255, 0)))
+                s_str = f"{'+' if add >= 0 else '-'}{s_v}"
+            self.hit_effects.append(HitEffect((x+self.field.position[0], y+self.field.position[1]), s_str, (0, 255, 0)
+            if add > 0 else (255, 0, 0)))
             y += 20
             self.score += add
         if self.immediate['money']:

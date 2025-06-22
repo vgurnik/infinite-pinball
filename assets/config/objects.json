@@ -136,6 +136,19 @@
           "cooldown": 0.3
         }
       ]
+    },
+    "chaos": {
+      "name": "object.chaos.name",
+      "texture": "chaos",
+      "size": 15,
+      "force": 1,
+      "effects": [
+        {
+          "effect": "chaos",
+          "params": [-50, 200],
+          "cooldown": 0.3
+        }
+      ]
     }
   },
   "pin": {

@@ -101,7 +101,7 @@ class Config:
         self.extra_award_per_ball = 100
         self.charge_bonus = 2
         self.interest_rate = 0.2
-        self.interest_cap = 50
+        self.interest_cap = 100
         self.reroll_next = 2
         self.inventory_size = 5
         self.start_flags = {"base_mult": 1, "reroll_start_cost": 10, "charge_bonus": False,

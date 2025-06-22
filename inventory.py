@@ -1,7 +1,7 @@
 import math
 import pygame
 from game_effects import ContextWindow
-from utils.text import multiline, loc
+from utils.text import multiline, loc, multiline_in_rect
 from utils.textures import mouse_scale
 import effects
 from config import fontfile
@@ -165,7 +165,7 @@ class InventoryItem:
             pygame.draw.rect(surface, (255, 255, 255), rect, 2, border_radius=5)
             # Draw the item name centered at the top of the card.
             font = pygame.font.Font(fontfile, 20)
-            text_surface = font.render(loc(self.name), True, (0, 0, 0))
+            text_surface = multiline_in_rect(loc(self.name), font, rect, (0, 0, 0))
             x = rect.x + (rect.width - text_surface.get_width()) / 2
             y = rect.y + 5
             surface.blit(text_surface, (x, y))
@@ -285,6 +285,7 @@ class PlayerInventory(Inventory):
         self.height = self.config.ui_inventory_height
         self.max_size = self.config.inventory_size
         self.deletion_zone = pygame.Rect(self.config.ui_deletion_pos, self.config.ui_deletion_size)
+        self.chosen_item = None
         self.explicit = False
         if overrides is not None:
             self.position = pygame.math.Vector2(overrides.get("pos", self.position))
@@ -299,11 +300,18 @@ class PlayerInventory(Inventory):
     def recalculate_targets(self):
         if len(self.items) == 0:
             return
+        if self.chosen_item and self.chosen_item >= len(self.items):
+            if len(self.items) == 0:
+                self.chosen_item = None
+            else:
+                self.chosen_item = len(self.items) - 1
         # Arrange items vertically.
         spacing = min(self.slot_height + self.slot_margin, self.height / len(self.items))
         for index, item in enumerate(self.items):
             target_y = self.position.y + index * spacing
             target_x = self.position.x
+            if self.chosen_item == index:
+                target_x += 40
             item.target_position = pygame.math.Vector2(target_x, target_y)
 
     def add_item(self, item: InventoryItem):
@@ -340,30 +348,43 @@ class PlayerInventory(Inventory):
 
     def handle_event(self, event):
         mouse_pos = mouse_scale(pygame.mouse.get_pos())
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # left click
-                # Iterate in reverse so that top-most drawn items are prioritized.
-                for item in reversed(self.items):
-                    if item.rect.collidepoint(mouse_pos):
-                        item.dragging = True
-                        self.dragging_item = item
-                        item.offset = pygame.math.Vector2(item.pos) - pygame.math.Vector2(mouse_pos)
-                        break
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # Iterate in reverse so that top-most drawn items are prioritized.
+            for item in reversed(self.items):
+                if item.rect.collidepoint(mouse_pos):
+                    item.dragging = True
+                    self.dragging_item = item
+                    item.offset = pygame.math.Vector2(item.pos) - pygame.math.Vector2(mouse_pos)
+                    break
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1 and self.dragging_item:
                 self.dragging_item.dragging = False
                 self.dragging_item.visibility = True
-                in_quiestion = self.dragging_item
+                in_question = self.dragging_item
+                spacing = min(self.slot_height + self.slot_margin, self.height / len(self.items))
+                i = self.items.index(in_question)
+                original_pos = pygame.math.Vector2((self.position.x + 40 * (self.chosen_item == i),
+                                                    self.position.y + i * spacing))
+                if self.dragging_item.pos.distance_to(original_pos) < 10:
+                    if self.chosen_item is not None and self.chosen_item == self.items.index(in_question):
+                        self.chosen_item = None
+                    else:
+                        self.chosen_item = self.items.index(in_question)
+                original_chosen = None
+                if self.chosen_item is not None and self.chosen_item < len(self.items):
+                    original_chosen = self.items[self.chosen_item]
+                # After dropping, re-sort the items based on their current y-positions.
+                self.items.sort(key=lambda x: x.pos.y)
+                if original_chosen is not None:
+                    self.chosen_item = self.items.index(original_chosen)
+                self.recalculate_targets()
                 self.dragging_item = None
                 if self.deletion_zone.collidepoint(mouse_pos):
                     self.context.set_visibility(False)
-                    return {"try_selling": in_quiestion}
-                if mouse_pos[0] > self.width and in_quiestion.properties["type"] in ["card", "buildable"]:
+                    return {"try_selling": in_question}
+                if mouse_pos[0] > self.width and in_question.properties["type"] in ["card", "buildable"]:
                     self.context.set_visibility(False)
-                    return {"try_using": in_quiestion}
-                # After dropping, re-sort the items based on their current y-positions.
-                self.items.sort(key=lambda x: x.pos.y)
-                self.recalculate_targets()
+                    return {"try_using": in_question}
             if event.button in [2, 3]:
                 for item in reversed(self.items):
                     if item.rect.collidepoint(mouse_pos):
@@ -374,6 +395,40 @@ class PlayerInventory(Inventory):
                             self.context.set_visibility(False)
                             return {"try_using": item}
                         break
+                if self.chosen_item is not None and self.chosen_item < len(self.items):
+                    if event.button == 2:
+                        return {"try_selling": self.items[self.chosen_item]}
+                    if event.button == 3:
+                        return {"try_using": self.items[self.chosen_item]}
+        elif event.type == pygame.KEYDOWN:
+            if self.chosen_item is not None and self.chosen_item < len(self.items):
+                if event.key == pygame.K_TAB:
+                    return {"try_selling": self.items[self.chosen_item]}
+                if event.key == pygame.K_LSHIFT:
+                    return {"try_using": self.items[self.chosen_item]}
+            if event.key == pygame.K_q:
+                if self.chosen_item is None and len(self.items) > 0:
+                    self.chosen_item = 0
+                else:
+                    self.chosen_item = (self.chosen_item - 1) % len(self.items)
+            if event.key == pygame.K_e:
+                if self.chosen_item is None and len(self.items) > 0:
+                    self.chosen_item = len(self.items) - 1
+                else:
+                    self.chosen_item = (self.chosen_item + 1) % len(self.items)
+            self.recalculate_targets()
+        elif event.type == pygame.MOUSEWHEEL:
+            if event.y > 0:
+                if self.chosen_item is None and len(self.items) > 0:
+                    self.chosen_item = 0
+                else:
+                    self.chosen_item = (self.chosen_item - 1) % len(self.items)
+            else:
+                if self.chosen_item is None and len(self.items) > 0:
+                    self.chosen_item = len(self.items) - 1
+                else:
+                    self.chosen_item = (self.chosen_item + 1) % len(self.items)
+            self.recalculate_targets()
         elif event.type == pygame.MOUSEMOTION:
             if self.dragging_item:
                 self.dragging_item.pos = pygame.math.Vector2(mouse_pos) + self.dragging_item.offset

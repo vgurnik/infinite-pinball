@@ -156,35 +156,38 @@ class Ui:
                 self.reroll_button.pressed = True
             if self.mode == 'round_finishable' and self.play_button.is_hovered():
                 self.play_button.pressed = True
-        elif event.type == pygame.KEYDOWN and game.debug_mode:
-            match event.key:
-                case pygame.K_EQUALS:
-                    game.money += 1000
-                    print('+$1000')
-                case pygame.K_MINUS:
-                    game.round_instance.score += 1000
-                    print('+1000 score')
-                case pygame.K_r:
-                    game.reroll_cost = 0
-                    print('reroll reset')
-                case pygame.K_w:
-                    game.round_instance.score = game.score_needed
-                    print('round won')
-                case pygame.K_e:
-                    name = input('spawn card:')
-                    item = None
-                    for i in game.config.shop_items["card"]:
-                        if i.get("name") == name:
-                            item = i
-                            break
-                    if item is None:
-                        for i in game.config.shop_items["buildable"]:
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LCTRL and self.mode == 'round_finishable':
+                return "round_over"
+            if game.debug_mode:
+                match event.key:
+                    case pygame.K_EQUALS:
+                        game.money += 1000
+                        print('+$1000')
+                    case pygame.K_MINUS:
+                        game.round_instance.score += 1000
+                        print('+1000 score')
+                    case pygame.K_i:
+                        game.reroll_cost = 0
+                        print('reroll reset')
+                    case pygame.K_o:
+                        game.round_instance.score = game.score_needed
+                        print('round won')
+                    case pygame.K_p:
+                        name = input('spawn card:')
+                        item = None
+                        for i in game.config.shop_items["card"]:
                             if i.get("name") == name:
                                 item = i
                                 break
-                    if item is not None and game.inventory.add_item(
-                            InventoryItem(properties=item, sprite=game.textures.get(item.get("sprite")))):
-                        print('spawned', loc(name))
-                    else:
-                        print('can not spawn', loc(name))
+                        if item is None:
+                            for i in game.config.shop_items["buildable"]:
+                                if i.get("name") == name:
+                                    item = i
+                                    break
+                        if item is not None and game.inventory.add_item(
+                                InventoryItem(properties=item, sprite=game.textures.get(item.get("sprite")))):
+                            print('spawned', loc(name))
+                        else:
+                            print('can not spawn', loc(name))
         return None

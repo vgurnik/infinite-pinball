@@ -380,6 +380,8 @@ def round_results_overlay(score, min_score):
             texts.insert(3, format_text("ui.message.score_reward", order_reward))
         if ball_reward > 0:
             texts.insert(3, format_text("ui.message.ball_reward", ball_reward))
+        for add, tag in game.immediate['$additional']:
+            texts.insert(3, format_text("{}: ${}", tag, add))
         for i, line in enumerate(texts):
             if i == 0:
                 txt = font.render(line, True, (0, 255, 0))
